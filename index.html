@@ -3,50 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OY 購物管家 - 歷史特價版</title>
+    <title>OY 購物管家 - 旗艦完備版</title>
     <style>
-        :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --tax: #e67e22; --win: #ffd700; --must: #e74c3c; --want: #3498db; --history: #3498db; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 250px; }
-        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        h2 { color: var(--primary); text-align: center; margin: 5px 0 10px 0; }
+        :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --tax: #e67e22; --win: #ffd700; --must: #e74c3c; --want: #3498db; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 260px; color: #333; }
+        .card { background: white; border-radius: 16px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        h2 { color: var(--primary); text-align: center; margin: 5px 0 15px 0; font-size: 20px; }
         
-        /* 表單樣式 */
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; outline: none; background: white; }
-        .row { display: flex; gap: 6px; align-items: center; }
-        .spec-entry { background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid #ddd; }
-        .price-row { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 5px; margin-top: 5px; }
+        /* 表單區域 */
+        .form-group { display: flex; flex-direction: column; gap: 10px; }
+        .input-row { display: flex; gap: 8px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; }
         
-        .btn-main { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
-        .btn-sub { background: #eee; color: #444; padding: 8px; border: none; border-radius: 8px; font-size: 12px; font-weight: bold; margin-bottom: 5px; }
-        .btn-del-spec { background: #ffcccc; color: #cc0000; border: none; width: 25px; height: 25px; border-radius: 50%; }
+        /* 規格小卡片 - 解決排版凸出問題 */
+        .spec-entry { background: #f9f9f9; padding: 12px; border-radius: 10px; border: 1px solid #eee; position: relative; }
+        .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        .full-width { grid-column: span 2; }
+        .spec-label { font-size: 11px; color: #777; margin-bottom: 2px; }
+
+        .btn-main { background: var(--primary); color: white; padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 5px; }
+        .btn-sub { background: #eee; color: #444; padding: 8px; border: none; border-radius: 8px; font-size: 12px; font-weight: bold; }
+        .btn-del { position: absolute; right: -5px; top: -5px; background: #ff4d4d; color: white; border: none; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; }
 
         /* 導覽 */
-        .nav-tabs { display: flex; background: white; border-radius: 12px; margin-bottom: 15px; padding: 5px; }
+        .nav-tabs { display: flex; background: white; border-radius: 12px; margin-bottom: 15px; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .nav-btn { flex: 1; padding: 10px; border: none; background: none; font-weight: bold; color: #888; border-radius: 8px; }
         .nav-btn.active { background: var(--primary); color: white; }
 
-        /* 卡片顯示 */
+        /* 產品卡片 */
         .item-card { background: white; border-radius: 15px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative; }
         .item-card.in-cart { border: 2px solid var(--cart); }
-        .priority-tag { font-size: 10px; font-weight: bold; color: white; padding: 2px 8px; border-radius: 10px; position: absolute; right: 10px; top: 10px; }
-        .tag-必買 { background: var(--must); } .tag-想買 { background: var(--want); } .tag-感興趣 { background: #95a5a6; }
+        .prod-img { width: 100%; height: 140px; object-fit: contain; background: #fff; border-bottom: 1px solid #f0f0f0; }
+        .prod-info { padding: 12px; }
+        .priority-badge { position: absolute; top: 10px; right: 10px; font-size: 10px; padding: 3px 8px; border-radius: 20px; color: white; font-weight: bold; z-index: 5; }
+        
+        .price-display { background: #fffdf0; padding: 8px; border-radius: 8px; margin-bottom: 5px; border: 1px solid #ffeaa7; }
+        .price-tag { color: #e74c3c; font-weight: bold; font-size: 16px; }
+        .old-price { text-decoration: line-through; color: #999; font-size: 12px; margin-left: 5px; }
+        .expiry-info { font-size: 11px; color: #e67e22; font-weight: bold; display: block; margin-top: 3px; }
 
-        .spec-row { padding: 10px; border-radius: 8px; margin-bottom: 6px; background: #fff; border: 1px solid #eee; font-size: 13px; }
-        .spec-row.best { border-color: var(--win); background: #fffdf0; position: relative; }
-        .best-label { position: absolute; right: 5px; top: -8px; background: var(--win); font-size: 9px; padding: 1px 4px; border-radius: 4px; font-weight: bold; }
-        .price-tag { font-weight: bold; color: #e74c3c; font-size: 15px; }
-        .old-price { text-decoration: line-through; color: #999; font-size: 11px; margin-left: 4px; }
-        .expiry-tag { color: #e74c3c; font-size: 10px; font-weight: bold; margin-top: 4px; display: block; }
+        /* 底部結帳欄 */
+        .checkout-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 100; border-radius: 20px 20px 0 0; }
+        .sum-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+        .total-row { color: var(--primary); font-size: 22px; font-weight: 900; border-top: 1px solid #eee; padding-top: 8px; margin-top: 8px; }
 
-        /* 歷史面板 */
-        .history-btn { color: var(--history); font-size: 12px; font-weight: bold; cursor: pointer; text-decoration: underline; margin-top: 8px; display: inline-block; }
-        .history-panel { display: none; background: #f0f7ff; padding: 10px; border-radius: 8px; margin-top: 8px; font-size: 11px; border: 1px solid #d0e4f7; }
-        .hist-item { border-bottom: 1px dashed #abc; padding: 4px 0; }
-
-        .checkout-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); z-index: 100; border-radius: 20px 20px 0 0; }
-        .sum-line { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
-        .final-row { color: var(--primary); font-size: 22px; font-weight: 900; margin-top: 5px; }
+        .history-panel { display: none; font-size: 11px; background: #f0f7ff; padding: 10px; border-radius: 8px; margin: 8px 0; border: 1px solid #cce2ff; }
+        .page { display: none; }
+        .page.active { display: block; }
     </style>
 </head>
 <body>
@@ -58,57 +61,71 @@
 
 <div id="wishlist-page" class="page active">
     <div class="card">
-        <h2>價格歷史追蹤 🌿</h2>
+        <h2>✨ 新增採購項目</h2>
         <div class="form-group">
-            <input type="text" id="name" placeholder="產品名稱 (重複名稱將存入歷史)">
-            <div class="row">
-                <select id="priority" style="flex:1"><option value="必買">🔥 必買</option><option value="想買" selected>🛍️ 想買</option><option value="感興趣">✨ 感興趣</option></select>
-                <select id="mainCat" onchange="updateSubCat()" style="flex:1"><option value="護膚品">護膚品</option><option value="化妝品">化妝品</option><option value="其他">其他</option></select>
+            <input type="text" id="name" placeholder="產品名稱 (必填)">
+            <div class="input-row">
+                <input type="text" id="imgUrl" placeholder="圖片網址 (可選)">
+                <input type="text" id="prodLink" placeholder="產品連結 (可選)">
             </div>
-            <div id="subCatContainer"></div>
+            <div class="input-row">
+                <select id="priority">
+                    <option value="必買">🔥 必買</option>
+                    <option value="想買" selected>🛍️ 想買</option>
+                    <option value="感興趣">✨ 感興趣</option>
+                </select>
+                <select id="mainCat" onchange="updateSubCat()">
+                    <option value="護膚品">護膚品</option>
+                    <option value="化妝品">化妝品</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <div id="subCatArea"></div>
+            
             <div id="specs-container"></div>
             <button class="btn-sub" onclick="addSpecInput()">＋增加對比規格</button>
-            <button class="btn-main" onclick="saveProduct()">儲存並記錄歷史</button>
+            <button class="btn-main" onclick="saveProduct()">儲存至清單</button>
         </div>
     </div>
     <div id="wish-list-container"></div>
 </div>
 
 <div id="cart-page" class="page">
-    <div class="card"><h2>🛒 現場結帳籃</h2><div id="cart-list-container"></div></div>
+    <div class="card"><h2>🛒 購物籃清單</h2><div id="cart-list-container"></div></div>
 </div>
 
 <div class="checkout-bar">
-    <div class="sum-line" style="color:var(--must); font-weight:bold;"><span>🔥 必買小計</span><span>₩<span id="must-total">0</span></span></div>
-    <div class="sum-line"><span>結帳小計</span><span>₩<span id="total-amount">0</span></span></div>
-    <div class="sum-line" style="color:var(--tax); font-weight:bold;"><span>📉 預估退稅</span><span>- ₩<span id="refund-amount">0</span></span></div>
-    <div class="sum-line final-row"><span>實付預預算</span><span>₩<span id="final-amount">0</span></span></div>
+    <div class="sum-row" style="color:var(--must); font-weight:bold;"><span>必買小計</span><span>₩<span id="must-total">0</span></span></div>
+    <div class="sum-row"><span>總計</span><span>₩<span id="total-amount">0</span></span></div>
+    <div class="sum-row" style="color:var(--tax);"><span>預估退稅</span><span>- ₩<span id="refund-amount">0</span></span></div>
+    <div class="sum-row total-row"><span>預算實付</span><span>₩<span id="final-amount">0</span></span></div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('oy_history_v13')) || [];
-    let cart = JSON.parse(localStorage.getItem('oy_cart_v13')) || [];
-
-    const taxTable = [{ min: 15000, max: 29999, refund: 1000 }, { min: 30000, max: 49999, refund: 2000 }, { min: 50000, max: 74999, refund: 3000 }, { min: 75000, max: 99999, refund: 5000 }, { min: 100000, max: 124999, refund: 7000 }, { min: 125000, max: 149999, refund: 8000 }, { min: 150000, max: 174999, refund: 9000 }, { min: 175000, max: 199999, refund: 10000 }, { min: 200000, max: 224999, refund: 12000 }];
+    let db = JSON.parse(localStorage.getItem('oy_flagship_v14')) || [];
+    let cart = JSON.parse(localStorage.getItem('oy_cart_v14')) || [];
 
     function updateSubCat() {
         const main = document.getElementById('mainCat').value;
-        const container = document.getElementById('subCatContainer');
-        container.innerHTML = main === "其他" ? `<input type="text" id="subCat" placeholder="類別(如:零食)" style="width:100%">` : `<select id="subCat" style="width:100%"><option value="Mask">Mask</option><option value="Toner">Toner</option><option value="Lip">Lip Tint</option></select>`;
+        const area = document.getElementById('subCatArea');
+        if (main === "其他") {
+            area.innerHTML = `<input type="text" id="subCat" placeholder="自定義類別 (如:零食)">`;
+        } else {
+            const subs = main === "護膚品" ? ["Mask", "Serum", "Toner", "Cream"] : ["Lip", "Foundation", "Eye"];
+            area.innerHTML = `<select id="subCat">${subs.map(s => `<option value="${s}">${s}</option>`).join('')}</select>`;
+        }
     }
 
     function addSpecInput() {
         const div = document.createElement('div');
         div.className = 'spec-entry';
         div.innerHTML = `
-            <div class="row">
-                <input type="number" class="spec-qty" placeholder="入數" style="flex:1">
-                <button class="btn-del-spec" onclick="this.parentElement.parentElement.remove()">✕</button>
-            </div>
-            <div class="price-row">
-                <input type="number" class="spec-orig" placeholder="原價 ₩">
-                <input type="number" class="spec-sale" placeholder="特價 ₩">
-                <input type="date" class="spec-until">
+            <button class="btn-del" onclick="this.parentElement.remove()">✕</button>
+            <div class="spec-grid">
+                <div><div class="spec-label">入數</div><input type="number" class="spec-qty" placeholder="1"></div>
+                <div><div class="spec-label">原價 ₩</div><input type="number" class="spec-orig" placeholder="20000"></div>
+                <div><div class="spec-label">特價 ₩ (選填)</div><input type="number" class="spec-sale" placeholder="15000"></div>
+                <div><div class="spec-label">特價截止 (選填)</div><input type="date" class="spec-until"></div>
             </div>
         `;
         document.getElementById('specs-container').appendChild(div);
@@ -116,33 +133,39 @@
 
     function saveProduct() {
         const name = document.getElementById('name').value;
-        if (!name) return alert('請輸入產品名稱');
+        if (!name) return alert('請填寫產品名稱');
         
-        const specDivs = document.querySelectorAll('.spec-entry');
         let specs = [];
-        specDivs.forEach(div => {
-            const qty = Number(div.querySelector('.spec-qty').value);
-            const orig = Number(div.querySelector('.spec-orig').value);
-            const sale = Number(div.querySelector('.spec-sale').value);
-            const until = div.querySelector('.spec-until').value;
-            if (qty && (orig || sale)) specs.push({ qty, orig, sale, until, unit: Math.round((sale||orig)/qty) });
+        document.querySelectorAll('.spec-entry').forEach(div => {
+            const q = Number(div.querySelector('.spec-qty').value);
+            const o = Number(div.querySelector('.spec-orig').value);
+            const s = Number(div.querySelector('.spec-sale').value);
+            const u = div.querySelector('.spec-until').value;
+            const finalP = s || o;
+            if (q && finalP) specs.push({ qty: q, orig: o, sale: s, until: u, unit: Math.round(finalP/q) });
         });
 
-        let oldIdx = db.findIndex(p => p.name === name);
-        const timestamp = new Date().toLocaleDateString();
+        if (specs.length === 0) return alert('請至少填寫一組有效規格');
 
+        const product = {
+            id: Date.now(), name, 
+            imgUrl: document.getElementById('imgUrl').value,
+            prodLink: document.getElementById('prodLink').value,
+            priority: document.getElementById('priority').value,
+            mainCat: document.getElementById('mainCat').value,
+            subCat: document.getElementById('subCat').value,
+            specs, history: []
+        };
+
+        let oldIdx = db.findIndex(p => p.name === name);
         if (oldIdx > -1) {
-            // 存入歷史
-            db[oldIdx].history = db[oldIdx].history || [];
-            db[oldIdx].history.push({ date: timestamp, specs: [...db[oldIdx].specs] });
-            // 更新當前
-            db[oldIdx].specs = specs;
-            db[oldIdx].priority = document.getElementById('priority').value;
+            product.history = [...db[oldIdx].history, { date: new Date().toLocaleDateString(), specs: db[oldIdx].specs }];
+            db[oldIdx] = product;
         } else {
-            db.push({ id: Date.now(), name, priority: document.getElementById('priority').value, mainCat: document.getElementById('mainCat').value, subCat: document.getElementById('subCat').value, specs, history: [] });
+            db.push(product);
         }
 
-        localStorage.setItem('oy_history_v13', JSON.stringify(db));
+        localStorage.setItem('oy_flagship_v14', JSON.stringify(db));
         resetForm(); render();
     }
 
@@ -150,50 +173,54 @@
         const wishC = document.getElementById('wish-list-container');
         const cartC = document.getElementById('cart-list-container');
         wishC.innerHTML = ''; cartC.innerHTML = '';
-        let total = 0, mustT = 0, count = 0;
+        let total = 0, mustT = 0, cartQty = 0;
 
-        db.sort((a,b) => (a.priority==='必買'?-1:1)).forEach(p => {
+        db.sort((a,b) => (a.priority === '必買' ? -1 : 1)).forEach(p => {
             const inCart = cart.includes(p.id);
             const minUnit = Math.min(...p.specs.map(s => s.unit));
             const specHtml = p.specs.map(s => `
-                <div class="spec-row ${s.unit === minUnit && p.specs.length > 1 ? 'best' : ''}">
-                    ${s.unit === minUnit && p.specs.length > 1 ? '<span class="best-label">🏆 最划算</span>' : ''}
-                    <div>${s.qty}入: <span class="price-tag">₩${(s.sale || s.orig).toLocaleString()}</span> ${s.sale ? `<span class="old-price">₩${s.orig.toLocaleString()}</span>` : ''}</div>
-                    <div style="font-size:11px; margin-top:2px;">單價: ₩${s.unit} ${s.until ? `<span class="expiry-tag">⏳ 特價至 ${s.until}</span>` : ''}</div>
+                <div class="price-display ${s.unit === minUnit && p.specs.length > 1 ? 'best' : ''}">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>${s.qty}入: <span class="price-tag">₩${(s.sale || s.orig).toLocaleString()}</span>${s.sale ? `<span class="old-price">₩${s.orig.toLocaleString()}</span>` : ''}</span>
+                        <span style="font-size:11px; background:#eee; padding:2px 5px; border-radius:4px;">單價 ₩${s.unit}</span>
+                    </div>
+                    ${s.sale && s.until ? `<span class="expiry-info">⏳ 特價至 ${s.until}</span>` : ''}
                 </div>`).join('');
 
-            const histHtml = (p.history || []).map(h => `
-                <div class="hist-item">📅 ${h.date}: ${h.specs.map(s => `₩${(s.sale||s.orig)}/${s.qty}入`).join(' | ')}</div>
-            `).join('');
-
-            const card = `<div class="item-card ${inCart?'in-cart':''}">
-                <span class="priority-tag tag-${p.priority}">${p.priority}</span>
-                <div class="prod-content">
-                    <span class="cat-tag">${p.mainCat} > ${p.subCat}</span>
-                    <div class="prod-title" style="font-weight:bold; font-size:17px; margin:5px 0;">${p.name}</div>
-                    ${specHtml}
-                    <div class="history-btn" onclick="toggleHist(${p.id})">📊 價格歷史 (${p.history.length})</div>
-                    <div id="hist-${p.id}" class="history-panel">${histHtml || '尚無舊價格記錄'}</div>
-                    <button class="btn-cart" style="background:${inCart?'#2ecc71':'#f0f0f0'}; color:${inCart?'white':'#333'}; width:100%; padding:10px; border:none; border-radius:10px; font-weight:bold; margin-top:10px;" onclick="toggleCart(${p.id})">${inCart?'❌ 移出購物籃':'➕ 放入購物籃'}</button>
-                </div>
-            </div>`;
+            const card = `
+                <div class="item-card ${inCart ? 'in-cart' : ''}">
+                    <span class="priority-badge" style="background:${p.priority==='必買'?'#e74c3c':(p.priority==='想買'?'#3498db':'#95a5a6')}">${p.priority}</span>
+                    ${p.imgUrl ? `<img src="${p.imgUrl}" class="prod-img">` : ''}
+                    <div class="prod-info">
+                        <div style="font-size:11px; color:#888;">${p.mainCat} > ${p.subCat}</div>
+                        <a href="${p.prodLink || '#'}" target="_blank" style="text-decoration:none; color:#333; font-weight:bold; font-size:16px; display:block; margin:5px 0;">${p.name} ${p.prodLink?'🔗':''}</a>
+                        ${specHtml}
+                        <div onclick="toggleH(${p.id})" style="color:#3498db; font-size:11px; text-decoration:underline; margin:5px 0; cursor:pointer;">📊 價格歷史 (${p.history.length})</div>
+                        <div id="h-${p.id}" class="history-panel">${p.history.map(h => `<div>${h.date}: ₩${h.specs[0].unit}/入</div>`).join('') || '尚無紀錄'}</div>
+                        <button class="btn-main" style="background:${inCart? '#2ecc71':'#f0f0f0'}; color:${inCart?'white':'#444'}; width:100%;" onclick="toggleCart(${p.id})">${inCart?'❌ 移出購物籃':'➕ 放入購物籃'}</button>
+                    </div>
+                </div>`;
             wishC.innerHTML += card;
-            if (inCart) { cartC.innerHTML += card; total += (p.specs[0].sale || p.specs[0].orig); count++; if(p.priority==='必買') mustT += (p.specs[0].sale || p.specs[0].orig); }
+            if (inCart) { cartC.innerHTML += card; total += (p.specs[0].sale || p.specs[0].orig); cartQty++; if(p.priority==='必買') mustT += (p.specs[0].sale || p.specs[0].orig); }
         });
 
+        // 退稅計算
+        const taxTable = [{ min: 15000, max: 29999, refund: 1000 }, { min: 30000, max: 49999, refund: 2000 }, { min: 50000, max: 74999, refund: 3000 }, { min: 75000, max: 99999, refund: 5000 }, { min: 100000, max: 124999, refund: 7000 }, { min: 125000, max: 149999, refund: 8000 }, { min: 150000, max: 174999, refund: 9000 }, { min: 175000, max: 199999, refund: 10000 }, { min: 200000, max: 224999, refund: 12000 }];
         const tier = taxTable.find(t => total >= t.min && total <= t.max);
-        const refund = tier ? tier.refund : (total >= 225000 ? Math.round(total * 0.065) : 0);
+        const refund = tier ? tier.refund : (total >= 225000 ? Math.round(total * 0.06) : 0);
+        
         document.getElementById('must-total').innerText = mustT.toLocaleString();
         document.getElementById('total-amount').innerText = total.toLocaleString();
         document.getElementById('refund-amount').innerText = refund.toLocaleString();
         document.getElementById('final-amount').innerText = (total - refund).toLocaleString();
-        document.getElementById('cart-count').innerText = count;
+        document.getElementById('cart-count').innerText = cartQty;
     }
 
-    function toggleHist(id) { const el = document.getElementById(`hist-${id}`); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
-    function toggleCart(id) { const idx = cart.indexOf(id); if (idx > -1) cart.splice(idx, 1); else cart.push(id); localStorage.setItem('oy_cart_v13', JSON.stringify(cart)); render(); }
+    function toggleH(id) { const el = document.getElementById('h-'+id); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
+    function toggleCart(id) { const idx = cart.indexOf(id); if (idx > -1) cart.splice(idx, 1); else cart.push(id); localStorage.setItem('oy_cart_v14', JSON.stringify(cart)); render(); }
     function switchPage(p, btn) { document.querySelectorAll('.page').forEach(x => x.classList.remove('active')); document.getElementById(p + '-page').classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); render(); }
-    function resetForm() { document.getElementById('name').value = ''; document.getElementById('specs-container').innerHTML = ''; addSpecInput(); }
+    function resetForm() { document.getElementById('name').value = ''; document.getElementById('imgUrl').value = ''; document.getElementById('prodLink').value = ''; document.getElementById('specs-container').innerHTML = ''; addSpecInput(); }
+    
     updateSubCat(); addSpecInput(); render();
 </script>
 </body>
