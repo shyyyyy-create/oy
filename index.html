@@ -2,145 +2,156 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Olive Young 購物清單 Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Olive Young 圖片版價格筆記</title>
     <style>
-        :root { --oy-orange: #f05a28; --oy-green: #97c024; }
-        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: #f4f7f6; padding: 20px; }
-        .container { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-        h2 { color: var(--oy-orange); text-align: center; margin-bottom: 5px; }
-        p.subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 25px; }
+        :root { --primary: #f05a28; --secondary: #97c024; --bg: #f4f4f4; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 50px; }
+        .card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        h2 { color: var(--primary); text-align: center; font-size: 20px; margin: 10px 0; }
         
-        /* 輸入區樣式 */
-        .input-card { background: #fffaf9; border: 1px solid #ffe6de; padding: 20px; border-radius: 12px; margin-bottom: 30px; }
-        .grid-input { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        input:focus { border-color: var(--oy-orange); outline: none; }
-        button#add-btn { width: 100%; background: var(--oy-orange); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
-        button#add-btn:hover { background: #d64a1d; transform: translateY(-2px); }
+        /* 表單樣式 */
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
+        input:focus { border-color: var(--primary); }
+        .row { display: flex; gap: 8px; }
+        .btn-main { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 5px; }
+        
+        /* 產品清單樣式 */
+        .item-card { background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .prod-img { width: 100%; height: 200px; object-fit: contain; background: #fff; border-bottom: 1px solid #eee; }
+        .no-img { width: 100%; height: 120px; background: #eee; display: flex; align-items: center; justify-content: center; color: #999; font-size: 14px; }
+        
+        .prod-content { padding: 15px; }
+        .prod-title { font-size: 18px; font-weight: bold; color: #222; text-decoration: none; display: block; margin-bottom: 5px; }
+        .prod-options { font-size: 13px; color: #666; background: #f9f9f9; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
+        
+        .price-row { display: flex; align-items: baseline; gap: 8px; }
+        .price-sale { color: #e74c3c; font-size: 22px; font-weight: 800; }
+        .price-orig { color: #aaa; text-decoration: line-through; font-size: 14px; }
+        
+        .promo-tag { font-size: 12px; color: #f05a28; border: 1px solid #f05a28; padding: 2px 6px; border-radius: 4px; margin-top: 5px; display: inline-block; }
+        
+        .history-section { margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px; }
+        .hist-btn { background: none; border: none; color: var(--secondary); font-size: 13px; padding: 0; cursor: pointer; }
+        .hist-list { display: none; list-style: none; padding: 8px; margin: 5px 0; background: #f9f9f9; border-radius: 5px; font-size: 12px; color: #777; }
 
-        /* 清單樣式 */
-        .stats { font-size: 14px; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        ul { list-style: none; padding: 0; }
-        li { background: white; border: 1px solid #eee; margin-bottom: 12px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-        li:hover { border-color: var(--oy-green); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        
-        .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-bottom: 5px; color: white; }
-        .tag-護膚 { background: #4a90e2; }
-        .tag-彩妝 { background: #e24a84; }
-        .tag-美體 { background: #27ae60; }
-        .tag-其他 { background: #95a5a6; }
-
-        .prod-detail { flex-grow: 1; }
-        .prod-name { font-weight: bold; font-size: 16px; display: block; margin-bottom: 4px; }
-        .prod-note { font-size: 13px; color: #666; }
-        .prod-link { font-size: 12px; color: var(--oy-green); text-decoration: none; }
-        
-        .delete-btn { background: #fdf2f2; color: #eb5757; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; margin-left: 15px; flex-shrink: 0; }
-        .delete-btn:hover { background: #eb5757; color: white; }
+        .actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-action { flex: 1; padding: 10px; border-radius: 6px; border: none; font-size: 14px; font-weight: bold; }
+        .edit { background: #e3f2fd; color: #1976d2; }
+        .del { background: #ffebee; color: #c62828; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Olive Young 許願清單 🌿</h2>
-    <p class="subtitle">免登入！收藏妳心動的韓國美妝</p>
-    
-    <div class="input-card">
-        <div class="grid-input">
-            <input type="text" id="prodName" placeholder="產品名稱 (必填)">
-            <select id="prodCat">
-                <option value="護膚">護膚</option>
-                <option value="彩妝">彩妝</option>
-                <option value="美體">美體/洗護</option>
-                <option value="其他">其他</option>
-            </select>
-            <input type="text" id="prodPrice" placeholder="參考價格/色號">
-            <input type="text" id="prodUrl" placeholder="產品連結 (https://...)">
+<div class="card">
+    <h2 id="form-title">新增收藏 🌿</h2>
+    <div class="form-group">
+        <input type="hidden" id="edit-id">
+        <input type="text" id="name" placeholder="產品名稱">
+        <input type="text" id="imgUrl" placeholder="圖片網址 (長按官網圖片複製)">
+        <input type="text" id="url" placeholder="產品連結網址">
+        <input type="text" id="options" placeholder="選項 (如：02號, 1+1組)">
+        <div class="row">
+            <input type="text" id="origPrice" placeholder="原價">
+            <input type="text" id="salePrice" placeholder="特價">
         </div>
-        <button id="add-btn">＋ 加入清單</button>
+        <input type="text" id="period" placeholder="特價期間 (如：至 1/31)">
+        <button class="btn-main" onclick="saveProduct()">儲存到我的清單</button>
+        <button id="cancel-edit" style="display:none; background:#ccc; margin-top:5px; padding:10px; border-radius:8px; border:none; color:white;" onclick="resetForm()">取消修改</button>
     </div>
-
-    <div class="stats">
-        <span>目前收藏：<span id="count">0</span> 件商品</span>
-        <span style="cursor:pointer; color:#999;" onclick="clearAll()">清空全部</span>
-    </div>
-
-    <ul id="wishlist"></ul>
 </div>
 
+<div id="list"></div>
+
 <script>
-    const addBtn = document.getElementById('add-btn');
-    const listContainer = document.getElementById('wishlist');
-    const countSpan = document.getElementById('count');
+    let db = JSON.parse(localStorage.getItem('oy_img_tracker')) || [];
 
-    document.addEventListener('DOMContentLoaded', getProducts);
+    function saveProduct() {
+        const id = document.getElementById('edit-id').value;
+        const name = document.getElementById('name').value;
+        const imgUrl = document.getElementById('imgUrl').value;
+        const url = document.getElementById('url').value;
+        const options = document.getElementById('options').value;
+        const origPrice = document.getElementById('origPrice').value;
+        const salePrice = document.getElementById('salePrice').value;
+        const period = document.getElementById('period').value;
+        const date = new Date().toLocaleDateString();
 
-    addBtn.addEventListener('click', () => {
-        const name = document.getElementById('prodName').value;
-        const cat = document.getElementById('prodCat').value;
-        const price = document.getElementById('prodPrice').value;
-        const url = document.getElementById('prodUrl').value;
+        if (!name) return alert('請輸入產品名稱');
 
-        if (!name) return alert('請填寫產品名稱');
-
-        const product = { id: Date.now(), name, cat, price, url };
-        saveLocal(product);
-        renderProduct(product);
-        updateCount();
-
-        // 清空輸入框
-        ['prodName', 'prodPrice', 'prodUrl'].forEach(id => document.getElementById(id).value = '');
-    });
-
-    function renderProduct(product) {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <div class="prod-detail">
-                <span class="tag tag-${product.cat}">${product.cat}</span>
-                <span class="prod-name">${product.name}</span>
-                <div class="prod-note">
-                    ${product.price ? `💰 ${product.price} | ` : ''}
-                    ${product.url ? `<a href="${product.url}" target="_blank" class="prod-link">查看官網 ↗</a>` : '<span style="color:#ccc">無連結</span>'}
-                </div>
-            </div>
-            <button class="delete-btn" onclick="removeProduct(${product.id}, this)">✕</button>
-        `;
-        listContainer.prepend(li); // 新加入的在最上面
-    }
-
-    function saveLocal(product) {
-        let products = localStorage.getItem('oy-pro-list') ? JSON.parse(localStorage.getItem('oy-pro-list')) : [];
-        products.push(product);
-        localStorage.setItem('oy-pro-list', JSON.stringify(products));
-    }
-
-    function getProducts() {
-        let products = localStorage.getItem('oy-pro-list') ? JSON.parse(localStorage.getItem('oy-pro-list')) : [];
-        products.forEach(p => renderProduct(p));
-        updateCount();
-    }
-
-    function removeProduct(id, element) {
-        let products = JSON.parse(localStorage.getItem('oy-pro-list'));
-        products = products.filter(p => p.id !== id);
-        localStorage.setItem('oy-pro-list', JSON.stringify(products));
-        element.parentElement.remove();
-        updateCount();
-    }
-
-    function updateCount() {
-        const products = localStorage.getItem('oy-pro-list') ? JSON.parse(localStorage.getItem('oy-pro-list')) : [];
-        countSpan.innerText = products.length;
-    }
-
-    function clearAll() {
-        if(confirm('確定要刪除所有收藏嗎？')) {
-            localStorage.removeItem('oy-pro-list');
-            listContainer.innerHTML = '';
-            updateCount();
+        if (id) {
+            const idx = db.findIndex(p => p.id == id);
+            if (db[idx].salePrice !== salePrice) {
+                db[idx].history.push({ price: db[idx].salePrice, period: db[idx].period, date: db[idx].lastUpdate });
+            }
+            db[idx] = { ...db[idx], name, imgUrl, url, options, origPrice, salePrice, period, lastUpdate: date };
+        } else {
+            db.push({ id: Date.now(), name, imgUrl, url, options, origPrice, salePrice, period, lastUpdate: date, history: [] });
         }
+
+        localStorage.setItem('oy_img_tracker', JSON.stringify(db));
+        resetForm();
+        render();
     }
+
+    function render() {
+        const container = document.getElementById('list');
+        container.innerHTML = '';
+        db.sort((a,b) => b.id - a.id).forEach(p => {
+            container.innerHTML += `
+                <div class="item-card">
+                    ${p.imgUrl ? `<img src="${p.imgUrl}" class="prod-img" onerror="this.src='https://via.placeholder.com/200?text=No+Image'">` : `<div class="no-img">尚無圖片</div>`}
+                    <div class="prod-content">
+                        <a href="${p.url || '#'}" target="_blank" class="prod-title">${p.name}</a>
+                        <div class="prod-options">${p.options || '預設選項'}</div>
+                        <div class="price-row">
+                            <span class="price-sale">₩${p.salePrice}</span>
+                            <span class="price-orig">₩${p.origPrice}</span>
+                        </div>
+                        ${p.period ? `<div class="promo-tag">活動：${p.period}</div>` : ''}
+                        
+                        <div class="history-section">
+                            <button class="hist-btn" onclick="toggleHist(${p.id})">🕒 查看價格歷史 (${p.history.length})</button>
+                            <ul class="hist-list" id="h-${p.id}">
+                                ${p.history.map(h => `<li>${h.date}: ₩${h.price} (${h.period})</li>`).reverse().join('')}
+                            </ul>
+                        </div>
+
+                        <div class="actions">
+                            <button class="btn-action edit" onclick="edit(${p.id})">修改</button>
+                            <button class="btn-action del" onclick="del(${p.id})">刪除</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function edit(id) {
+        const p = db.find(x => x.id == id);
+        document.getElementById('edit-id').value = p.id;
+        document.getElementById('name').value = p.name;
+        document.getElementById('imgUrl').value = p.imgUrl;
+        document.getElementById('url').value = p.url;
+        document.getElementById('options').value = p.options;
+        document.getElementById('origPrice').value = p.origPrice;
+        document.getElementById('salePrice').value = p.salePrice;
+        document.getElementById('period').value = p.period;
+        document.getElementById('form-title').innerText = "編輯資料 ✏️";
+        document.getElementById('cancel-edit').style.display = "block";
+        window.scrollTo(0,0);
+    }
+
+    function del(id) { if(confirm('要刪除嗎？')) { db = db.filter(x => x.id !== id); localStorage.setItem('oy_img_tracker', JSON.stringify(db)); render(); } }
+    function toggleHist(id) { const el = document.getElementById('h-'+id); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
+    function resetForm() { 
+        document.getElementById('edit-id').value = '';
+        document.querySelectorAll('input').forEach(i => i.value = ''); 
+        document.getElementById('form-title').innerText = "新增收藏 🌿";
+        document.getElementById('cancel-edit').style.display = "none";
+    }
+    render();
 </script>
 
 </body>
