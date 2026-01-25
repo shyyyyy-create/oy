@@ -3,46 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Olive Young 購物神助手 - 終極版</title>
+    <title>OY 購物管家 - 全能大一統版</title>
     <style>
         :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --tax: #e67e22; --win: #ffd700; --history: #3498db; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 200px; }
         .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        h2 { color: var(--primary); text-align: center; margin: 5px 0 15px 0; }
+        h2 { color: var(--primary); text-align: center; margin: 5px 0 10px 0; }
         
-        /* 輸入介面 */
         .form-group { display: flex; flex-direction: column; gap: 8px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; outline: none; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; outline: none; background: white; }
         .row { display: flex; gap: 6px; align-items: center; }
-        .spec-entry { background: #f8f9fa; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 4px solid #ddd; }
         
-        /* 按鈕 */
+        .spec-entry { background: #f8f9fa; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 4px solid #ddd; position: relative; }
         .btn-main { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
         .btn-sub { background: #eee; color: #444; padding: 8px; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 5px; }
-        .btn-del-spec { background: #ffcccc; color: #cc0000; border: none; padding: 10px; border-radius: 8px; }
+        .btn-del-spec { background: #ffcccc; color: #cc0000; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
 
-        /* 導覽 */
-        .nav-tabs { display: flex; background: white; border-radius: 12px; margin-bottom: 15px; padding: 5px; }
-        .nav-btn { flex: 1; padding: 10px; border: none; background: none; font-weight: bold; color: #888; border-radius: 8px; }
+        .nav-tabs { display: flex; background: white; border-radius: 12px; margin-bottom: 15px; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .nav-btn { flex: 1; padding: 10px; border: none; background: none; font-weight: bold; color: #888; border-radius: 8px; cursor: pointer; }
         .nav-btn.active { background: var(--primary); color: white; }
 
-        /* 卡片顯示 */
-        .item-card { background: white; border-radius: 15px; margin-bottom: 12px; overflow: hidden; border: 2px solid transparent; }
-        .item-card.in-cart { border-color: var(--cart); }
+        .item-card { background: white; border-radius: 15px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .item-card.in-cart { border: 2px solid var(--cart); }
         .prod-content { padding: 12px; }
-        .prod-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+        .cat-tag { font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; }
+        .prod-title { font-size: 18px; font-weight: bold; margin: 5px 0; }
 
-        .spec-list-display { margin-top: 10px; }
         .spec-row { display: flex; justify-content: space-between; padding: 8px; border-radius: 8px; margin-bottom: 4px; background: #fff; border: 1px solid #eee; font-size: 13px; position: relative; }
         .spec-row.best { border-color: var(--win); background: #fffdf0; }
-        .best-label { position: absolute; right: 5px; top: -10px; background: var(--win); font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: bold; }
+        .best-label { position: absolute; right: 5px; top: -10px; background: var(--win); font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: bold; color: #000; }
 
-        /* 歷史記錄 */
-        .history-btn { color: var(--history); font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; display: inline-block; }
-        .history-panel { display: none; background: #f0f7ff; padding: 10px; border-radius: 8px; margin-top: 8px; font-size: 12px; }
+        .history-btn { color: var(--history); font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; display: inline-block; text-decoration: underline; }
+        .history-panel { display: none; background: #f0f7ff; padding: 10px; border-radius: 8px; margin-top: 8px; font-size: 12px; border: 1px solid #d0e4f7; }
         
         .checkout-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); z-index: 100; border-radius: 20px 20px 0 0; }
         .final-row { color: var(--primary); font-size: 24px; font-weight: 900; }
+        .tax-info-text { font-size: 12px; color: var(--tax); margin-top: 5px; text-align: center; font-weight: bold; }
+
+        .page { display: none; }
+        .page.active { display: block; }
     </style>
 </head>
 <body>
@@ -54,39 +53,55 @@
 
 <div id="wishlist-page" class="page active">
     <div class="card">
-        <h2>精準比價 + 歷史 🌿</h2>
+        <h2>精準比價 + 分類 🌿</h2>
         <div class="form-group">
-            <input type="text" id="name" placeholder="產品名稱 (如: A面膜)">
-            <div id="specs-container">
-                </div>
+            <input type="text" id="name" placeholder="產品名稱">
+            <div class="row">
+                <select id="mainCat" onchange="updateSubCat()" style="flex:1">
+                    <option value="護膚品">護膚品</option>
+                    <option value="化妝品">化妝品</option>
+                </select>
+                <select id="subCat" style="flex:1"></select>
+            </div>
+            <div id="specs-container"></div>
             <button class="btn-sub" onclick="addSpecInput()">＋增加對比規格</button>
-            <button class="btn-main" onclick="saveProduct()">儲存產品</button>
+            <button class="btn-main" onclick="saveProduct()">儲存並追蹤價格</button>
         </div>
     </div>
     <div id="wish-list-container"></div>
 </div>
 
 <div id="cart-page" class="page">
-    <div class="card"><h2>🛒 現場對帳</h2><div id="cart-list-container"></div></div>
+    <div class="card"><h2>🛒 現場對帳清單</h2><div id="cart-list-container"></div></div>
 </div>
 
 <div class="checkout-bar">
     <div class="summary-row" style="display:flex; justify-content:space-between; margin-bottom:5px;">
-        <span>結帳金額</span>
+        <span>結帳小計</span>
         <span style="font-weight:bold;">₩<span id="total-amount">0</span></span>
     </div>
     <div class="summary-row final-row" style="display:flex; justify-content:space-between;">
         <span>實付預算</span>
         <span>₩<span id="final-amount">0</span></span>
     </div>
-    <p id="tax-msg" style="font-size:12px; color:var(--tax); margin:5px 0 0 0; text-align:center; font-weight:bold;"></p>
+    <div id="tax-msg" class="tax-info-text"></div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('oy_ultimate_history_v8')) || [];
-    let cart = JSON.parse(localStorage.getItem('oy_cart_v8')) || [];
+    let db = JSON.parse(localStorage.getItem('oy_all_in_one_v9')) || [];
+    let cart = JSON.parse(localStorage.getItem('oy_cart_v9')) || [];
+
+    const categories = {
+        "護膚品": ["Toner", "Lotion", "Cream", "Mask", "Serum", "Cleanser"],
+        "化妝品": ["Base", "Foundation", "Cushion", "Lip Tint", "Eyebrow", "Eyeliner", "Blush"]
+    };
 
     const taxTable = [{ min: 15000, max: 29999, refund: 1000 }, { min: 30000, max: 49999, refund: 2000 }, { min: 50000, max: 74999, refund: 3000 }, { min: 75000, max: 99999, refund: 5000 }, { min: 100000, max: 124999, refund: 7000 }, { min: 125000, max: 149999, refund: 8000 }, { min: 150000, max: 174999, refund: 9000 }, { min: 175000, max: 199999, refund: 10000 }, { min: 200000, max: 224999, refund: 12000 }];
+
+    function updateSubCat() {
+        const main = document.getElementById('mainCat').value;
+        document.getElementById('subCat').innerHTML = categories[main].map(c => `<option value="${c}">${c}</option>`).join('');
+    }
 
     function addSpecInput(qty = '', price = '') {
         const container = document.getElementById('specs-container');
@@ -104,8 +119,10 @@
 
     function saveProduct() {
         const name = document.getElementById('name').value;
+        const mainCat = document.getElementById('mainCat').value;
+        const subCat = document.getElementById('subCat').value;
         const specDivs = document.querySelectorAll('.spec-entry');
-        if (!name || specDivs.length === 0) return alert('請填寫名稱與至少一個規格');
+        if (!name || specDivs.length === 0) return alert('請填寫完整資訊');
 
         let currentSpecs = [];
         specDivs.forEach(div => {
@@ -114,20 +131,19 @@
             if (qty && price) currentSpecs.push({ qty, price, unit: Math.round(price/qty) });
         });
 
-        // 歷史價格邏輯：檢查是否已有同名產品
-        let existingIndex = db.findIndex(p => p.name === name);
+        let existingIdx = db.findIndex(p => p.name === name);
         const timestamp = new Date().toLocaleDateString();
 
-        if (existingIndex > -1) {
-            // 更新現有產品，並將舊價格推入歷史
-            db[existingIndex].history.push({ date: timestamp, specs: [...db[existingIndex].specs] });
-            db[existingIndex].specs = currentSpecs;
+        if (existingIdx > -1) {
+            db[existingIdx].history.push({ date: timestamp, specs: [...db[existingIdx].specs] });
+            db[existingIdx].specs = currentSpecs;
+            db[existingIdx].mainCat = mainCat;
+            db[existingIdx].subCat = subCat;
         } else {
-            // 新增產品
-            db.push({ id: Date.now(), name, specs: currentSpecs, history: [], inCartSpecIndex: 0 });
+            db.push({ id: Date.now(), name, mainCat, subCat, specs: currentSpecs, history: [] });
         }
 
-        localStorage.setItem('oy_ultimate_history_v8', JSON.stringify(db));
+        localStorage.setItem('oy_all_in_one_v9', JSON.stringify(db));
         resetForm();
         render();
     }
@@ -136,9 +152,9 @@
         const wishC = document.getElementById('wish-list-container');
         const cartC = document.getElementById('cart-list-container');
         wishC.innerHTML = ''; cartC.innerHTML = '';
-        let total = 0; let cartQty = 0;
+        let total = 0; let cartCount = 0;
 
-        db.forEach((p, pIndex) => {
+        db.forEach(p => {
             const inCart = cart.includes(p.id);
             const minUnit = Math.min(...p.specs.map(s => s.unit));
             
@@ -151,48 +167,44 @@
             `).join('');
 
             let historyHtml = p.history.map(h => `
-                <div style="border-bottom:1px solid #ddd; padding:4px 0;">
-                    📅 ${h.date}: ${h.specs.map(s => `₩${s.unit}/入`).join(', ')}
-                </div>
+                <div style="border-bottom:1px solid #ddd; padding:4px 0;">📅 ${h.date}: ${h.specs.map(s => `₩${s.unit}/入`).join(', ')}</div>
             `).join('');
 
-            const html = `
+            const cardHtml = `
                 <div class="item-card ${inCart ? 'in-cart' : ''}">
                     <div class="prod-content">
+                        <span class="cat-tag">${p.mainCat} > ${p.subCat}</span>
                         <div class="prod-title">${p.name}</div>
                         <div class="spec-list-display">${specHtml}</div>
-                        
-                        <div class="history-btn" onclick="toggleHistory(${p.id})">📊 查看歷史價格 (${p.history.length})</div>
-                        <div id="hist-${p.id}" class="history-panel">${historyHtml || '尚無歷史記錄'}</div>
-
-                        <button class="btn-cart ${inCart ? 'active' : ''}" onclick="toggleCart(${p.id})">
-                            ${inCart ? '❌ 移出購物籃' : '➕ 放入購物籃 (按規格1)'}
+                        <div class="history-btn" onclick="toggleHist(${p.id})">📊 歷史價格 (${p.history.length})</div>
+                        <div id="hist-${p.id}" class="history-panel">${historyHtml || '目前尚無舊記錄'}</div>
+                        <button class="btn-cart ${inCart ? 'active' : ''}" style="background:${inCart?'#2ecc71':'#f0f0f0'}; color:${inCart?'white':'#333'}; width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; margin-top:10px;" onclick="toggleCart(${p.id})">
+                            ${inCart ? '❌ 移出購物籃' : '➕ 放入購物籃 (採規格1)'}
                         </button>
                     </div>
                 </div>
             `;
-            wishC.innerHTML += html;
+            wishC.innerHTML += cardHtml;
             if (inCart) {
-                cartC.innerHTML += html;
+                cartC.innerHTML += cardHtml;
                 total += p.specs[0].price;
-                cartQty += p.specs[0].qty;
+                cartCount++;
             }
         });
 
-        // 退稅計算
         const tier = taxTable.find(t => total >= t.min && total <= t.max);
         const refund = tier ? tier.refund : (total >= 225000 ? Math.round(total * 0.06) : 0);
         document.getElementById('total-amount').innerText = total.toLocaleString();
         document.getElementById('final-amount').innerText = (total - refund).toLocaleString();
-        document.getElementById('cart-count').innerText = cartQty;
+        document.getElementById('cart-count').innerText = cartCount;
         
-        const taxMsg = document.getElementById('tax-msg');
-        if (total > 0 && total < 15000) taxMsg.innerText = `還差 ₩${(15000-total).toLocaleString()} 即可退稅`;
-        else if (total >= 15000) taxMsg.innerText = `已減免退稅 ₩${refund.toLocaleString()}`;
-        else taxMsg.innerText = "";
+        const msg = document.getElementById('tax-msg');
+        if (total > 0 && total < 15000) msg.innerText = `還差 ₩${(15000-total).toLocaleString()} 達到退稅門檻`;
+        else if (total >= 15000) msg.innerText = `已減免退稅 ₩${refund.toLocaleString()}`;
+        else msg.innerText = "";
     }
 
-    function toggleHistory(id) {
+    function toggleHist(id) {
         const el = document.getElementById(`hist-${id}`);
         el.style.display = el.style.display === 'block' ? 'none' : 'block';
     }
@@ -200,7 +212,7 @@
     function toggleCart(id) {
         const idx = cart.indexOf(id);
         if (idx > -1) cart.splice(idx, 1); else cart.push(id);
-        localStorage.setItem('oy_cart_v8', JSON.stringify(cart));
+        localStorage.setItem('oy_cart_v9', JSON.stringify(cart));
         render();
     }
 
@@ -215,9 +227,10 @@
     function resetForm() {
         document.getElementById('name').value = '';
         document.getElementById('specs-container').innerHTML = '';
-        addSpecInput(); // 預設留一個
+        addSpecInput();
     }
 
+    updateSubCat();
     addSpecInput();
     render();
 </script>
