@@ -3,36 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OY 購物管家 - 精準退稅版</title>
+    <title>Olive Young 購物管家 Pro+</title>
     <style>
-        :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --tax: #e67e22; }
+        :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --tax: #e67e22; --win: #ffd700; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 180px; }
         .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
         h2 { color: var(--primary); text-align: center; margin: 5px 0 15px 0; }
         
         .form-group { display: flex; flex-direction: column; gap: 8px; }
-        input { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
-        .row { display: flex; gap: 8px; }
-        .btn-main { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; outline: none; background: white; }
+        .row { display: flex; gap: 6px; }
+        .spec-box { background: #f9f9f9; padding: 10px; border-radius: 10px; border: 1px dashed #ccc; margin-top: 5px; }
+        .spec-label { font-size: 12px; font-weight: bold; color: #666; margin-bottom: 5px; display: block; }
         
-        .nav-tabs { display: flex; background: white; border-radius: 12px; margin-bottom: 15px; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .nav-btn { flex: 1; padding: 10px; border: none; background: none; font-weight: bold; color: #888; cursor: pointer; border-radius: 8px; }
+        .btn-main { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 5px; }
+        .btn-add-spec { background: #eee; color: #444; padding: 8px; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; }
+
+        .nav-tabs { display: flex; background: white; border-radius: 12px; margin-bottom: 15px; padding: 5px; }
+        .nav-btn { flex: 1; padding: 10px; border: none; background: none; font-weight: bold; color: #888; border-radius: 8px; }
         .nav-btn.active { background: var(--primary); color: white; }
 
-        .item-card { background: white; border-radius: 15px; overflow: hidden; margin-bottom: 15px; border: 2px solid transparent; }
+        .item-card { background: white; border-radius: 15px; margin-bottom: 12px; border: 2px solid transparent; overflow: hidden; }
         .item-card.in-cart { border-color: var(--cart); }
         .prod-content { padding: 12px; }
-        .prod-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
-        .price-sale { color: #e74c3c; font-size: 18px; font-weight: 800; }
-        
-        .btn-cart { background: #eee; color: #333; width: 100%; padding: 10px; border-radius: 8px; border: none; font-weight: bold; margin-top: 5px; }
+        .cat-tag { font-size: 10px; background: #eee; color: #666; padding: 2px 6px; border-radius: 4px; }
+        .prod-title { font-size: 16px; font-weight: bold; margin: 5px 0; }
+
+        /* 規格顯示 */
+        .spec-result { display: flex; justify-content: space-between; padding: 8px; border-radius: 8px; margin-top: 5px; font-size: 13px; border: 1px solid #f0f0f0; position: relative; }
+        .spec-result.winner { background: #fffdeb; border-color: var(--win); }
+        .winner-tag { position: absolute; right: 5px; top: -8px; background: var(--win); font-size: 10px; padding: 1px 5px; border-radius: 4px; font-weight: bold; }
+        .unit-price { color: #e74c3c; font-weight: bold; }
+
+        .btn-cart { background: #f0f0f0; color: #333; width: 100%; padding: 10px; border-radius: 8px; border: none; font-weight: bold; margin-top: 10px; }
         .btn-cart.active { background: var(--cart); color: white; }
 
-        /* 結帳工具列 */
         .checkout-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); z-index: 100; border-radius: 20px 20px 0 0; }
         .summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .total-value { font-size: 18px; font-weight: 700; }
-        .tax-row { color: var(--tax); font-weight: bold; border-bottom: 1px dashed #eee; padding-bottom: 8px; margin-bottom: 8px; }
         .final-row { color: var(--primary); font-size: 24px; font-weight: 900; }
         .tax-alert-box { background: #fff5f5; color: #e74c3c; font-size: 12px; padding: 6px; border-radius: 8px; text-align: center; margin-top: 8px; font-weight: bold; border: 1px solid #ffcccc; }
 
@@ -44,18 +51,36 @@
 
 <div class="nav-tabs">
     <button class="nav-btn active" onclick="switchPage('wishlist', this)">願望清單</button>
-    <button class="nav-btn" onclick="switchPage('cart', this)">現場購物籃 (<span id="cart-count">0</span>)</button>
+    <button class="nav-btn" onclick="switchPage('cart', this)">購物籃 (<span id="cart-count">0</span>)</button>
 </div>
 
 <div id="wishlist-page" class="page active">
     <div class="card">
-        <h2 id="form-title">即時加入產品 🌿</h2>
+        <h2 id="form-title">新增/對比產品 🌿</h2>
         <div class="form-group">
-            <input type="text" id="name" placeholder="產品名稱">
+            <input type="text" id="name" placeholder="產品名稱 (如: a面膜)">
             <div class="row">
-                <input type="number" id="salePrice" placeholder="價格 ₩" style="flex:2">
-                <input type="number" id="qty" value="1" placeholder="數量" style="flex:1">
+                <select id="mainCat" onchange="updateSubCat()" style="flex:1"><option value="護膚品">護膚品</option><option value="化妝品">化妝品</option></select>
+                <select id="subCat" style="flex:1"></select>
             </div>
+            
+            <div class="spec-box">
+                <span class="spec-label">規格一 (預設購買項)</span>
+                <div class="row">
+                    <input type="number" id="qty1" placeholder="數量" style="flex:1">
+                    <input type="number" id="sale1" placeholder="特價 ₩" style="flex:2">
+                </div>
+            </div>
+
+            <div id="extra-spec" class="spec-box" style="display:none;">
+                <span class="spec-label">規格二 (對比用)</span>
+                <div class="row">
+                    <input type="number" id="qty2" placeholder="數量" style="flex:1">
+                    <input type="number" id="sale2" placeholder="特價 ₩" style="flex:2">
+                </div>
+            </div>
+
+            <button class="btn-add-spec" id="toggleSpecBtn" onclick="toggleExtraSpec()">＋新增規格對比</button>
             <button class="btn-main" onclick="saveProduct()">儲存至清單</button>
         </div>
     </div>
@@ -63,92 +88,58 @@
 </div>
 
 <div id="cart-page" class="page">
-    <div class="card">
-        <h2>🛒 現場結帳對帳單</h2>
-        <div id="cart-list-container"></div>
-    </div>
+    <div class="card"><h2>🛒 現場對帳單</h2><div id="cart-list-container"></div></div>
 </div>
 
 <div class="checkout-bar">
-    <div class="summary-row">
-        <span>商品總額 (<span id="summary-count">0</span> 件)</span>
-        <span class="total-value">₩<span id="total-amount">0</span></span>
-    </div>
-    <div class="summary-row tax-row">
-        <span>📉 官網精準退稅 (Global Tax Free)</span>
-        <span>- ₩<span id="refund-amount">0</span></span>
-    </div>
-    <div class="summary-row final-row">
-        <span>實付預算</span>
-        <span>₩<span id="final-amount">0</span></span>
-    </div>
+    <div class="summary-row"><span>總額 (<span id="summary-count">0</span>件)</span><span class="total-value">₩<span id="total-amount">0</span></span></div>
+    <div class="summary-row" style="color:var(--tax); font-weight:bold;"><span>📉 精準退稅</span><span>- ₩<span id="refund-amount">0</span></span></div>
+    <div class="summary-row final-row"><span>實付預算</span><span>₩<span id="final-amount">0</span></span></div>
     <div id="tax-alert" class="tax-alert-box" style="display:none;"></div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('oy_tax_chart_db')) || [];
-    let cart = JSON.parse(localStorage.getItem('oy_tax_chart_cart')) || [];
+    let db = JSON.parse(localStorage.getItem('oy_spec_v7')) || [];
+    let cart = JSON.parse(localStorage.getItem('oy_cart_v7')) || [];
+    let hasExtraSpec = false;
 
-    // 根據圖片資料建立的退稅對照表
-    const taxTable = [
-        { min: 15000, max: 29999, refund: 1000 },
-        { min: 30000, max: 49999, refund: 2000 },
-        { min: 50000, max: 74999, refund: 3000 },
-        { min: 75000, max: 99999, refund: 5000 },
-        { min: 100000, max: 124999, refund: 7000 },
-        { min: 125000, max: 149999, refund: 8000 },
-        { min: 150000, max: 174999, refund: 9000 },
-        { min: 175000, max: 199999, refund: 10000 },
-        { min: 200000, max: 224999, refund: 12000 },
-        { min: 225000, max: 249999, refund: 13000 },
-        { min: 250000, max: 274999, refund: 15000 },
-        { min: 275000, max: 299999, refund: 17000 },
-        { min: 300000, max: 324999, refund: 19000 },
-        { min: 325000, max: 349999, refund: 21000 },
-        { min: 350000, max: 374999, refund: 23000 },
-        { min: 375000, max: 399999, refund: 25000 },
-        { min: 400000, max: 424999, refund: 27000 },
-        { min: 425000, max: 449999, refund: 28000 },
-        { min: 450000, max: 474999, refund: 30000 },
-        { min: 475000, max: 499999, refund: 32000 },
-        { min: 500000, max: 549999, refund: 35000 }
-        // ...後續級距可按需求添加
-    ];
+    const categories = {
+        "護膚品": ["Toner", "Lotion", "Cream", "Mask", "Serum", "Cleanser"],
+        "化妝品": ["Base", "Foundation", "Powder", "Lip Tint", "Eyebrow", "Eyeliner", "Highlighter", "Fixer"]
+    };
 
-    function calculateRefund(total) {
-        if (total < 15000) return 0;
-        const tier = taxTable.find(t => total >= t.min && total <= t.max);
-        if (tier) return tier.refund;
-        // 如果超過表格定義的最大值，按 7% 估算或繼續擴展表格
-        if (total >= 500000) {
-            const highTier = taxTable[taxTable.length - 1];
-            return total >= highTier.min ? highTier.refund : 0; 
-        }
-        return 0;
+    const taxTable = [{ min: 15000, max: 29999, refund: 1000 }, { min: 30000, max: 49999, refund: 2000 }, { min: 50000, max: 74999, refund: 3000 }, { min: 75000, max: 99999, refund: 5000 }, { min: 100000, max: 124999, refund: 7000 }, { min: 125000, max: 149999, refund: 8000 }, { min: 150000, max: 174999, refund: 9000 }, { min: 175000, max: 199999, refund: 10000 }, { min: 200000, max: 224999, refund: 12000 }];
+
+    function toggleExtraSpec() {
+        hasExtraSpec = !hasExtraSpec;
+        document.getElementById('extra-spec').style.display = hasExtraSpec ? 'block' : 'none';
+        document.getElementById('toggleSpecBtn').innerText = hasExtraSpec ? '－移除規格對比' : '＋新增規格對比';
     }
 
-    function switchPage(page, btn) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(page + '-page').classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        render();
+    function updateSubCat() {
+        const main = document.getElementById('mainCat').value;
+        document.getElementById('subCat').innerHTML = categories[main].map(c => `<option value="${c}">${c}</option>`).join('');
     }
 
     function saveProduct() {
         const name = document.getElementById('name').value;
-        const price = Number(document.getElementById('salePrice').value);
-        if (!name || !price) return alert('請輸入產品與正確價格');
-        db.push({ id: Date.now(), name, salePrice: price, qty: Number(document.getElementById('qty').value) || 1 });
-        localStorage.setItem('oy_tax_chart_db', JSON.stringify(db));
-        document.getElementById('name').value = ''; document.getElementById('salePrice').value = '';
-        render();
-    }
+        const q1 = Number(document.getElementById('qty1').value);
+        const s1 = Number(document.getElementById('sale1').value);
+        if (!name || !q1 || !s1) return alert('請填寫規格一的資訊');
 
-    function toggleCart(id) {
-        const idx = cart.indexOf(id);
-        if (idx > -1) cart.splice(idx, 1); else cart.push(id);
-        localStorage.setItem('oy_tax_chart_cart', JSON.stringify(cart));
+        const q2 = Number(document.getElementById('qty2').value);
+        const s2 = Number(document.getElementById('sale2').value);
+
+        db.push({
+            id: Date.now(),
+            name,
+            mainCat: document.getElementById('mainCat').value,
+            subCat: document.getElementById('subCat').value,
+            spec1: { qty: q1, price: s1 },
+            spec2: (hasExtraSpec && q2 && s2) ? { qty: q2, price: s2 } : null
+        });
+        localStorage.setItem('oy_spec_v7', JSON.stringify(db));
+        resetForm();
         render();
     }
 
@@ -160,12 +151,44 @@
 
         db.sort((a,b) => b.id - a.id).forEach(p => {
             const inCart = cart.includes(p.id);
-            const html = `<div class="item-card ${inCart ? 'in-cart' : ''}"><div class="prod-content"><div class="prod-title">${p.name}</div><div class="price-sale">₩${p.salePrice.toLocaleString()} x ${p.qty}</div><button class="btn-cart ${inCart ? 'active' : ''}" onclick="toggleCart(${p.id})">${inCart ? '❌ 移出購物籃' : '➕ 放入購物籃'}</button></div></div>`;
+            const u1 = Math.round(p.spec1.price / p.spec1.qty);
+            const u2 = p.spec2 ? Math.round(p.spec2.price / p.spec2.qty) : null;
+            const is1Cheaper = u2 ? (u1 <= u2) : true;
+
+            const specHtml = `
+                <div class="spec-result ${is1Cheaper?'winner':''}">
+                    <span>規格一: ${p.spec1.qty}入 / ₩${p.spec1.price.toLocaleString()}</span>
+                    <span class="unit-price">單價 ₩${u1}</span>
+                    ${is1Cheaper && u2 ? '<span class="winner-tag">🏆 最划算</span>' : ''}
+                </div>
+                ${p.spec2 ? `
+                <div class="spec-result ${!is1Cheaper?'winner':''}">
+                    <span>規格二: ${p.spec2.qty}入 / ₩${p.spec2.price.toLocaleString()}</span>
+                    <span class="unit-price">單價 ₩${u2}</span>
+                    ${!is1Cheaper ? '<span class="winner-tag">🏆 最划算</span>' : ''}
+                </div>` : ''}
+            `;
+
+            const html = `
+                <div class="item-card ${inCart ? 'in-cart' : ''}">
+                    <div class="prod-content">
+                        <span class="cat-tag">${p.mainCat} > ${p.subCat}</span>
+                        <div class="prod-title">${p.name}</div>
+                        ${specHtml}
+                        <button class="btn-cart ${inCart ? 'active' : ''}" onclick="toggleCart(${p.id})">
+                            ${inCart ? '❌ 移出購物籃' : '➕ 加入購物籃 (採規格一)'}
+                        </button>
+                    </div>
+                </div>
+            `;
             wishC.innerHTML += html;
-            if (inCart) { cartC.innerHTML += html; total += (p.salePrice * p.qty); count += p.qty; }
+            if (inCart) { cartC.innerHTML += html; total += p.spec1.price; count += p.spec1.qty; }
         });
 
-        const refund = calculateRefund(total);
+        // 退稅計算 (簡化版邏輯)
+        const tier = taxTable.find(t => total >= t.min && total <= t.max);
+        const refund = tier ? tier.refund : (total >= 225000 ? Math.round(total * 0.06) : 0);
+        
         document.getElementById('total-amount').innerText = total.toLocaleString();
         document.getElementById('refund-amount').innerText = refund.toLocaleString();
         document.getElementById('final-amount').innerText = (total - refund).toLocaleString();
@@ -174,22 +197,33 @@
         
         const alertBox = document.getElementById('tax-alert');
         if (total > 0 && total < 15000) {
-            alertBox.style.display = 'block';
-            alertBox.innerText = `⚠️ 還差 ₩${(15000 - total).toLocaleString()} 達到退稅門檻 (15,000₩)！`;
-        } else if (total >= 15000) {
-            // 找出下一個級距
-            const currentTier = taxTable.find(t => total >= t.min && total <= t.max);
-            if (currentTier) {
-                const nextTier = taxTable[taxTable.indexOf(currentTier) + 1];
-                if (nextTier) {
-                    alertBox.style.display = 'block';
-                    alertBox.style.background = '#f0fff4'; alertBox.style.color = '#276749'; alertBox.style.borderColor = '#c6f6d5';
-                    alertBox.innerText = `✅ 再買 ₩${(nextTier.min - total).toLocaleString()}，退稅可跳至下個級距 (₩${nextTier.refund.toLocaleString()})！`;
-                } else { alertBox.style.display = 'none'; }
-            }
+            alertBox.style.display = 'block'; alertBox.innerText = `還差 ₩${(15000-total).toLocaleString()} 達到退稅門檻！`;
         } else { alertBox.style.display = 'none'; }
     }
-    render();
+
+    function toggleCart(id) {
+        const idx = cart.indexOf(id);
+        if (idx > -1) cart.splice(idx, 1); else cart.push(id);
+        localStorage.setItem('oy_cart_v7', JSON.stringify(cart));
+        render();
+    }
+
+    function switchPage(page, btn) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(page + '-page').classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+    }
+
+    function resetForm() {
+        document.getElementById('name').value = '';
+        document.getElementById('qty1').value = ''; document.getElementById('sale1').value = '';
+        document.getElementById('qty2').value = ''; document.getElementById('sale2').value = '';
+        if(hasExtraSpec) toggleExtraSpec();
+    }
+
+    updateSubCat(); render();
 </script>
 </body>
 </html>
