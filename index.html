@@ -3,41 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Olive Young 圖片版價格筆記</title>
+    <title>Olive Young 購物管家 Pro</title>
     <style>
-        :root { --primary: #f05a28; --secondary: #97c024; --bg: #f4f4f4; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 50px; }
+        :root { --primary: #f05a28; --secondary: #97c024; --bought: #6c757d; --bg: #f0f2f5; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 80px; }
         .card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
         h2 { color: var(--primary); text-align: center; font-size: 20px; margin: 10px 0; }
         
-        /* 表單樣式 */
         .form-group { display: flex; flex-direction: column; gap: 8px; }
-        input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; }
-        input:focus { border-color: var(--primary); }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; background: white; }
         .row { display: flex; gap: 8px; }
-        .btn-main { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 5px; }
+        .btn-main { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 5px; cursor: pointer; }
         
-        /* 產品清單樣式 */
-        .item-card { background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-        .prod-img { width: 100%; height: 200px; object-fit: contain; background: #fff; border-bottom: 1px solid #eee; }
-        .no-img { width: 100%; height: 120px; background: #eee; display: flex; align-items: center; justify-content: center; color: #999; font-size: 14px; }
-        
+        /* 篩選選單樣式 */
+        .filter-tabs { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tab { flex: 1; padding: 10px; text-align: center; background: white; border-radius: 20px; font-size: 14px; font-weight: bold; color: #666; cursor: pointer; white-space: nowrap; border: 1px solid #eee; }
+        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* 產品清單樣 style */
+        .item-card { background: white; border-radius: 12px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .item-card.is-bought { opacity: 0.7; filter: grayscale(0.5); border-left: 5px solid var(--bought); }
+        .prod-img { width: 100%; height: 180px; object-fit: contain; background: #fff; }
         .prod-content { padding: 15px; }
-        .prod-title { font-size: 18px; font-weight: bold; color: #222; text-decoration: none; display: block; margin-bottom: 5px; }
-        .prod-options { font-size: 13px; color: #666; background: #f9f9f9; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
+        .prod-title { font-size: 18px; font-weight: bold; color: #222; text-decoration: none; display: block; }
+        .category-tag { font-size: 11px; background: #eef2f7; color: #555; padding: 2px 8px; border-radius: 4px; margin: 5px 0; display: inline-block; }
         
-        .price-row { display: flex; align-items: baseline; gap: 8px; }
-        .price-sale { color: #e74c3c; font-size: 22px; font-weight: 800; }
-        .price-orig { color: #aaa; text-decoration: line-through; font-size: 14px; }
-        
-        .promo-tag { font-size: 12px; color: #f05a28; border: 1px solid #f05a28; padding: 2px 6px; border-radius: 4px; margin-top: 5px; display: inline-block; }
-        
-        .history-section { margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px; }
-        .hist-btn { background: none; border: none; color: var(--secondary); font-size: 13px; padding: 0; cursor: pointer; }
-        .hist-list { display: none; list-style: none; padding: 8px; margin: 5px 0; background: #f9f9f9; border-radius: 5px; font-size: 12px; color: #777; }
+        .status-select { margin: 10px 0; width: 100%; border: 1px solid var(--secondary); color: var(--secondary); font-weight: bold; }
+        .price-row { display: flex; align-items: baseline; gap: 8px; margin: 5px 0; }
+        .price-sale { color: #e74c3c; font-size: 20px; font-weight: 800; }
+        .price-orig { color: #aaa; text-decoration: line-through; font-size: 13px; }
 
         .actions { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-action { flex: 1; padding: 10px; border-radius: 6px; border: none; font-size: 14px; font-weight: bold; }
+        .btn-action { flex: 1; padding: 10px; border-radius: 6px; border: none; font-size: 13px; font-weight: bold; cursor: pointer; }
         .edit { background: #e3f2fd; color: #1976d2; }
         .del { background: #ffebee; color: #c62828; }
     </style>
@@ -45,52 +42,88 @@
 <body>
 
 <div class="card">
-    <h2 id="form-title">新增收藏 🌿</h2>
+    <h2 id="form-title">Olive Young 購物管家 🛒</h2>
     <div class="form-group">
         <input type="hidden" id="edit-id">
         <input type="text" id="name" placeholder="產品名稱">
-        <input type="text" id="imgUrl" placeholder="圖片網址 (長按官網圖片複製)">
-        <input type="text" id="url" placeholder="產品連結網址">
-        <input type="text" id="options" placeholder="選項 (如：02號, 1+1組)">
+        <input type="text" id="imgUrl" placeholder="圖片網址">
+        
         <div class="row">
-            <input type="text" id="origPrice" placeholder="原價">
-            <input type="text" id="salePrice" placeholder="特價">
+            <select id="mainCat" onchange="updateSubCat()">
+                <option value="護膚品">護膚品</option>
+                <option value="化妝品">化妝品</option>
+                <option value="其他">其他</option>
+            </select>
+            <select id="subCat">
+                </select>
         </div>
-        <input type="text" id="period" placeholder="特價期間 (如：至 1/31)">
-        <button class="btn-main" onclick="saveProduct()">儲存到我的清單</button>
+
+        <select id="status">
+            <option value="感興趣">感興趣</option>
+            <option value="想購買">想購買</option>
+            <option value="考慮購買">考慮購買</option>
+            <option value="已購買">✅ 已購買</option>
+        </select>
+
+        <input type="text" id="url" placeholder="官網連結">
+        <div class="row">
+            <input type="text" id="origPrice" placeholder="原價 ₩">
+            <input type="text" id="salePrice" placeholder="特價 ₩">
+        </div>
+        <button class="btn-main" onclick="saveProduct()">儲存至清單</button>
         <button id="cancel-edit" style="display:none; background:#ccc; margin-top:5px; padding:10px; border-radius:8px; border:none; color:white;" onclick="resetForm()">取消修改</button>
     </div>
+</div>
+
+<div class="filter-tabs">
+    <div class="tab active" onclick="filterList('全部', this)">全部</div>
+    <div class="tab" onclick="filterList('未購買', this)">未購買</div>
+    <div class="tab" onclick="filterList('已購買', this)">已購買</div>
+    <div class="tab" onclick="filterList('想購買', this)">必買清單</div>
 </div>
 
 <div id="list"></div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('oy_img_tracker')) || [];
+    let db = JSON.parse(localStorage.getItem('oy_final_manager')) || [];
+    let currentFilter = '全部';
+
+    const categories = {
+        "護膚品": ["Toner", "Lotion", "Cream", "Mask", "Cleanser", "Serum", "Other"],
+        "化妝品": ["Foundation", "Cushion", "Lipstick", "Eye Shadow", "Mascara", "Blush", "Other"],
+        "其他": ["Body Care", "Hair Care", "Tools"]
+    };
+
+    function updateSubCat() {
+        const main = document.getElementById('mainCat').value;
+        const sub = document.getElementById('subCat');
+        sub.innerHTML = categories[main].map(c => `<option value="${c}">${c}</option>`).join('');
+    }
 
     function saveProduct() {
         const id = document.getElementById('edit-id').value;
         const name = document.getElementById('name').value;
         const imgUrl = document.getElementById('imgUrl').value;
+        const mainCat = document.getElementById('mainCat').value;
+        const subCat = document.getElementById('subCat').value;
+        const status = document.getElementById('status').value;
         const url = document.getElementById('url').value;
-        const options = document.getElementById('options').value;
         const origPrice = document.getElementById('origPrice').value;
         const salePrice = document.getElementById('salePrice').value;
-        const period = document.getElementById('period').value;
         const date = new Date().toLocaleDateString();
 
         if (!name) return alert('請輸入產品名稱');
 
+        const productData = { id: id || Date.now(), name, imgUrl, mainCat, subCat, status, url, origPrice, salePrice, lastUpdate: date };
+
         if (id) {
             const idx = db.findIndex(p => p.id == id);
-            if (db[idx].salePrice !== salePrice) {
-                db[idx].history.push({ price: db[idx].salePrice, period: db[idx].period, date: db[idx].lastUpdate });
-            }
-            db[idx] = { ...db[idx], name, imgUrl, url, options, origPrice, salePrice, period, lastUpdate: date };
+            db[idx] = productData;
         } else {
-            db.push({ id: Date.now(), name, imgUrl, url, options, origPrice, salePrice, period, lastUpdate: date, history: [] });
+            db.push(productData);
         }
 
-        localStorage.setItem('oy_img_tracker', JSON.stringify(db));
+        localStorage.setItem('oy_final_manager', JSON.stringify(db));
         resetForm();
         render();
     }
@@ -98,28 +131,35 @@
     function render() {
         const container = document.getElementById('list');
         container.innerHTML = '';
-        db.sort((a,b) => b.id - a.id).forEach(p => {
+        
+        let filtered = db;
+        if (currentFilter === '未購買') filtered = db.filter(p => p.status !== '已購買');
+        if (currentFilter === '已購買') filtered = db.filter(p => p.status === '已購買');
+        if (currentFilter === '想購買') filtered = db.filter(p => p.status === '想購買');
+
+        filtered.sort((a,b) => b.id - a.id).forEach(p => {
+            const isBought = p.status === '已購買';
             container.innerHTML += `
-                <div class="item-card">
-                    ${p.imgUrl ? `<img src="${p.imgUrl}" class="prod-img" onerror="this.src='https://via.placeholder.com/200?text=No+Image'">` : `<div class="no-img">尚無圖片</div>`}
+                <div class="item-card ${isBought ? 'is-bought' : ''}">
+                    ${p.imgUrl ? `<img src="${p.imgUrl}" class="prod-img">` : ''}
                     <div class="prod-content">
+                        <span class="category-tag">${p.mainCat} > ${p.subCat}</span>
                         <a href="${p.url || '#'}" target="_blank" class="prod-title">${p.name}</a>
-                        <div class="prod-options">${p.options || '預設選項'}</div>
+                        
                         <div class="price-row">
                             <span class="price-sale">₩${p.salePrice}</span>
                             <span class="price-orig">₩${p.origPrice}</span>
                         </div>
-                        ${p.period ? `<div class="promo-tag">活動：${p.period}</div>` : ''}
-                        
-                        <div class="history-section">
-                            <button class="hist-btn" onclick="toggleHist(${p.id})">🕒 查看價格歷史 (${p.history.length})</button>
-                            <ul class="hist-list" id="h-${p.id}">
-                                ${p.history.map(h => `<li>${h.date}: ₩${h.price} (${h.period})</li>`).reverse().join('')}
-                            </ul>
-                        </div>
+
+                        <select class="status-select" onchange="quickUpdateStatus(${p.id}, this.value)">
+                            <option value="感興趣" ${p.status==='感興趣'?'selected':''}>感興趣</option>
+                            <option value="想購買" ${p.status==='想購買'?'selected':''}>想購買</option>
+                            <option value="考慮購買" ${p.status==='考慮購買'?'selected':''}>考慮購買</option>
+                            <option value="已購買" ${p.status==='已購買'?'selected':''}>✅ 已購買</option>
+                        </select>
 
                         <div class="actions">
-                            <button class="btn-action edit" onclick="edit(${p.id})">修改</button>
+                            <button class="btn-action edit" onclick="edit(${p.id})">編輯</button>
                             <button class="btn-action del" onclick="del(${p.id})">刪除</button>
                         </div>
                     </div>
@@ -128,29 +168,49 @@
         });
     }
 
+    function quickUpdateStatus(id, newStatus) {
+        const idx = db.findIndex(p => p.id == id);
+        db[idx].status = newStatus;
+        localStorage.setItem('oy_final_manager', JSON.stringify(db));
+        render();
+    }
+
+    function filterList(type, el) {
+        currentFilter = type;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        render();
+    }
+
     function edit(id) {
         const p = db.find(x => x.id == id);
         document.getElementById('edit-id').value = p.id;
         document.getElementById('name').value = p.name;
         document.getElementById('imgUrl').value = p.imgUrl;
+        document.getElementById('mainCat').value = p.mainCat;
+        updateSubCat();
+        document.getElementById('subCat').value = p.subCat;
+        document.getElementById('status').value = p.status;
         document.getElementById('url').value = p.url;
-        document.getElementById('options').value = p.options;
         document.getElementById('origPrice').value = p.origPrice;
         document.getElementById('salePrice').value = p.salePrice;
-        document.getElementById('period').value = p.period;
-        document.getElementById('form-title').innerText = "編輯資料 ✏️";
+        document.getElementById('form-title').innerText = "編輯商品 ✏️";
         document.getElementById('cancel-edit').style.display = "block";
         window.scrollTo(0,0);
     }
 
-    function del(id) { if(confirm('要刪除嗎？')) { db = db.filter(x => x.id !== id); localStorage.setItem('oy_img_tracker', JSON.stringify(db)); render(); } }
-    function toggleHist(id) { const el = document.getElementById('h-'+id); el.style.display = el.style.display === 'block' ? 'none' : 'block'; }
+    function del(id) { if(confirm('確定要刪除嗎？')) { db = db.filter(x => x.id !== id); localStorage.setItem('oy_final_manager', JSON.stringify(db)); render(); } }
+    
     function resetForm() { 
         document.getElementById('edit-id').value = '';
         document.querySelectorAll('input').forEach(i => i.value = ''); 
-        document.getElementById('form-title').innerText = "新增收藏 🌿";
+        document.getElementById('form-title').innerText = "Olive Young 購物管家 🛒";
         document.getElementById('cancel-edit').style.display = "none";
+        updateSubCat();
     }
+
+    // 初始化
+    updateSubCat();
     render();
 </script>
 
