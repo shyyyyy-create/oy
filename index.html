@@ -3,227 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Olive Young 購物清單 Pro</title>
+    <title>OY 購物管家 - 精準退稅版</title>
     <style>
-        :root { --primary: #f05a28; --secondary: #97c024; --bought: #6c757d; --bg: #f2f2f7; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 50px; }
+        :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --tax: #e67e22; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 180px; }
         .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        h2 { color: var(--primary); text-align: center; font-size: 22px; margin: 10px 0; }
+        h2 { color: var(--primary); text-align: center; margin: 5px 0 15px 0; }
         
-        .form-group { display: flex; flex-direction: column; gap: 10px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; background: white; -webkit-appearance: none; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
         .row { display: flex; gap: 8px; }
         .btn-main { background: var(--primary); color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
         
-        /* 篩選 Tab */
-        .filter-tabs { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding: 5px 0; scrollbar-width: none; }
-        .tab { flex: 0 0 auto; padding: 8px 16px; background: white; border-radius: 20px; font-size: 14px; font-weight: 600; color: #666; cursor: pointer; border: 1px solid #eee; }
-        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .nav-tabs { display: flex; background: white; border-radius: 12px; margin-bottom: 15px; padding: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .nav-btn { flex: 1; padding: 10px; border: none; background: none; font-weight: bold; color: #888; cursor: pointer; border-radius: 8px; }
+        .nav-btn.active { background: var(--primary); color: white; }
 
-        /* 產品卡片 */
-        .item-card { background: white; border-radius: 16px; overflow: hidden; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; }
-        .item-card.is-bought { opacity: 0.6; filter: grayscale(0.8); }
-        .prod-img { width: 100%; height: 200px; object-fit: contain; background: #fff; }
-        .prod-content { padding: 15px; }
-        .category-path { font-size: 11px; color: var(--secondary); font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: block; }
-        .prod-title { font-size: 18px; font-weight: bold; color: #222; text-decoration: none; display: block; margin-bottom: 8px; }
+        .item-card { background: white; border-radius: 15px; overflow: hidden; margin-bottom: 15px; border: 2px solid transparent; }
+        .item-card.in-cart { border-color: var(--cart); }
+        .prod-content { padding: 12px; }
+        .prod-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+        .price-sale { color: #e74c3c; font-size: 18px; font-weight: 800; }
         
-        .price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
-        .price-sale { color: #e74c3c; font-size: 22px; font-weight: 800; }
-        .price-orig { color: #aaa; text-decoration: line-through; font-size: 14px; }
+        .btn-cart { background: #eee; color: #333; width: 100%; padding: 10px; border-radius: 8px; border: none; font-weight: bold; margin-top: 5px; }
+        .btn-cart.active { background: var(--cart); color: white; }
 
-        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 10px; }
-        .status-感興趣 { background: #e3f2fd; color: #1976d2; }
-        .status-想購買 { background: #fff3e0; color: #f57c00; }
-        .status-考慮購買 { background: #f3e5f5; color: #7b1fa2; }
-        .status-已購買 { background: #e8f5e9; color: #2e7d32; }
+        /* 結帳工具列 */
+        .checkout-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); z-index: 100; border-radius: 20px 20px 0 0; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .total-value { font-size: 18px; font-weight: 700; }
+        .tax-row { color: var(--tax); font-weight: bold; border-bottom: 1px dashed #eee; padding-bottom: 8px; margin-bottom: 8px; }
+        .final-row { color: var(--primary); font-size: 24px; font-weight: 900; }
+        .tax-alert-box { background: #fff5f5; color: #e74c3c; font-size: 12px; padding: 6px; border-radius: 8px; text-align: center; margin-top: 8px; font-weight: bold; border: 1px solid #ffcccc; }
 
-        .quick-status { width: 100%; margin-top: 10px; border: 1px solid #eee; padding: 8px; border-radius: 8px; font-size: 14px; }
-
-        .actions { display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid #f5f5f5; padding-top: 15px; }
-        .btn-action { flex: 1; padding: 10px; border-radius: 8px; border: none; font-size: 13px; font-weight: bold; cursor: pointer; }
-        .edit { background: #f0f0f0; color: #444; }
-        .del { background: #fff0f0; color: #d32f2f; }
+        .page { display: none; }
+        .page.active { display: block; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2 id="form-title">Olive Young 願望清單 🌿</h2>
-    <div class="form-group">
-        <input type="hidden" id="edit-id">
-        <input type="text" id="name" placeholder="產品名稱">
-        <input type="text" id="imgUrl" placeholder="圖片網址">
-        
-        <div class="row">
-            <select id="mainCat" onchange="updateSubCat()">
-                <option value="護膚品">護膚品</option>
-                <option value="化妝品">化妝品</option>
-                <option value="其他">其他</option>
-            </select>
-            <select id="subCat"></select>
-        </div>
+<div class="nav-tabs">
+    <button class="nav-btn active" onclick="switchPage('wishlist', this)">願望清單</button>
+    <button class="nav-btn" onclick="switchPage('cart', this)">現場購物籃 (<span id="cart-count">0</span>)</button>
+</div>
 
-        <select id="status">
-            <option value="感興趣">感興趣</option>
-            <option value="想購買">🔥 想購買</option>
-            <option value="考慮購買">🤔 考慮購買</option>
-            <option value="已購買">✅ 已購買</option>
-        </select>
-
-        <input type="text" id="url" placeholder="產品官網連結">
-        <div class="row">
-            <input type="text" id="origPrice" placeholder="原價 ₩">
-            <input type="text" id="salePrice" placeholder="特價 ₩">
+<div id="wishlist-page" class="page active">
+    <div class="card">
+        <h2 id="form-title">即時加入產品 🌿</h2>
+        <div class="form-group">
+            <input type="text" id="name" placeholder="產品名稱">
+            <div class="row">
+                <input type="number" id="salePrice" placeholder="價格 ₩" style="flex:2">
+                <input type="number" id="qty" value="1" placeholder="數量" style="flex:1">
+            </div>
+            <button class="btn-main" onclick="saveProduct()">儲存至清單</button>
         </div>
-        <button class="btn-main" onclick="saveProduct()">儲存產品</button>
-        <button id="cancel-edit" style="display:none; background:#666; margin-top:5px; padding:12px; border-radius:10px; border:none; color:white;" onclick="resetForm()">取消編輯</button>
+    </div>
+    <div id="wish-list-container"></div>
+</div>
+
+<div id="cart-page" class="page">
+    <div class="card">
+        <h2>🛒 現場結帳對帳單</h2>
+        <div id="cart-list-container"></div>
     </div>
 </div>
 
-<div class="filter-tabs">
-    <div class="tab active" onclick="filterList('全部', this)">全部</div>
-    <div class="tab" onclick="filterList('想購買', this)">🔥 必買</div>
-    <div class="tab" onclick="filterList('未購買', this)">🛒 未買</div>
-    <div class="tab" onclick="filterList('已購買', this)">✅ 已買</div>
+<div class="checkout-bar">
+    <div class="summary-row">
+        <span>商品總額 (<span id="summary-count">0</span> 件)</span>
+        <span class="total-value">₩<span id="total-amount">0</span></span>
+    </div>
+    <div class="summary-row tax-row">
+        <span>📉 官網精準退稅 (Global Tax Free)</span>
+        <span>- ₩<span id="refund-amount">0</span></span>
+    </div>
+    <div class="summary-row final-row">
+        <span>實付預算</span>
+        <span>₩<span id="final-amount">0</span></span>
+    </div>
+    <div id="tax-alert" class="tax-alert-box" style="display:none;"></div>
 </div>
 
-<div id="list"></div>
-
 <script>
-    let db = JSON.parse(localStorage.getItem('oy_ultimate_db')) || [];
-    let currentFilter = '全部';
+    let db = JSON.parse(localStorage.getItem('oy_tax_chart_db')) || [];
+    let cart = JSON.parse(localStorage.getItem('oy_tax_chart_cart')) || [];
 
-    const categories = {
-        "護膚品": ["Toner", "Lotion", "Cream", "Mask", "Cleanser", "Serum", "Sun Care"],
-        "化妝品": ["Base", "Foundation", "Cushion", "Powder", "Lip Tint", "Lipstick", "Lip Pencil", "Eyebrow", "Eyeliner", "Eye Shadow", "Highlighter", "Shading", "Blush", "Fixer"],
-        "其他": ["Body Care", "Hair Care", "Beauty Tools", "Fragrance"]
-    };
+    // 根據圖片資料建立的退稅對照表
+    const taxTable = [
+        { min: 15000, max: 29999, refund: 1000 },
+        { min: 30000, max: 49999, refund: 2000 },
+        { min: 50000, max: 74999, refund: 3000 },
+        { min: 75000, max: 99999, refund: 5000 },
+        { min: 100000, max: 124999, refund: 7000 },
+        { min: 125000, max: 149999, refund: 8000 },
+        { min: 150000, max: 174999, refund: 9000 },
+        { min: 175000, max: 199999, refund: 10000 },
+        { min: 200000, max: 224999, refund: 12000 },
+        { min: 225000, max: 249999, refund: 13000 },
+        { min: 250000, max: 274999, refund: 15000 },
+        { min: 275000, max: 299999, refund: 17000 },
+        { min: 300000, max: 324999, refund: 19000 },
+        { min: 325000, max: 349999, refund: 21000 },
+        { min: 350000, max: 374999, refund: 23000 },
+        { min: 375000, max: 399999, refund: 25000 },
+        { min: 400000, max: 424999, refund: 27000 },
+        { min: 425000, max: 449999, refund: 28000 },
+        { min: 450000, max: 474999, refund: 30000 },
+        { min: 475000, max: 499999, refund: 32000 },
+        { min: 500000, max: 549999, refund: 35000 }
+        // ...後續級距可按需求添加
+    ];
 
-    function updateSubCat() {
-        const main = document.getElementById('mainCat').value;
-        const sub = document.getElementById('subCat');
-        sub.innerHTML = categories[main].map(c => `<option value="${c}">${c}</option>`).join('');
+    function calculateRefund(total) {
+        if (total < 15000) return 0;
+        const tier = taxTable.find(t => total >= t.min && total <= t.max);
+        if (tier) return tier.refund;
+        // 如果超過表格定義的最大值，按 7% 估算或繼續擴展表格
+        if (total >= 500000) {
+            const highTier = taxTable[taxTable.length - 1];
+            return total >= highTier.min ? highTier.refund : 0; 
+        }
+        return 0;
+    }
+
+    function switchPage(page, btn) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(page + '-page').classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
     }
 
     function saveProduct() {
-        const id = document.getElementById('edit-id').value;
         const name = document.getElementById('name').value;
-        const imgUrl = document.getElementById('imgUrl').value;
-        const mainCat = document.getElementById('mainCat').value;
-        const subCat = document.getElementById('subCat').value;
-        const status = document.getElementById('status').value;
-        const url = document.getElementById('url').value;
-        const origPrice = document.getElementById('origPrice').value;
-        const salePrice = document.getElementById('salePrice').value;
+        const price = Number(document.getElementById('salePrice').value);
+        if (!name || !price) return alert('請輸入產品與正確價格');
+        db.push({ id: Date.now(), name, salePrice: price, qty: Number(document.getElementById('qty').value) || 1 });
+        localStorage.setItem('oy_tax_chart_db', JSON.stringify(db));
+        document.getElementById('name').value = ''; document.getElementById('salePrice').value = '';
+        render();
+    }
 
-        if (!name) return alert('請輸入產品名稱');
-
-        const product = { id: id ? Number(id) : Date.now(), name, imgUrl, mainCat, subCat, status, url, origPrice, salePrice };
-
-        if (id) {
-            const idx = db.findIndex(p => p.id == id);
-            db[idx] = product;
-        } else {
-            db.push(product);
-        }
-
-        localStorage.setItem('oy_ultimate_db', JSON.stringify(db));
-        resetForm();
+    function toggleCart(id) {
+        const idx = cart.indexOf(id);
+        if (idx > -1) cart.splice(idx, 1); else cart.push(id);
+        localStorage.setItem('oy_tax_chart_cart', JSON.stringify(cart));
         render();
     }
 
     function render() {
-        const container = document.getElementById('list');
-        container.innerHTML = '';
-        
-        let filtered = db;
-        if (currentFilter === '未購買') filtered = db.filter(p => p.status !== '已購買');
-        else if (currentFilter === '已購買') filtered = db.filter(p => p.status === '已購買');
-        else if (currentFilter === '想購買') filtered = db.filter(p => p.status === '想購買');
+        const wishC = document.getElementById('wish-list-container');
+        const cartC = document.getElementById('cart-list-container');
+        wishC.innerHTML = ''; cartC.innerHTML = '';
+        let total = 0; let count = 0;
 
-        filtered.sort((a,b) => b.id - a.id).forEach(p => {
-            container.innerHTML += `
-                <div class="item-card ${p.status === '已購買' ? 'is-bought' : ''}">
-                    ${p.imgUrl ? `<img src="${p.imgUrl}" class="prod-img" onerror="this.style.display='none'">` : ''}
-                    <div class="prod-content">
-                        <span class="category-path">${p.mainCat} > ${p.subCat}</span>
-                        <a href="${p.url || '#'}" target="_blank" class="prod-title">${p.name}</a>
-                        
-                        <div class="price-row">
-                            <span class="price-sale">₩${p.salePrice || '??'}</span>
-                            <span class="price-orig">₩${p.origPrice || '--'}</span>
-                        </div>
-
-                        <span class="status-badge status-${p.status}">${p.status}</span>
-
-                        <select class="quick-status" onchange="updateStatus(${p.id}, this.value)">
-                            <option value="感興趣" ${p.status==='感興趣'?'selected':''}>感興趣</option>
-                            <option value="想購買" ${p.status==='想購買'?'selected':''}>想購買</option>
-                            <option value="考慮購買" ${p.status==='考慮購買'?'selected':''}>考慮購買</option>
-                            <option value="已購買" ${p.status==='已購買'?'selected':''}>已購買</option>
-                        </select>
-
-                        <div class="actions">
-                            <button class="btn-action edit" onclick="edit(${p.id})">編輯</button>
-                            <button class="btn-action del" onclick="del(${p.id})">刪除</button>
-                        </div>
-                    </div>
-                </div>
-            `;
+        db.sort((a,b) => b.id - a.id).forEach(p => {
+            const inCart = cart.includes(p.id);
+            const html = `<div class="item-card ${inCart ? 'in-cart' : ''}"><div class="prod-content"><div class="prod-title">${p.name}</div><div class="price-sale">₩${p.salePrice.toLocaleString()} x ${p.qty}</div><button class="btn-cart ${inCart ? 'active' : ''}" onclick="toggleCart(${p.id})">${inCart ? '❌ 移出購物籃' : '➕ 放入購物籃'}</button></div></div>`;
+            wishC.innerHTML += html;
+            if (inCart) { cartC.innerHTML += html; total += (p.salePrice * p.qty); count += p.qty; }
         });
-    }
 
-    function updateStatus(id, newStatus) {
-        const idx = db.findIndex(p => p.id == id);
-        db[idx].status = newStatus;
-        localStorage.setItem('oy_ultimate_db', JSON.stringify(db));
-        render();
+        const refund = calculateRefund(total);
+        document.getElementById('total-amount').innerText = total.toLocaleString();
+        document.getElementById('refund-amount').innerText = refund.toLocaleString();
+        document.getElementById('final-amount').innerText = (total - refund).toLocaleString();
+        document.getElementById('cart-count').innerText = count;
+        document.getElementById('summary-count').innerText = count;
+        
+        const alertBox = document.getElementById('tax-alert');
+        if (total > 0 && total < 15000) {
+            alertBox.style.display = 'block';
+            alertBox.innerText = `⚠️ 還差 ₩${(15000 - total).toLocaleString()} 達到退稅門檻 (15,000₩)！`;
+        } else if (total >= 15000) {
+            // 找出下一個級距
+            const currentTier = taxTable.find(t => total >= t.min && total <= t.max);
+            if (currentTier) {
+                const nextTier = taxTable[taxTable.indexOf(currentTier) + 1];
+                if (nextTier) {
+                    alertBox.style.display = 'block';
+                    alertBox.style.background = '#f0fff4'; alertBox.style.color = '#276749'; alertBox.style.borderColor = '#c6f6d5';
+                    alertBox.innerText = `✅ 再買 ₩${(nextTier.min - total).toLocaleString()}，退稅可跳至下個級距 (₩${nextTier.refund.toLocaleString()})！`;
+                } else { alertBox.style.display = 'none'; }
+            }
+        } else { alertBox.style.display = 'none'; }
     }
-
-    function filterList(type, el) {
-        currentFilter = type;
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-        render();
-    }
-
-    function edit(id) {
-        const p = db.find(x => x.id == id);
-        document.getElementById('edit-id').value = p.id;
-        document.getElementById('name').value = p.name;
-        document.getElementById('imgUrl').value = p.imgUrl;
-        document.getElementById('mainCat').value = p.mainCat;
-        updateSubCat();
-        document.getElementById('subCat').value = p.subCat;
-        document.getElementById('status').value = p.status;
-        document.getElementById('url').value = p.url;
-        document.getElementById('origPrice').value = p.origPrice;
-        document.getElementById('salePrice').value = p.salePrice;
-        document.getElementById('form-title').innerText = "編輯商品項目";
-        document.getElementById('cancel-edit').style.display = "block";
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    }
-
-    function del(id) {
-        if(confirm('確定要從清單中移除嗎？')) {
-            db = db.filter(x => x.id !== id);
-            localStorage.setItem('oy_ultimate_db', JSON.stringify(db));
-            render();
-        }
-    }
-
-    function resetForm() {
-        document.getElementById('edit-id').value = '';
-        document.querySelectorAll('input').forEach(i => i.value = '');
-        document.getElementById('form-title').innerText = "Olive Young 願望清單 🌿";
-        document.getElementById('cancel-edit').style.display = "none";
-        updateSubCat();
-    }
-
-    updateSubCat();
     render();
 </script>
-
 </body>
 </html>
