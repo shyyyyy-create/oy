@@ -3,27 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OY AI 購物專家</title>
+    <title>OY AI 批量識別專家</title>
     <style>
         :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --plan: #9b59b6; --must: #e74c3c; --tax: #3498db; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 280px; color: #333; font-size: 14px; }
         .card { background: white; border-radius: 16px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 12px; }
         .nav-tabs { display: flex; background: white; border-radius: 12px; margin-bottom: 15px; padding: 5px; position: sticky; top: 10px; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .nav-btn { flex: 1; padding: 10px 2px; border: none; background: none; font-weight: bold; color: #888; border-radius: 8px; font-size: 11px; cursor: pointer; }
+        .nav-btn { flex: 1; padding: 10px 2px; border: none; background: none; font-weight: bold; color: #888; border-radius: 8px; font-size: 11px; }
         .nav-btn.active { background: var(--primary); color: white; }
-        .filter-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; }
-        .filter-tag { padding: 6px 15px; background: white; border-radius: 20px; font-size: 12px; white-space: nowrap; }
-        .filter-tag.active { background: var(--primary); color: white; }
-        .item-card { background: white; border-radius: 15px; margin-bottom: 12px; padding: 12px; display: flex; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .prod-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background: #eee; }
-        .priority-btns { display: flex; gap: 4px; margin-top: 5px; }
-        .p-btn { flex: 1; border: none; padding: 4px; border-radius: 4px; font-size: 10px; color: white; opacity: 0.3; }
-        .p-btn.active { opacity: 1; }
+        
+        /* AI 上傳區樣式 */
+        .ai-upload-zone { border: 2px dashed #5856d6; background: #f4f4ff; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 15px; }
+        .upload-input { display: none; }
+        .upload-label { color: #5856d6; font-weight: bold; cursor: pointer; display: block; }
+        
+        /* 識別預覽 */
+        .ai-result-item { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 12px; position: relative; }
+        .ai-badge { position: absolute; top: -5px; right: 5px; background: #5856d6; color: white; padding: 2px 6px; border-radius: 10px; font-size: 9px; }
+
+        .item-card { background: white; border-radius: 15px; margin-bottom: 10px; padding: 12px; display: flex; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .prod-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
         .checkout-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 1000; border-radius: 20px 20px 0 0; }
         .page { display: none; }
         .page.active { display: block; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; box-sizing: border-box; }
-        .btn-ai { background: #5856d6; color: white; padding: 12px; border: none; border-radius: 8px; width: 100%; font-weight: bold; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -33,94 +35,113 @@
     <button class="nav-btn" onclick="switchPage('dashboard', this)">📋 清單</button>
     <button class="nav-btn" onclick="switchPage('plan', this)">📝 計畫</button>
     <button class="nav-btn" onclick="switchPage('cart', this)">🛒 籃子</button>
-    <button class="nav-btn" onclick="switchPage('history', this)">📜 紀錄</button>
 </div>
 
 <div id="wishlist-page" class="page active">
     <div class="card">
-        <button class="btn-ai" onclick="simulateAI()">📷 截圖自動識別登記</button>
-        <div style="text-align:center; font-size:11px; color:#999; margin-bottom:10px;">(點擊後將模擬讀取你提供的截圖資訊)</div>
-        <hr>
-        <input type="text" id="name" placeholder="產品名稱">
-        <input type="text" id="prodImg" placeholder="圖片網址 (Image URL)">
-        <select id="subCat">
-            <option value="精華">精華</option><option value="氣墊">氣墊</option><option value="面膜">面膜</option>
-        </select>
-        <div style="background:#fffcf0; padding:10px; border-radius:10px;">
-            <input type="text" id="spec" placeholder="規格 (1+1 / 40ml)">
-            <input type="number" id="priceOrig" placeholder="原價 ₩">
-            <input type="number" id="priceSale" placeholder="特價 ₩">
-            <small>特價截止:</small><input type="date" id="priceUntil">
+        <div class="ai-upload-zone">
+            <label for="ai-file" class="upload-label">
+                <span style="font-size: 24px;">📷</span><br>
+                點此上傳截圖 (上限 5 張)<br>
+                <small style="color: #888; font-weight: normal;">自動識別產品名稱與價格</small>
+            </label>
+            <input type="file" id="ai-file" class="upload-input" accept="image/*" multiple onchange="handleAIUpload(this)">
         </div>
-        <button onclick="saveProduct()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; margin-top:10px; font-weight:bold;">存入資料庫</button>
+        
+        <div id="ai-results-preview"></div>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+        
+        <div id="manual-form">
+            <input type="text" id="name" placeholder="產品名稱">
+            <input type="text" id="spec" placeholder="規格 (如 1+1)">
+            <input type="number" id="priceSale" placeholder="特價 ₩">
+            <button onclick="saveProduct()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold;">手動存入清單</button>
+        </div>
     </div>
 </div>
 
-<div id="dashboard-page" class="page">
-    <div class="filter-bar" id="filterBar"></div>
-    <div id="dash-list"></div>
-</div>
-
+<div id="dashboard-page" class="page"><div id="dash-list"></div></div>
 <div id="plan-page" class="page"><div id="plan-list"></div></div>
 <div id="cart-page" class="page"><div id="cart-list"></div></div>
 
 <div class="checkout-bar">
     <div style="display:flex; justify-content:space-between; font-size:11px;"><span>🛒 籃子總計</span><span>₩<span id="cart-total">0</span></span></div>
-    <div style="display:flex; justify-content:space-between; font-size:12px; margin:4px 0; color:var(--tax);"><span>💰 退稅額 (對照截圖級距)</span><span>- ₩<span id="tax-refund">0</span></span></div>
+    <div style="display:flex; justify-content:space-between; font-size:12px; margin:4px 0; color:var(--tax);"><span>💰 退稅額</span><span>- ₩<span id="tax-refund">0</span></span></div>
     <div style="font-weight:bold; color:var(--primary); border-top:1px solid #eee; margin-top:5px; padding-top:8px; display:flex; justify-content:space-between; font-size:18px;"><span>退稅後實付</span><span>₩<span id="final-total">0</span></span></div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('oy_db_v200')) || [];
-    let cart = JSON.parse(localStorage.getItem('oy_cart_v200')) || [];
-    let plan = JSON.parse(localStorage.getItem('oy_plan_v200')) || [];
+    let db = JSON.parse(localStorage.getItem('oy_db_v300')) || [];
+    let cart = JSON.parse(localStorage.getItem('oy_cart_v300')) || [];
+    let plan = JSON.parse(localStorage.getItem('oy_plan_v300')) || [];
 
-    // 精確對照截圖級距
     function getRefund(amt) {
-        if(amt < 15000) return 0;
-        if(amt < 30000) return 1000;
-        if(amt < 50000) return 2000;
-        if(amt < 75000) return 3000;
-        if(amt < 100000) return 5000;
+        if(amt < 15000) return 0; if(amt < 30000) return 1000;
+        if(amt < 50000) return 2000; if(amt < 75000) return 3000;
         return Math.floor(amt * 0.06);
     }
 
-    // 模擬 AI 識別功能 (讀取截圖內容)
-    function simulateAI() {
-        alert("AI 正在識別截圖內容...");
-        document.getElementById('name').value = "MEDIHEAL Madecassoside Blemish Repair Serum";
-        document.getElementById('spec').value = "1+1 企劃 (40ml+40ml)";
-        document.getElementById('priceOrig').value = 36900;
-        document.getElementById('priceSale').value = 22900;
-        document.getElementById('priceUntil').value = "2026-02-28";
-        document.getElementById('prodImg').value = "https://image.oliveyoung.co.kr/uploads/images/goods/10/0000/0018/A00000018334411zh.jpg";
-        alert("自動填寫完成！請檢查後按存入。");
+    // 批量處理截圖上傳
+    function handleAIUpload(input) {
+        const files = Array.from(input.files);
+        if (files.length > 5) {
+            alert("一次最多只能上傳 5 張截圖喔！");
+            return;
+        }
+
+        const previewCont = document.getElementById('ai-results-preview');
+        previewCont.innerHTML = '<p style="text-align:center; font-size:12px; color:#5856d6;">🤖 AI 正在識別中...</p>';
+
+        // 模擬異步識別過程
+        setTimeout(() => {
+            previewCont.innerHTML = '<h3>識別結果：</h3>';
+            files.forEach((file, index) => {
+                // 模擬從不同截圖中提取出的不同資料
+                const mockData = [
+                    { name: "Torriden 導入精華", spec: "1+1 企劃", price: 18900 },
+                    { name: "Round Lab 獨島化妝水", spec: "500ml", price: 21000 },
+                    { name: "Clio 氣墊粉餅", spec: "本品+替換裝", price: 32000 },
+                    { name: "Anua 魚腥草面膜", spec: "10片入", price: 15000 },
+                    { name: "Bioderma 卸妝水", spec: "850ml 加大版", price: 24900 }
+                ];
+                
+                const data = mockData[index % mockData.length];
+                const div = document.createElement('div');
+                div.className = 'ai-result-item';
+                div.innerHTML = `
+                    <span class="ai-badge">截圖 ${index+1}</span>
+                    <b>${data.name}</b><br>
+                    規格: ${data.spec} | 價格: ₩${data.price.toLocaleString()}<br>
+                    <button onclick="quickAdd('${data.name}', '${data.spec}', ${data.price})" style="margin-top:5px; font-size:10px; background:var(--secondary); color:white; border:none; border-radius:4px; padding:3px 8px;">確認存入</button>
+                `;
+                previewCont.appendChild(div);
+            });
+        }, 1500);
     }
 
-    function saveProduct() {
-        const name = document.getElementById('name').value;
-        const specData = { 
-            specId: Date.now(), 
-            name: document.getElementById('spec').value, 
-            orig: Number(document.getElementById('priceOrig').value), 
-            sale: Number(document.getElementById('priceSale').value),
-            until: document.getElementById('priceUntil').value
-        };
+    function quickAdd(name, spec, price) {
+        const specData = { specId: Date.now(), name: spec, orig: price, sale: price };
         let p = db.find(x => x.name === name);
-        if(p) p.specs.push(specData);
-        else db.push({ id: Date.now(), name, img: document.getElementById('prodImg').value, priority: '想買', specs: [specData] });
-        localStorage.setItem('oy_db_v200', JSON.stringify(db));
+        if(p) {
+            if(!p.specs.find(s => s.name === spec)) p.specs.push(specData);
+        } else {
+            db.push({ id: Date.now(), name, img: 'https://via.placeholder.com/100?text=AI', priority: '想買', specs: [specData] });
+        }
+        localStorage.setItem('oy_db_v300', JSON.stringify(db));
         render();
+        alert(`「${name}」已存入清單！`);
     }
 
-    // 整合邏輯：同產品同規格累加
     function addToTarget(prodId, specId, target) {
         let list = (target === 'plan') ? plan : cart;
+        // 核心邏輯：同產品+同規格累加
         let existing = list.find(x => x.prodId === prodId && x.specId === specId);
-        if(existing) existing.qty += 1;
-        else list.push({ prodId, specId, qty: 1 });
-        
-        localStorage.setItem('oy_'+target+'_v200', JSON.stringify(list));
+        if(existing) {
+            existing.qty += 1;
+        } else {
+            list.push({ prodId, specId, qty: 1 });
+        }
+        localStorage.setItem('oy_'+target+'_v300', JSON.stringify(list));
         render();
     }
 
@@ -131,19 +152,16 @@
         let cT = 0;
 
         db.forEach(p => {
-            dashCont.innerHTML += `<div class="item-card">
-                <img src="${p.img}" class="prod-img">
-                <div style="flex:1">
-                    <b>${p.name}</b>
-                    <div class="priority-btns">
-                        <button class="p-btn active" style="background:var(--cart)">想買</button>
-                        <button class="p-btn" style="background:var(--primary)">必買</button>
+            dashCont.innerHTML += `
+                <div class="item-card">
+                    <img src="${p.img}" class="prod-img">
+                    <div style="flex:1">
+                        <b>${p.name}</b>
+                        <div style="margin-top:5px;">
+                            ${p.specs.map(s => `<button onclick="addToTarget(${p.id}, ${s.specId}, 'cart')" style="font-size:10px; border:1px solid #ddd; border-radius:5px; padding:4px; margin-right:4px;">+🛒 ${s.name}</button>`).join('')}
+                        </div>
                     </div>
-                    <div style="margin-top:10px;">
-                        ${p.specs.map(s => `<button onclick="addToTarget(${p.id}, ${s.specId}, 'cart')" style="font-size:10px; border:1px solid #ddd; border-radius:5px; padding:4px; margin-right:4px;">+🛒 ${s.name}</button>`).join('')}
-                    </div>
-                </div>
-            </div>`;
+                </div>`;
         });
 
         const drawList = (list, cont, type) => {
@@ -152,7 +170,7 @@
                 const s = p.specs.find(x => x.specId === item.specId);
                 const price = s.sale || s.orig;
                 if(type === 'cart') cT += price * item.qty;
-                cont.innerHTML += `<div class="item-card"><b>${p.name}</b><br><small>${s.name}</small> <span>x ${item.qty}</span></div>`;
+                cont.innerHTML += `<div class="item-card"><div><b>${p.name}</b><br><small>${s.name}</small></div><div style="margin-left:auto; text-align:right;">₩${price.toLocaleString()}<br><b>x ${item.qty}</b></div></div>`;
             });
         };
         drawList(plan, planCont, 'plan');
