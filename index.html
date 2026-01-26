@@ -3,29 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OY AI 視覺專家 - OCR 版</title>
+    <title>OY AI 韓文強化版</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --plan: #9b59b6; --must: #e74c3c; --tax: #3498db; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 280px; color: #333; font-size: 14px; }
+        body { font-family: -apple-system, "Malgun Gothic", sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 280px; color: #333; font-size: 14px; }
         .card { background: white; border-radius: 16px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 12px; }
         .nav-tabs { display: flex; background: white; border-radius: 12px; margin-bottom: 15px; padding: 5px; position: sticky; top: 10px; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .nav-btn { flex: 1; padding: 10px 2px; border: none; background: none; font-weight: bold; color: #888; border-radius: 8px; font-size: 11px; cursor: pointer; }
         .nav-btn.active { background: var(--primary); color: white; }
-        
-        /* 上傳區域樣式 */
-        .upload-zone { border: 2px dashed #ccc; border-radius: 12px; padding: 20px; text-align: center; background: #fafafa; transition: 0.3s; cursor: pointer; }
-        .upload-zone:active { background: #eee; border-color: var(--primary); }
-        #preview-area { display: flex; gap: 5px; overflow-x: auto; margin-top: 10px; }
-        .thumb { width: 60px; height: 60px; border-radius: 5px; object-fit: cover; border: 1px solid #ddd; }
-        
-        .status-msg { font-size: 12px; color: var(--tax); margin: 10px 0; font-weight: bold; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; box-sizing: border-box; }
-        .item-card { background: white; border-radius: 15px; margin-bottom: 12px; padding: 12px; display: flex; gap: 12px; align-items: center; }
+        .upload-zone { border: 2px dashed #f05a28; border-radius: 12px; padding: 20px; text-align: center; background: #fff9f7; cursor: pointer; }
+        #preview-area { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; }
+        .thumb { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; border: 1px solid #eee; }
+        .status-msg { font-size: 12px; color: var(--primary); margin: 10px 0; font-weight: bold; text-align: center; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; box-sizing: border-box; outline: none; }
+        .item-card { background: white; border-radius: 15px; margin-bottom: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--primary); }
         .checkout-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 1000; border-radius: 20px 20px 0 0; }
         .page { display: none; }
         .page.active { display: block; }
-        .p-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; }
     </style>
 </head>
 <body>
@@ -39,138 +34,121 @@
 
 <div id="wishlist-page" class="page active">
     <div class="card">
-        <h3>📷 截圖識別登記 (上限5張)</h3>
+        <h3>🇰🇷 韓文/多圖 AI 識別</h3>
         <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-            <span id="upload-hint">點擊此處上傳產品截圖<br><small>(可選取多張同產品規格)</small></span>
+            <span id="upload-hint">📤 點擊上傳截圖 (1~5張)<br><small>支援韓文產品名、價格、特價日</small></span>
             <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)">
             <div id="preview-area"></div>
         </div>
         <div id="status" class="status-msg"></div>
         
-        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-        
-        <input type="text" id="name" placeholder="產品名稱 (識別後自動填入)">
-        <select id="subCat">
-            <option value="化妝品_Base">底妝 (Base)</option>
-            <option value="化妝品_Eyes">眼妝 (Eyes)</option>
-            <option value="化妝品_Lip">唇妝 (Lip)</option>
-            <option value="護膚品">護膚品</option>
-        </select>
-        
-        <div style="background:#fffcf0; padding:12px; border-radius:10px;">
-            <input type="text" id="spec" placeholder="規格 (如: 1+1 企劃)">
+        <input type="text" id="name" placeholder="產品名稱 (韓文/英文)">
+        <div style="background:#f9f9f9; padding:12px; border-radius:10px; margin-top:10px;">
+            <input type="text" id="spec" placeholder="規格 (如: 1+1,企劃,企劃,40ml)">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                 <input type="number" id="priceOrig" placeholder="原價 ₩">
                 <input type="number" id="priceSale" placeholder="特價 ₩">
             </div>
-            <input type="date" id="priceUntil">
+            <div style="margin-top:5px;"><small>📅 特價截止日:</small> <input type="date" id="priceUntil"></div>
         </div>
-        
-        <button onclick="saveProduct()" style="width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:10px; margin-top:10px; font-weight:bold;">存入清單資料庫</button>
+        <button onclick="saveProduct()" style="width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:10px; margin-top:12px; font-weight:bold; font-size:16px;">存入資料庫</button>
     </div>
 </div>
 
-<div id="dashboard-page" class="page"><div id="dash-list"></div></div>
-<div id="plan-page" class="page"><div id="plan-list"></div></div>
-<div id="cart-page" class="page"><div id="cart-list"></div></div>
+<div id="dashboard-page" class="page"><div id="dash-list" style="padding:5px;"></div></div>
+<div id="plan-page" class="page"><div id="plan-list" style="padding:5px;"></div></div>
+<div id="cart-page" class="page"><div id="cart-list" style="padding:5px;"></div></div>
 
 <div class="checkout-bar">
-    <div style="display:flex; justify-content:space-between; font-size:11px;"><span>🛒 籃子總額</span><span>₩<span id="cart-total">0</span></span></div>
-    <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--tax); margin-top:5px;"><span>💰 預計退稅</span><span>- ₩<span id="tax-refund">0</span></span></div>
-    <div style="font-weight:bold; color:var(--primary); border-top:1px solid #eee; margin-top:5px; padding-top:8px; display:flex; justify-content:space-between; font-size:18px;"><span>退稅後實付</span><span>₩<span id="final-total">0</span></span></div>
+    <div style="display:flex; justify-content:space-between; font-size:12px;"><span>🛒 籃子小計</span><span>₩<span id="cart-total">0</span></span></div>
+    <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--tax); margin-top:5px; font-weight:bold;"><span>💰 退稅額</span><span>- ₩<span id="tax-refund">0</span></span></div>
+    <div style="font-weight:bold; color:var(--primary); border-top:1px solid #eee; margin-top:8px; padding-top:10px; display:flex; justify-content:space-between; font-size:18px;"><span>退稅後預計實付</span><span>₩<span id="final-total">0</span></span></div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('oy_db_v300')) || [];
-    let cart = JSON.parse(localStorage.getItem('oy_cart_v300')) || [];
-    let plan = JSON.parse(localStorage.getItem('oy_plan_v300')) || [];
+    let db = JSON.parse(localStorage.getItem('oy_db_v400')) || [];
+    let cart = JSON.parse(localStorage.getItem('oy_cart_v400')) || [];
+    let plan = JSON.parse(localStorage.getItem('oy_plan_v400')) || [];
 
-    // --- OCR 處理邏輯 ---
+    // --- OCR 核心優化 ---
     async function handleFiles(files) {
-        if (files.length > 5) return alert("一次最多上傳5張截圖");
+        if (files.length > 5) return alert("上限為5張截圖");
         const status = document.getElementById('status');
         const preview = document.getElementById('preview-area');
         preview.innerHTML = '';
-        status.innerText = "正在讀取圖片文字...";
+        status.innerText = "⏳ 正在啟動韓文 AI 識別引擎...";
 
         for (let file of files) {
             const reader = new FileReader();
-            reader.onload = (e) => {
-                preview.innerHTML += `<img src="${e.target.result}" class="thumb">`;
-            };
+            reader.onload = (e) => { preview.innerHTML += `<img src="${e.target.result}" class="thumb">`; };
             reader.readAsDataURL(file);
 
-            // 使用 Tesseract.js 識別
-            const { data: { text } } = await Tesseract.recognize(file, 'eng+kor');
+            // 同時載入韓文與英文語言包
+            const worker = await Tesseract.createWorker('kor+eng');
+            const { data: { text } } = await worker.recognize(file);
+            console.log("OCR Result:", text);
             processOCRText(text);
+            await worker.terminate();
         }
-        status.innerText = "識別完成！請檢查欄位。";
+        status.innerText = "✅ 識別完成！";
     }
 
     function processOCRText(text) {
-        // 簡單的正則表達式抓取邏輯
+        // 1. 抓取價格 (過濾逗號，找4-6位數字)
         const prices = text.replace(/,/g, '').match(/\d{4,6}/g) || [];
         if (prices.length > 0) {
-            const sortedPrices = prices.map(Number).sort((a,b) => b-a);
-            document.getElementById('priceOrig').value = sortedPrices[0] || "";
-            document.getElementById('priceSale').value = sortedPrices[1] || sortedPrices[0] || "";
+            const sorted = prices.map(Number).sort((a,b) => b-a);
+            if (sorted[0]) document.getElementById('priceOrig').value = sorted[0];
+            if (sorted[1]) document.getElementById('priceSale').value = sorted[1];
         }
-        
-        if (text.includes("1+1")) document.getElementById('spec').value = "1+1 企劃";
-        
-        // 抓取日期 (格式如 02.28)
-        const dateMatch = text.match(/\d{2}\.\d{2}/);
-        if (dateMatch) {
+
+        // 2. 抓取日期 (特價期間)
+        // 匹配 02.01~02.28 或 2/28 或 2.28
+        const dateRegex = /(\d{1,2})[\.\/](\d{1,2})/g;
+        const dates = text.match(dateRegex);
+        if (dates) {
+            // 抓最後一個日期通常是截止日
+            const lastDate = dates[dates.length - 1].replace(/[\.\/]/, '-');
+            const [m, d] = lastDate.split('-');
             const year = new Date().getFullYear();
-            document.getElementById('priceUntil').value = `${year}-${dateMatch[0].replace('.','-')}`;
+            document.getElementById('priceUntil').value = `${year}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
         }
-        
-        // 抓取名稱 (通常第一行較長的英文)
-        const lines = text.split('\n').filter(l => l.length > 5);
-        if (lines[0] && !document.getElementById('name').value) {
-            document.getElementById('name').value = lines[0].trim();
+
+        // 3. 抓取規格
+        if (text.includes("1+1") || text.includes("기획")) document.getElementById('spec').value = "1+1 企劃";
+
+        // 4. 抓取名稱 (找含有韓文的行)
+        const lines = text.split('\n').filter(l => l.trim().length > 4);
+        const nameCandidate = lines.find(l => /[\uAC00-\uD7AF]/.test(l)); // 匹配含有韓文的字串
+        if (nameCandidate && !document.getElementById('name').value) {
+            document.getElementById('name').value = nameCandidate.trim();
         }
     }
 
-    // --- 規格整合與儲存 ---
     function saveProduct() {
         const name = document.getElementById('name').value.trim();
-        if (!name) return alert("請輸入產品名稱");
-        
+        if (!name) return alert("產品名稱不能為空");
         const specItem = {
             specId: Date.now(),
-            name: document.getElementById('spec').value || "標準規格",
+            name: document.getElementById('spec').value || "標準",
             orig: Number(document.getElementById('priceOrig').value),
             sale: Number(document.getElementById('priceSale').value),
             until: document.getElementById('priceUntil').value
         };
-
         let p = db.find(x => x.name === name);
-        if (p) {
-            p.specs.push(specItem);
-        } else {
-            db.push({
-                id: Date.now(),
-                name,
-                main: document.getElementById('subCat').value,
-                priority: '想買',
-                specs: [specItem]
-            });
-        }
-        localStorage.setItem('oy_db_v300', JSON.stringify(db));
-        alert("已成功登記產品與規格！");
+        if (p) p.specs.push(specItem);
+        else db.push({ id: Date.now(), name, specs: [specItem] });
+        localStorage.setItem('oy_db_v400', JSON.stringify(db));
+        alert("存入成功！");
         render();
     }
 
-    // --- 核心累加邏輯 ---
+    // --- 累加整合邏輯 ---
     function addToCart(prodId, specId) {
         let existing = cart.find(x => x.prodId === prodId && x.specId === specId);
-        if (existing) {
-            existing.qty += 1;
-        } else {
-            cart.push({ prodId, specId, qty: 1 });
-        }
-        localStorage.setItem('oy_cart_v300', JSON.stringify(cart));
+        if (existing) existing.qty += 1;
+        else cart.push({ prodId, specId, qty: 1 });
+        localStorage.setItem('oy_cart_v400', JSON.stringify(cart));
         render();
     }
 
@@ -182,11 +160,11 @@
 
         db.forEach(p => {
             dashCont.innerHTML += `
-                <div class="item-card">
-                    <div style="flex:1">
-                        <b>${p.name}</b><br>
+                <div class="card">
+                    <b style="font-size:15px;">${p.name}</b>
+                    <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:8px;">
                         ${p.specs.map(s => `
-                            <button onclick="addToCart(${p.id}, ${s.specId})" style="margin-top:5px; font-size:11px; padding:5px; border:1px solid #ddd; border-radius:5px; background:#fff;">
+                            <button onclick="addToCart(${p.id}, ${s.specId})" style="font-size:11px; padding:6px; border:1px solid var(--primary); border-radius:6px; background:white;">
                                 +🛒 ${s.name} (₩${(s.sale||s.orig).toLocaleString()})
                             </button>
                         `).join('')}
@@ -194,22 +172,21 @@
                 </div>`;
         });
 
-        cart.forEach((item, idx) => {
+        cart.forEach(item => {
             const p = db.find(x => x.id === item.prodId);
             const s = p.specs.find(x => x.specId === item.specId);
-            const price = s.sale || s.orig;
-            cT += price * item.qty;
+            const price = (s.sale || s.orig) * item.qty;
+            cT += price;
             cartCont.innerHTML += `
                 <div class="item-card">
-                    <div style="flex:1"><b>${p.name}</b><br><small>${s.name}</small></div>
-                    <div style="text-align:right">
-                        <b>₩${(price * item.qty).toLocaleString()}</b><br>
-                        <span>數量: ${item.qty}</span>
-                    </div>
+                    <div><b>${p.name}</b><br><small>${s.name} x ${item.qty}</small></div>
+                    <b style="color:var(--must)">₩${price.toLocaleString()}</b>
                 </div>`;
         });
 
-        const refund = (cT >= 15000) ? 1000 : (cT >= 30000 ? 2000 : 0); // 簡化展示級距
+        // 簡易退稅級距計算
+        const getRefund = (a) => a >= 100000 ? 5000 : (a >= 50000 ? 2000 : (a >= 30000 ? 1000 : 0));
+        const refund = getRefund(cT);
         document.getElementById('cart-total').innerText = cT.toLocaleString();
         document.getElementById('tax-refund').innerText = refund.toLocaleString();
         document.getElementById('final-total').innerText = (cT - refund).toLocaleString();
@@ -221,7 +198,6 @@
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     }
-
     render();
 </script>
 </body>
