@@ -3,160 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OY 購物專家 - 行前預算版</title>
+    <title>OY 購物專家 - 歷史存檔版</title>
     <style>
-        :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --plan: #9b59b6; --tax: #e67e22; --must: #e74c3c; --want: #3498db; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 280px; }
+        :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --plan: #9b59b6; --history: #34495e; --tax: #e67e22; --must: #e74c3c; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 280px; color: #333; }
         .card { background: white; border-radius: 16px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        h2 { color: var(--primary); text-align: center; font-size: 18px; margin: 5px 0 15px 0; }
+        h2 { color: var(--primary); text-align: center; font-size: 18px; margin: 5px 0 10px 0; }
         
         /* 導航 */
         .nav-tabs { display: flex; background: white; border-radius: 12px; margin-bottom: 15px; padding: 5px; position: sticky; top: 10px; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .nav-btn { flex: 1; padding: 10px 2px; border: none; background: none; font-weight: bold; color: #888; border-radius: 8px; font-size: 12px; }
+        .nav-btn { flex: 1; padding: 10px 2px; border: none; background: none; font-weight: bold; color: #888; border-radius: 8px; font-size: 11px; }
         .nav-btn.active { background: var(--primary); color: white; }
 
-        /* 輸入框與按鈕 */
-        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-        .btn-main { background: var(--primary); color: white; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .btn-plan { background: var(--plan); color: white; border-radius: 8px; padding: 8px; border: none; flex: 1; font-size: 13px; }
-        .btn-cart { background: var(--cart); color: white; border-radius: 8px; padding: 8px; border: none; flex: 1; font-size: 13px; }
-        .btn-inactive { background: #eee !important; color: #888 !important; }
+        /* 通用按鈕 */
+        .btn-main { background: var(--primary); color: white; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn-history { background: var(--history); color: white; padding: 8px; border: none; border-radius: 6px; font-size: 12px; }
 
         /* 產品卡片 */
-        .item-card { background: white; border-radius: 15px; margin-bottom: 12px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .item-card.in-plan { border-left: 5px solid var(--plan); }
-        .item-card.in-cart { border-left: 5px solid var(--cart); }
-        .price-tag { color: var(--must); font-weight: bold; font-size: 16px; }
-        .buy-controls { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-        .row-actions { display: flex; gap: 5px; }
-        .qty-box { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #666; }
-        .qty-input { width: 50px !important; padding: 5px !important; text-align: center; }
+        .item-card { background: white; border-radius: 15px; margin-bottom: 10px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .price-tag { color: var(--must); font-weight: bold; }
+        .action-row { display: flex; gap: 5px; margin-top: 8px; }
+        .btn-act { flex: 1; padding: 8px; border: none; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .qty-row { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font-size: 12px; background: #f9f9f9; padding: 5px 8px; border-radius: 6px; }
 
-        /* 結帳資訊 */
+        /* 歷史紀錄樣式 */
+        .history-item { border-left: 5px solid var(--history); margin-bottom: 15px; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #ddd; padding-bottom: 8px; margin-bottom: 8px; }
+        .history-name { font-weight: bold; color: var(--history); }
+        .history-detail { font-size: 12px; color: #666; line-height: 1.6; }
+
+        /* 結帳列 */
         .checkout-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 1000; border-radius: 20px 20px 0 0; }
-        .sum-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 2px; }
-        .total-row { color: var(--primary); font-size: 18px; font-weight: 900; border-top: 1px solid #eee; padding-top: 8px; margin-top: 5px; }
+        .sum-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
+        .total-row { color: var(--primary); font-size: 18px; font-weight: 900; border-top: 1px solid #eee; padding-top: 8px; }
 
         .page { display: none; }
         .page.active { display: block; }
-        .filter-tags { display: flex; gap: 5px; overflow-x: auto; margin-top: 8px; }
-        .tag { padding: 5px 10px; background: #fff; border: 1px solid #ddd; border-radius: 15px; font-size: 11px; white-space: nowrap; }
-        .tag.active { background: var(--primary); color: white; border-color: var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="nav-tabs">
     <button class="nav-btn active" onclick="switchPage('wishlist', this)">✚ 登記</button>
-    <button class="nav-btn" onclick="switchPage('dashboard', this)">📋 總覽</button>
-    <button class="nav-btn" onclick="switchPage('plan', this)">📝 計畫(<span id="plan-count">0</span>)</button>
-    <button class="nav-btn" onclick="switchPage('cart', this)">🛒 籃子(<span id="cart-count">0</span>)</button>
+    <button class="nav-btn" onclick="switchPage('dashboard', this)">📋 清單</button>
+    <button class="nav-btn" onclick="switchPage('plan', this)">📝 計畫</button>
+    <button class="nav-btn" onclick="switchPage('cart', this)">🛒 籃子</button>
+    <button class="nav-btn" onclick="switchPage('history', this)">📜 紀錄</button>
 </div>
 
 <div id="wishlist-page" class="page active">
     <div class="card">
-        <h2>✨ 登記產品資料</h2>
+        <h2>✨ 登記產品</h2>
         <div style="display:flex; flex-direction:column; gap:10px;">
-            <input type="text" id="name" placeholder="產品名稱 (必填)">
-            <div style="display:flex; gap:5px;">
-                <select id="mainCat" onchange="updateSubCat()"><option value="護膚品">🌿 護膚</option><option value="化妝品">💄 化妝</option><option value="個人護理">🚿 個護</option><option value="其他">📦 其他</option></select>
-                <div id="makeup-sub" style="display:none; flex:1;"><select id="mkType" onchange="updateSubCat()"><option value="Base">Base</option><option value="Eyes">Eyes</option><option value="Lip">Lip</option></select></div>
-            </div>
-            <div id="subCatArea"></div>
-            <div style="display:flex; gap:5px;">
-                <input type="number" id="price" placeholder="價格 ₩">
-                <input type="text" id="spec" placeholder="規格 (如 1+1)">
-            </div>
-            <select id="priority"><option value="必買">🔥 必買</option><option value="想買">🛍️ 想買</option><option value="感興趣">✨ 感興趣</option></select>
-            <button class="btn-main" onclick="saveProduct()">儲存產品</button>
+            <input type="text" id="name" placeholder="產品名稱">
+            <select id="mainCat" onchange="toggleMakeupSub()"><option value="護膚品">🌿 護膚</option><option value="化妝品">💄 化妝</option><option value="個人護理">🚿 個護</option><option value="其他">📦 其他</option></select>
+            <div id="mk-sub" style="display:none;"><select id="mkType"><option value="Base">Base</option><option value="Eyes">Eyes</option><option value="Lip">Lip</option></select></div>
+            <div style="display:flex; gap:5px;"><input type="number" id="price" placeholder="₩ 價格"><input type="text" id="spec" placeholder="規格"></div>
+            <button class="btn-main" onclick="saveProduct()">儲存</button>
         </div>
     </div>
 </div>
 
-<div id="plan-page" class="page">
-    <div class="card"><h2>📝 行前購買計畫</h2><div id="plan-list"></div></div>
-</div>
+<div id="dashboard-page" class="page"><div id="dash-list" style="padding:5px;"></div></div>
 
-<div id="dashboard-page" class="page">
-    <div class="card"><input type="text" placeholder="🔍 搜索..." id="search" oninput="render()"><div class="filter-tags" id="tags"></div></div>
-    <div id="full-list"></div>
+<div id="plan-page" class="page">
+    <div class="card">
+        <div id="plan-tabs" style="display:flex; gap:5px; overflow-x:auto; margin-bottom:10px;"></div>
+        <div id="plan-list"></div>
+    </div>
 </div>
 
 <div id="cart-page" class="page">
-    <div class="card"><h2>🛒 現場購物籃</h2><div id="cart-list"></div></div>
+    <div class="card">
+        <h2>🛒 當前購物籃</h2>
+        <div id="cart-list"></div>
+        <hr>
+        <div style="margin-top:15px;">
+            <input type="text" id="checkoutName" placeholder="為這次購物取名 (如: 明洞旗艦店)">
+            <button class="btn-main" style="background:var(--history); margin-top:10px;" onclick="archiveCart()">完成結帳並存檔紀錄</button>
+        </div>
+    </div>
+</div>
+
+<div id="history-page" class="page">
+    <div class="card">
+        <h2>📜 歷史購買紀錄</h2>
+        <div id="history-list"></div>
+    </div>
 </div>
 
 <div class="checkout-bar">
-    <div class="sum-row" style="color:var(--plan);"><span>📝 計畫預算總計</span><span>₩<span id="plan-total">0</span></span></div>
-    <div class="sum-row" style="color:var(--cart);"><span>🛒 籃內實際總計</span><span>₩<span id="cart-total">0</span></span></div>
-    <div class="sum-row" style="color:var(--must);"><span>🔥 必買項小計 (計畫)</span><span>₩<span id="must-total">0</span></span></div>
-    <div class="sum-row total-row"><span>預計實付 (籃內)</span><span>₩<span id="final-total">0</span></span></div>
+    <div class="sum-row"><span>📝 計畫總計</span><span>₩<span id="plan-total">0</span></span></div>
+    <div class="sum-row" style="color:var(--cart);"><span>🛒 籃內總計</span><span>₩<span id="cart-total">0</span></span></div>
+    <div class="sum-row total-row"><span>籃內實付估計</span><span>₩<span id="final-total">0</span></span></div>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('oy_db_v20')) || [];
-    let plan = JSON.parse(localStorage.getItem('oy_plan_v20')) || []; // [{id, qty}]
-    let cart = JSON.parse(localStorage.getItem('oy_cart_v20')) || []; // [{id, qty}]
+    let db = JSON.parse(localStorage.getItem('oy_db_v23')) || [];
+    let allPlans = JSON.parse(localStorage.getItem('oy_plans_v23')) || { "預設計畫": [] };
+    let currentPlan = localStorage.getItem('oy_cur_plan') || "預設計畫";
+    let cart = JSON.parse(localStorage.getItem('oy_cart_v23')) || [];
+    let history = JSON.parse(localStorage.getItem('oy_history_v23')) || [];
 
     function saveProduct() {
-        const product = { id: Date.now(), name: document.getElementById('name').value, price: Number(document.getElementById('price').value), priority: document.getElementById('priority').value, subCat: document.getElementById('subCat')?.value || '其他' };
-        db.push(product); localStorage.setItem('oy_db_v20', JSON.stringify(db)); render(); alert('儲存成功！');
+        const p = { id: Date.now(), name: document.getElementById('name').value, price: Number(document.getElementById('price').value), spec: document.getElementById('spec').value };
+        db.push(p); localStorage.setItem('oy_db_v23', JSON.stringify(db)); render();
     }
 
-    function toggleState(id, listName) {
-        let list = listName === 'plan' ? plan : cart;
-        let idx = list.findIndex(i => i.id === id);
-        if (idx > -1) list.splice(idx, 1);
-        else list.push({ id, qty: 1 });
-        localStorage.setItem('oy_'+listName+'_v20', JSON.stringify(list));
+    // 存檔功能
+    function archiveCart() {
+        if (cart.length === 0) return alert("購物籃是空的！");
+        const name = document.getElementById('checkoutName').value || `購物紀錄 ${new Date().toLocaleString()}`;
+        
+        const record = {
+            id: Date.now(),
+            date: new Date().toLocaleString(),
+            name: name,
+            items: cart.map(item => {
+                const product = db.find(p => p.id === item.id);
+                return { ...product, qty: item.qty };
+            }),
+            total: cart.reduce((sum, item) => {
+                const product = db.find(p => p.id === item.id);
+                return sum + (product.price * item.qty);
+            }, 0)
+        };
+
+        history.unshift(record);
+        localStorage.setItem('oy_history_v23', JSON.stringify(history));
+        
+        // 清空購物籃
+        cart = [];
+        localStorage.setItem('oy_cart_v23', JSON.stringify(cart));
+        document.getElementById('checkoutName').value = '';
+        
+        alert("結帳紀錄已存檔！");
+        switchPage('history', document.querySelectorAll('.nav-btn')[4]);
         render();
     }
 
-    function updateQty(id, val, listName) {
-        let list = listName === 'plan' ? plan : cart;
-        let item = list.find(i => i.id === id);
-        if (item) { item.qty = parseInt(val) || 1; localStorage.setItem('oy_'+listName+'_v20', JSON.stringify(list)); render(); }
+    function deleteHistory(id) {
+        if(confirm("確定要刪除這筆紀錄嗎？")) {
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem('oy_history_v23', JSON.stringify(history));
+            render();
+        }
+    }
+
+    function renameHistory(id) {
+        const newName = prompt("請輸入新的紀錄名稱：");
+        if (newName) {
+            const h = history.find(item => item.id === id);
+            if (h) h.name = newName;
+            localStorage.setItem('oy_history_v23', JSON.stringify(history));
+            render();
+        }
     }
 
     function render() {
-        const planCont = document.getElementById('plan-list'); planCont.innerHTML = '';
+        const dashCont = document.getElementById('dash-list'); dashCont.innerHTML = '';
         const cartCont = document.getElementById('cart-list'); cartCont.innerHTML = '';
-        const dashCont = document.getElementById('full-list'); dashCont.innerHTML = '';
+        const histCont = document.getElementById('history-list'); histCont.innerHTML = '';
+        let cT = 0;
 
-        let pTotal = 0, cTotal = 0, mTotal = 0;
-
+        // 渲染清單 (簡化版邏輯)
         db.forEach(p => {
-            const pItem = plan.find(i => i.id === p.id);
-            const cItem = cart.find(i => i.id === p.id);
-
-            const cardHtml = `
-                <div class="item-card ${pItem?'in-plan':''} ${cItem?'in-cart':''}">
-                    <div style="font-size:11px; color:#888;">${p.subCat} | ${p.priority}</div>
-                    <div style="font-weight:bold;">${p.name}</div>
-                    <div class="price-tag">₩${p.price.toLocaleString()}</div>
-                    <div class="buy-controls">
-                        <div class="row-actions">
-                            <button class="btn-plan ${!pItem?'btn-inactive':''}" onclick="toggleState(${p.id}, 'plan')">${pItem?'✓ 計畫中':'＋入計畫'}</button>
-                            <button class="btn-cart ${!cItem?'btn-inactive':''}" onclick="toggleState(${p.id}, 'cart')">${cItem?'✓ 籃子裡':'＋入籃子'}</button>
-                        </div>
-                        ${(pItem || cItem) ? `
-                        <div class="qty-box">
-                            數量: <input type="number" class="qty-input" value="${(cItem||pItem).qty}" onchange="updateQty(${p.id}, this.value, '${cItem?'cart':'plan'}')">
-                        </div>` : ''}
-                    </div>
-                </div>`;
-
-            dashCont.innerHTML += cardHtml;
-            if (pItem) { planCont.innerHTML += cardHtml; pTotal += p.price * pItem.qty; if(p.priority==='必買') mTotal += p.price * pItem.qty; }
-            if (cItem) { cartCont.innerHTML += cardHtml; cTotal += p.price * cItem.qty; }
+            const inCart = cart.find(i => i.id === p.id);
+            const card = `<div class="item-card">
+                <b>${p.name}</b> <span class="price-tag">₩${p.price.toLocaleString()}</span>
+                <div class="action-row">
+                    <button class="btn-act" onclick="toggleCart(${p.id})" style="background:${inCart?var(--cart):'#eee'}">${inCart?'✓ 在籃子':'＋入籃子'}</button>
+                </div>
+            </div>`;
+            dashCont.innerHTML += card;
+            if (inCart) {
+                cartCont.innerHTML += card;
+                cT += p.price * (inCart.qty || 1);
+            }
         });
 
-        document.getElementById('plan-total').innerText = pTotal.toLocaleString();
-        document.getElementById('cart-total').innerText = cTotal.toLocaleString();
-        document.getElementById('must-total').innerText = mTotal.toLocaleString();
-        document.getElementById('plan-count').innerText = plan.length;
-        document.getElementById('cart-count').innerText = cart.length;
-        document.getElementById('final-total').innerText = (cTotal * 0.95).toLocaleString(); // 假設簡易退稅
+        // 渲染歷史紀錄
+        history.forEach(h => {
+            histCont.innerHTML += `
+                <div class="card history-item">
+                    <div class="history-header">
+                        <div class="history-name">${h.name}</div>
+                        <div style="display:flex; gap:5px;">
+                            <button onclick="renameHistory(${h.id})" style="font-size:10px; border:none; background:#eee; border-radius:4px; padding:2px 5px;">改名</button>
+                            <button onclick="deleteHistory(${h.id})" style="font-size:10px; border:none; background:#ffe; color:red; border-radius:4px; padding:2px 5px;">刪除</button>
+                        </div>
+                    </div>
+                    <div class="history-detail">
+                        日期: ${h.date}<br>
+                        品項: ${h.items.map(i => `${i.name} x${i.qty}`).join(', ')}<br>
+                        <b style="color:var(--primary)">總消費: ₩${h.total.toLocaleString()}</b>
+                    </div>
+                </div>`;
+        });
+
+        document.getElementById('cart-total').innerText = cT.toLocaleString();
+        document.getElementById('final-total').innerText = (cT * 0.95).toLocaleString();
+    }
+
+    // (其餘 toggleCart, updateQty 等函數保持先前邏輯)
+    function toggleCart(id) {
+        const idx = cart.findIndex(i => i.id === id);
+        if (idx > -1) cart.splice(idx, 1); else cart.push({id, qty:1});
+        localStorage.setItem('oy_cart_v23', JSON.stringify(cart)); render();
     }
 
     function switchPage(p, btn) {
@@ -164,6 +217,11 @@
         document.getElementById(p + '-page').classList.add('active');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+    }
+
+    function toggleMakeupSub() {
+        const main = document.getElementById('mainCat').value;
+        document.getElementById('mk-sub').style.display = (main === '化妝品') ? 'block' : 'none';
     }
 
     render();
