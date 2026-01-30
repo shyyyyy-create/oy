@@ -388,8 +388,8 @@
                                 <span style="min-width:18px; text-align:center;">${i.qty}</span>
                                 <button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, 1)">+</button>
                             </div>
-                            <button class="btn-small" style="padding:4px 8px; background:var(--cart); color:white; border:none;" onclick="addToCartFromPlan(${gi}, ${ii})">🛒</button>
-                            <button onclick="planGroups[${gi}].items.splice(${ii},1); saveAndRender();" style="border:none; background:none; color:red;">×</button>
+                            <button class="btn-small" onclick="addToCartFromPlan(${gi}, ${ii})" style="background:var(--cart); color:white; border:none; padding:4px 8px;">加入🛒</button>
+                            <button onclick="planGroups[${gi}].items.splice(${ii},1); saveAndRender();" style="border:none; background:none; color:red; font-size:18px; margin-left:2px;">×</button>
                         </div>
                     </div>`;
                 }).join('')}
@@ -397,25 +397,18 @@
         `).join('');
     }
 
-    // 修復：計畫加入購物籃 (核心邏輯修正)
     function addToCartFromPlan(gi, ii) {
         const item = planGroups[gi].items[ii];
-        if (!item) return;
+        const existingIdx = cart.findIndex(c => c.prodId === item.prodId && c.specId === item.specId);
         
-        // 檢查產品和規格是否存在
-        const p = db.find(x => x.id === item.prodId);
-        if(!p) return alert("產品已刪除");
-        
-        let existing = cart.find(x => x.prodId === item.prodId && x.specId === item.specId);
-        if (existing) {
-            existing.qty += item.qty;
+        if(existingIdx > -1) {
+            cart[existingIdx].qty += item.qty;
         } else {
-            cart.push({ prodId: item.prodId, specId: item.specId, qty: item.qty });
+            cart.push({prodId: item.prodId, specId: item.specId, qty: item.qty});
         }
         
-        // 重要：必須保存並重新渲染購物車
         saveAndRender();
-        alert("已成功將「" + p.name + "」加入購物籃");
+        alert("已加入籃子！");
     }
 
     function renderHistory() {
