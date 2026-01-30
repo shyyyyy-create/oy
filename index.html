@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>買不完的OY Pro</title>
+    <title>買不完的OY</title>
     <style>
         :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --plan: #9b59b6; --gray: #8e8e93; --highlight: #fff9c4; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 140px; color: #333; overflow-x: hidden; }
@@ -12,7 +12,6 @@
         .nav-btn { flex: 1; padding: 10px 5px; border: none; background: none; font-weight: bold; color: #888; border-radius: 8px; font-size: 11px; cursor: pointer; white-space: nowrap; }
         .nav-btn.active { background: var(--primary); color: white; }
         
-        /* 商品卡片優化 */
         .item-card { background: white; border-radius: 15px; margin-bottom: 10px; padding: 12px; border-left: 5px solid transparent; box-sizing: border-box; display: flex; gap: 12px; }
         .item-card[data-pri="必買"] { border-left-color: #ff5252; }
         .item-card[data-pri="需要"] { border-left-color: #ffb142; }
@@ -27,11 +26,11 @@
         .action-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
         .btn-small { padding: 6px 10px; font-size: 11px; border-radius: 6px; border: 1px solid #ddd; background: white; white-space: nowrap; flex: 1 1 auto; text-align: center; }
         
-        /* 底部與彈窗 */
         .checkout-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 12px 15px 25px 15px; border-top: 1px solid #eee; z-index: 1500; box-sizing: border-box; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
         #modalOverlay, #imgModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center; }
         .modal-content { background:white; padding:20px; border-radius:20px; width:85%; max-width:350px; }
         .full-img { max-width: 90%; max-height: 80%; border-radius: 10px; }
+        .history-tag { font-size: 10px; color: var(--gray); margin-bottom: 4px; }
     </style>
 </head>
 <body>
@@ -52,47 +51,41 @@
     <div class="card">
         <h3>✨ 登記新產品</h3>
         <input type="text" id="name" placeholder="產品名稱 (必填)">
-        
         <div style="display:flex; gap:8px; align-items: center; margin-bottom:10px;">
             <div id="imgPreview" style="width:60px; height:60px; border:1px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#999; flex-shrink:0; overflow:hidden;">無圖片</div>
             <div style="flex:1;">
-                <input type="text" id="imgUrl" placeholder="圖片連結 (URL)" style="margin-bottom:4px; font-size:12px;">
-                <input type="file" id="imgFile" accept="image/*" style="font-size:11px; border:none; padding:0;">
+                <input type="text" id="imgUrl" placeholder="圖片連結" style="margin-bottom:4px; font-size:12px;">
+                <input type="file" id="imgFile" accept="image/*" style="font-size:11px; border:none;">
             </div>
         </div>
-
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <select id="mainCat" onchange="updateSubCats()"></select>
+            <select id="mainCat" onchange="updateSubCats('mainCat', 'subCat')"></select>
             <select id="subCat"></select>
         </div>
-
         <div id="specContainer">
             <div class="card spec-input" style="background:#f9f9f9; padding:10px; margin-bottom:8px;">
-                <input type="text" class="s-name" placeholder="規格 (如: 1+1)">
+                <input type="text" class="s-name" placeholder="規格">
                 <input type="number" class="s-price" placeholder="價格 ₩">
             </div>
         </div>
-        <button onclick="addSpecRow()" style="width:100%; padding:8px; border:1px dashed var(--secondary); background:none; color:var(--secondary); border-radius:8px; margin-bottom:15px; font-size:11px;">➕ 新增規格</button>
+        <button onclick="addSpecRow()" class="btn-small" style="width:100%; border-style:dashed; color:var(--secondary); margin-bottom:10px;">➕ 新增規格</button>
         <button class="btn-main" onclick="saveProduct()">存入我的清單</button>
-    </div>
-    <div style="text-align: center; margin-top: 20px;">
-        <button class="btn-small" onclick="exportData()">💾 備份資料</button>
-        <button class="btn-small" onclick="importData()">🔄 恢復資料</button>
     </div>
 </div>
 
 <div id="dashboard-page" class="page">
     <div class="card">
         <input type="text" id="searchBar" placeholder="🔍 搜尋名稱..." oninput="render()">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom:5px;">
             <select id="fMain" onchange="syncSubFilter(); render()"></select>
-            <select id="fPriority" onchange="render()">
-                <option value="全部">所有優先級</option>
-                <option value="必買">🔥 必買</option>
-                <option value="需要">⚡ 需要</option>
-                <option value="想買">☁️ 想買</option>
-            </select>
+            <select id="fSub" onchange="render()"><option value="全部">所有子類</option></select>
         </div>
+        <select id="fPriority" onchange="render()">
+            <option value="全部">所有優先級</option>
+            <option value="必買">🔥 必買</option>
+            <option value="需要">⚡ 需要</option>
+            <option value="想買">☁️ 想買</option>
+        </select>
     </div>
     <div id="dash-list"></div>
 </div>
@@ -101,23 +94,31 @@
     <div class="card"><button class="btn-main" style="background:var(--plan);" onclick="createNewPlanGroup()">➕ 創建新計畫清單</button></div>
     <div id="plan-groups"></div>
 </div>
-<div id="cart-page" class="page"><div id="cart-list"></div></div>
+
+<div id="cart-page" class="page">
+    <div id="cart-list"></div>
+    <div class="card" style="margin-top:20px; border-top:2px solid #eee;">
+        <h3>📜 購買紀錄 (以往買的)</h3>
+        <div id="history-list"></div>
+        <button class="btn-small" onclick="if(confirm('清空所有歷史？')) { historyDB=[]; saveAndRender(); }" style="width:100%; margin-top:10px; color:red;">清空歷史</button>
+    </div>
+</div>
 
 <div class="checkout-bar">
-    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
         <div class="tax-info">
             <span style="font-size:10px; color:var(--gray);">匯率: <span id="display-rate">0</span></span><br>
             總計: <b>₩<span id="cart-total">0</span></b> <span style="color:var(--primary); font-weight:bold;">(≈$<span id="local-total">0</span>)</span>
         </div>
         <div id="tax-refund-display" style="text-align:right; font-weight:bold; font-size:14px;">₩0</div>
     </div>
+    <button class="btn-main" style="background:var(--cart); padding:8px;" onclick="checkoutCart()">✅ 完成購買 (移至歷史)</button>
 </div>
 
 <div id="imgModal" onclick="this.style.display='none'"><img class="full-img" id="fullImg"></div>
-
 <div id="modalOverlay">
     <div class="modal-content">
-        <h4 id="modalProdName" style="margin:0 0 10px 0;"></h4>
+        <h4 id="modalProdName"></h4>
         <select id="modalSpecSelect"></select>
         <input type="number" id="modalQty" value="1" min="1">
         <div style="display:flex; gap:10px; margin-top:15px;">
@@ -137,12 +138,13 @@
     };
 
     let currentRate = parseFloat(localStorage.getItem('oy_rate')) || 0.0058;
-    let db = JSON.parse(localStorage.getItem('oy_db_v10')) || [];
-    let cart = JSON.parse(localStorage.getItem('oy_cart_v10')) || [];
-    let planGroups = JSON.parse(localStorage.getItem('oy_plans_v10')) || [{title: "首爾必買", items: [], checks: []}];
+    let db = JSON.parse(localStorage.getItem('oy_db_v11')) || [];
+    let cart = JSON.parse(localStorage.getItem('oy_cart_v11')) || [];
+    let historyDB = JSON.parse(localStorage.getItem('oy_history_v11')) || [];
+    let planGroups = JSON.parse(localStorage.getItem('oy_plans_v11')) || [{title: "首爾必買", items: [], checks: []}];
     let tempImgBase64 = "";
 
-    // 圖片處理邏輯
+    // 圖片預覽
     document.getElementById('imgFile').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -151,12 +153,10 @@
             const img = new Image();
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const maxW = 300; // 壓縮尺寸避免儲存爆量
+                const maxW = 300;
                 const scale = maxW / img.width;
-                canvas.width = maxW;
-                canvas.height = img.height * scale;
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                canvas.width = maxW; canvas.height = img.height * scale;
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                 tempImgBase64 = canvas.toDataURL('image/jpeg', 0.7);
                 document.getElementById('imgPreview').innerHTML = `<img src="${tempImgBase64}" style="width:100%;height:100%;object-fit:cover;">`;
             };
@@ -165,49 +165,53 @@
         reader.readAsDataURL(file);
     });
 
-    function saveRate() {
-        currentRate = parseFloat(document.getElementById('rateInput').value) || 0;
-        localStorage.setItem('oy_rate', currentRate);
-        render();
+    function saveRate() { currentRate = parseFloat(document.getElementById('rateInput').value) || 0; localStorage.setItem('oy_rate', currentRate); render(); }
+
+    function updateSubCats(mainId, subId) {
+        const m = document.getElementById(mainId).value;
+        const subSelect = document.getElementById(subId);
+        if(m === '全部') { subSelect.innerHTML = '<option value="全部">所有子類</option>'; return; }
+        subSelect.innerHTML = catConfig[m].map(c => `<option value="${c}">${c}</option>`).join('');
     }
 
-    function updateSubCats() {
-        const m = document.getElementById('mainCat').value;
-        document.getElementById('subCat').innerHTML = catConfig[m].map(c => `<option value="${c}">${c}</option>`).join('');
-    }
-
-    function addSpecRow() {
-        const div = document.createElement('div');
-        div.className = 'card spec-input'; div.style = 'background:#f9f9f9; padding:10px; margin-bottom:8px;';
-        div.innerHTML = `<input type="text" class="s-name" placeholder="規格"><input type="number" class="s-price" placeholder="價格 ₩">`;
-        document.getElementById('specContainer').appendChild(div);
+    function syncSubFilter() {
+        const m = document.getElementById('fMain').value;
+        const subSelect = document.getElementById('fSub');
+        if(m === '全部') { subSelect.innerHTML = '<option value="全部">所有子類</option>'; }
+        else { subSelect.innerHTML = '<option value="全部">所有子類</option>' + catConfig[m].map(c => `<option value="${c}">${c}</option>`).join(''); }
     }
 
     function saveProduct() {
         const name = document.getElementById('name').value;
         if(!name) return alert("請輸入名稱");
-        
-        const finalImg = tempImgBase64 || document.getElementById('imgUrl').value || "";
         const specs = Array.from(document.querySelectorAll('.spec-input')).map(c => ({
             specId: Date.now() + Math.random(),
             name: c.querySelector('.s-name').value || "標準",
             price: Number(c.querySelector('.s-price').value) || 0
         }));
-
-        db.push({ id: Date.now(), name, img: finalImg, main: document.getElementById('mainCat').value, sub: document.getElementById('subCat').value, priority: '想買', specs });
+        db.push({ id: Date.now(), name, img: tempImgBase64 || document.getElementById('imgUrl').value, main: document.getElementById('mainCat').value, sub: document.getElementById('subCat').value, priority: '想買', specs });
+        tempImgBase64 = ""; document.getElementById('imgPreview').innerHTML = "無圖片"; document.getElementById('name').value = "";
         saveAndRender();
-        alert("存入成功！");
-        // Reset
-        document.getElementById('name').value = "";
-        document.getElementById('imgUrl').value = "";
-        document.getElementById('imgPreview').innerHTML = "無圖片";
-        tempImgBase64 = "";
     }
 
-    function showFullImg(src) {
-        if(!src) return;
-        document.getElementById('fullImg').src = src;
-        document.getElementById('imgModal').style.display = 'flex';
+    // 結帳並保存到歷史
+    function checkoutCart() {
+        if(cart.length === 0) return alert("籃子是空的");
+        if(!confirm("確定結帳？這將清空籃子並將商品移入歷史紀錄。")) return;
+        
+        const timestamp = new Date().toLocaleString();
+        const session = {
+            date: timestamp,
+            items: cart.map(item => {
+                const p = db.find(x => x.id === item.prodId);
+                const s = p ? p.specs.find(x => x.specId === item.specId) : null;
+                return { name: p ? p.name : '未知', spec: s ? s.name : '', qty: item.qty, price: s ? s.price : 0 };
+            })
+        };
+        historyDB.unshift(session); // 最新在最前
+        cart = [];
+        saveAndRender();
+        alert("已存入歷史紀錄！");
     }
 
     function render() {
@@ -218,57 +222,47 @@
         const dashCont = document.getElementById('dash-list');
         dashCont.innerHTML = '';
         const fMain = document.getElementById('fMain').value;
+        const fSub = document.getElementById('fSub').value;
         const fPri = document.getElementById('fPriority').value;
         const sText = document.getElementById('searchBar').value.toLowerCase();
 
         db.forEach(p => {
             if(fMain !== '全部' && p.main !== fMain) return;
+            if(fSub !== '全部' && p.sub !== fSub) return;
             if(fPri !== '全部' && p.priority !== fPri) return;
             if(sText && !p.name.toLowerCase().includes(sText)) return;
 
-            const imgHtml = p.img ? `<img src="${p.img}" class="prod-img" onclick="showFullImg('${p.img}')">` : `<div class="prod-img" style="display:flex;align-items:center;justify-content:center;font-size:20px;background:#eee;color:#ccc;">?</div>`;
-
-            dashCont.innerHTML += `
-                <div class="item-card card" data-pri="${p.priority}">
-                    ${imgHtml}
-                    <div class="prod-info">
-                        <b style="font-size:14px;">${p.name}</b><br>
-                        <small style="color:var(--gray)">${p.sub}</small>
-                        <div class="action-group">
-                            <select class="btn-small" style="flex:2;" onchange="updatePriority(${p.id}, this.value)">
-                                <option value="想買" ${p.priority==='想買'?'selected':''}>想買</option>
-                                <option value="需要" ${p.priority==='需要'?'selected':''}>需要</option>
-                                <option value="必買" ${p.priority==='必買'?'selected':''}>必買</option>
-                            </select>
-                            <button class="btn-small" style="background:var(--cart);color:white;border:none;" onclick="openSelector(${p.id},'cart')">🛒</button>
-                            <button class="btn-small" onclick="handlePlanAdd(${p.id})">📝</button>
-                            <button class="btn-small" style="color:red" onclick="deleteProduct(${p.id})">×</button>
-                        </div>
-                    </div>
-                </div>`;
+            const imgHtml = p.img ? `<img src="${p.img}" class="prod-img" onclick="showFullImg('${p.img}')">` : `<div class="prod-img" style="line-height:70px;text-align:center;color:#ccc;">?</div>`;
+            dashCont.innerHTML += `<div class="item-card card" data-pri="${p.priority}">${imgHtml}<div class="prod-info"><b>${p.name}</b><br><small>${p.sub}</small><div class="action-group"><button class="btn-small" style="background:var(--cart);color:white;border:none;" onclick="openSelector(${p.id},'cart')">🛒</button><button class="btn-small" onclick="handlePlanAdd(${p.id})">📝</button><button class="btn-small" onclick="deleteProduct(${p.id})">×</button></div></div></div>`;
         });
 
-        // 計畫與籃子計算 (邏輯同前版本，僅整合縮圖)
+        // 歷史紀錄渲染
+        const histCont = document.getElementById('history-list');
+        histCont.innerHTML = historyDB.map(s => `
+            <div style="font-size:12px; border-bottom:1px dashed #ddd; padding:10px 0;">
+                <div class="history-tag">📅 ${s.date}</div>
+                ${s.items.map(i => `<div>• ${i.name} (${i.spec}) x${i.qty} - ₩${(i.price*i.qty).toLocaleString()}</div>`).join('')}
+            </div>
+        `).join('');
+
         renderPlans();
         renderCart();
     }
 
     function renderPlans() {
-        const planCont = document.getElementById('plan-groups');
-        planCont.innerHTML = planGroups.map((g, gi) => `
+        document.getElementById('plan-groups').innerHTML = planGroups.map((g, gi) => `
             <div class="card">
-                <div style="font-weight:bold; color:var(--plan); margin-bottom:10px; border-bottom:1px solid #eee;">📌 ${g.title}</div>
+                <div style="font-weight:bold; color:var(--plan); display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid #eee;">
+                    <span>📌 ${g.title}</span>
+                    <button onclick="if(confirm('刪除？')){planGroups.splice(${gi},1); saveAndRender();}" style="border:none; color:red; background:none; font-size:10px;">刪除</button>
+                </div>
                 ${g.items.map((i, ii) => {
                     const p = db.find(x => x.id === i.prodId);
                     if(!p) return '';
-                    const s = p.specs.find(x => x.specId === i.specId);
                     const isDone = g.checks && g.checks[ii];
-                    return `<div class="check-item">
-                        <div style="display:flex; align-items:center; gap:8px; flex:1; ${isDone?'opacity:0.3;text-decoration:line-through':''}">
-                            ${p.img ? `<img src="${p.img}" style="width:30px;height:30px;border-radius:4px;" onclick="showFullImg('${p.img}')">`:''}
-                            <div><b>${p.name}</b><br><small>${s ? s.name : ''} x ${i.qty}</small></div>
-                        </div>
-                        <button class="btn-small" onclick="transferToCart(${gi}, ${ii})">${isDone?'✅':'🛒拿了'}</button>
+                    return `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; ${isDone?'opacity:0.3;text-decoration:line-through':''}">
+                        <span>${p.name} (${p.specs.find(x=>x.specId===i.specId)?.name}) x${i.qty}</span>
+                        <button class="btn-small" onclick="transferToCart(${gi}, ${ii})">${isDone?'✅':'🛒'}</button>
                     </div>`;
                 }).join('')}
             </div>
@@ -278,49 +272,25 @@
     function renderCart() {
         const cartCont = document.getElementById('cart-list');
         let total = 0;
-        cartCont.innerHTML = '<h3>🛒 購物籃中</h3>';
+        cartCont.innerHTML = '<h3>🛒 當前籃子</h3>';
         cart.forEach((i, idx) => {
             const p = db.find(x => x.id === i.prodId);
-            if(!p) return;
-            const s = p.specs.find(x => x.specId === i.specId);
-            const price = s ? s.price : 0;
-            total += price * i.qty;
+            const s = p ? p.specs.find(x => x.specId === i.specId) : null;
+            if(s) total += s.price * i.qty;
             cartCont.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="display:flex;gap:10px;align-items:center;">
-                    ${p.img ? `<img src="${p.img}" style="width:40px;height:40px;border-radius:4px;">`:''}
-                    <div><b>${p.name}</b><br><small>${s ? s.name : ''} x ${i.qty}</small></div>
-                </div>
-                <div style="text-align:right;">
-                    <b>₩${(price*i.qty).toLocaleString()}</b><br>
-                    <button class="btn-small" style="color:red;border:none;" onclick="cart.splice(${idx},1); saveAndRender();">移除</button>
-                </div>
+                <div><b>${p.name}</b><br><small>${s?s.name:''} x ${i.qty}</small></div>
+                <div style="text-align:right;"><b>₩${(s?s.price*i.qty:0).toLocaleString()}</b><br><button class="btn-small" style="color:red;border:none;" onclick="cart.splice(${idx},1); saveAndRender();">移除</button></div>
             </div>`;
         });
         document.getElementById('cart-total').innerText = total.toLocaleString();
         document.getElementById('local-total').innerText = Math.round(total * currentRate).toLocaleString();
         
         let refund = 0;
-        const refundTable = [{m: 15000, r: 1000}, {m: 30000, r: 2000}, {m: 50000, r: 3000}, {m: 75000, r: 5000}, {m: 100000, r: 7000}]; // 簡化展示
+        const refundTable = [{m: 15000, r: 1000}, {m: 30000, r: 2000}, {m: 50000, r: 3000}, {m: 75000, r: 5000}, {m: 100000, r: 7000}, {m: 500000, r: 35000}];
         for(let entry of refundTable) { if(total >= entry.m) refund = entry.r; }
-        document.getElementById('tax-refund-display').innerHTML = `估計退稅: <span style="color:var(--cart)">₩${refund.toLocaleString()}</span>`;
+        document.getElementById('tax-refund-display').innerHTML = `退稅: <span style="color:var(--cart)">₩${refund.toLocaleString()}</span>`;
     }
 
-    // 其他基礎函數
-    function updatePriority(id, v) { db.find(x => x.id === id).priority = v; saveAndRender(); }
-    function deleteProduct(id) { if(confirm('確定刪除商品？')) { db = db.filter(x => x.id !== id); saveAndRender(); } }
-    function saveAndRender() {
-        localStorage.setItem('oy_db_v10', JSON.stringify(db));
-        localStorage.setItem('oy_cart_v10', JSON.stringify(cart));
-        localStorage.setItem('oy_plans_v10', JSON.stringify(planGroups));
-        render();
-    }
-    function switchPage(p, btn) {
-        document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-        document.getElementById(p + '-page').classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        render();
-    }
     function openSelector(prodId, targetType, planIdx = null) {
         const p = db.find(x => x.id === prodId);
         document.getElementById('modalProdName').innerText = p.name;
@@ -336,46 +306,42 @@
         };
     }
     function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+    function showFullImg(src) { document.getElementById('fullImg').src = src; document.getElementById('imgModal').style.display = 'flex'; }
+    function deleteProduct(id) { if(confirm('刪除？')) { db = db.filter(x => x.id !== id); saveAndRender(); } }
+    function saveAndRender() {
+        localStorage.setItem('oy_db_v11', JSON.stringify(db));
+        localStorage.setItem('oy_cart_v11', JSON.stringify(cart));
+        localStorage.setItem('oy_plans_v11', JSON.stringify(planGroups));
+        localStorage.setItem('oy_history_v11', JSON.stringify(historyDB));
+        render();
+    }
+    function switchPage(p, btn) {
+        document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+        document.getElementById(p + '-page').classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+    }
     function transferToCart(gi, ii) {
         const item = planGroups[gi].items[ii];
-        if(!planGroups[gi].checks[ii]) {
-            cart.push({...item});
-            planGroups[gi].checks[ii] = true;
-        }
+        if(!planGroups[gi].checks[ii]) { cart.push({...item}); planGroups[gi].checks[ii] = true; }
         saveAndRender();
     }
     function handlePlanAdd(pid) {
-        let c = prompt("選擇計畫編號：\n" + planGroups.map((g,i)=>`[${i}] ${g.title}`).join('\n'), "0");
+        let c = prompt("編號：\n" + planGroups.map((g,i)=>`[${i}] ${g.title}`).join('\n'), "0");
         if(c !== null && planGroups[c]) openSelector(pid, 'plan', parseInt(c));
     }
-    function createNewPlanGroup() {
-        let t = prompt("計畫名稱:"); if(t) { planGroups.push({title:t, items:[], checks:[]}); saveAndRender(); }
-    }
-    function exportData() {
-        const data = btoa(unescape(encodeURIComponent(JSON.stringify({db, cart, planGroups}))));
-        const t = document.createElement("textarea"); t.value = data; document.body.appendChild(t);
-        t.select(); document.execCommand("copy"); document.body.removeChild(t);
-        alert("備份碼已複製！");
-    }
-    function importData() {
-        const data = prompt("貼入備份碼：");
-        if(data) {
-            try {
-                const obj = JSON.parse(decodeURIComponent(escape(atob(data))));
-                db = obj.db; cart = obj.cart; planGroups = obj.planGroups;
-                saveAndRender();
-            } catch(e) { alert("代碼出錯"); }
-        }
-    }
-    function syncSubFilter() {
-        const m = document.getElementById('fMain').value;
-        document.getElementById('fSub').innerHTML = '<option value="全部">所有子類</option>' + (catConfig[m] ? catConfig[m].map(c => `<option value="${c}">${c}</option>`).join('') : "");
+    function createNewPlanGroup() { let t = prompt("名稱:"); if(t) { planGroups.push({title:t, items:[], checks:[]}); saveAndRender(); } }
+    function addSpecRow() {
+        const div = document.createElement('div'); div.className = 'card spec-input'; div.style = 'background:#f9f9f9; padding:10px; margin-bottom:8px;';
+        div.innerHTML = `<input type="text" class="s-name" placeholder="規格"><input type="number" class="s-price" placeholder="價格 ₩">`;
+        document.getElementById('specContainer').appendChild(div);
     }
 
-    // 初始化
+    // 初始化下拉
     document.getElementById('mainCat').innerHTML = Object.keys(catConfig).map(k => `<option value="${k}">${k}</option>`).join('');
     document.getElementById('fMain').innerHTML = '<option value="全部">所有大類</option>' + Object.keys(catConfig).map(k => `<option value="${k}">${k}</option>`).join('');
-    updateSubCats();
+    updateSubCats('mainCat', 'subCat');
     render();
 </script>
 </body>
