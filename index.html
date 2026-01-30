@@ -338,16 +338,25 @@
         const cont = document.getElementById('cart-list');
         const today = new Date().toISOString().split('T')[0];
         cont.innerHTML = '<h3 style="font-size:15px;">🛒 待購籃子</h3>';
+        
+        if (cart.length === 0) {
+            cont.innerHTML += '<div style="color:#888; text-align:center; padding:20px;">籃子是空的</div>';
+        }
+
         cart.forEach((i, idx) => {
             const p = db.find(x => x.id === i.prodId);
             const s = p?.specs.find(x => x.specId === i.specId);
-            if(!s) return;
-            const price = (s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price;
+            
+            // 修正：如果找不到規格(可能是編輯過導致ID變更)，顯示錯誤提示，而不是隱藏
+            const displayName = p ? p.name : '未知/已刪除產品';
+            const displaySpec = s ? s.name : '<span style="color:red;">規格已失效(請刪除)</span>';
+            const price = s ? ((s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price) : 0;
+            
             total += price * i.qty;
             cont.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px;">
                 <div style="min-width:0; flex:1; margin-right:10px;">
-                    <b style="font-size:13px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</b>
-                    <small style="color:var(--gray);">${s.name} (₩${price.toLocaleString()})</small>
+                    <b style="font-size:13px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayName}</b>
+                    <small style="color:var(--gray);">${displaySpec} (₩${price.toLocaleString()})</small>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
                     <div class="qty-ctrl">
@@ -359,6 +368,7 @@
                 </div>
             </div>`;
         });
+        
         let refund = 0;
         for (let i = refundTable.length - 1; i >= 0; i--) { if (total >= refundTable[i].min) { refund = refundTable[i].refund; break; } }
         document.getElementById('cart-total').innerText = `₩${total.toLocaleString()}`;
@@ -380,7 +390,7 @@
                     return `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid #f5f5f5;">
                         <div style="min-width:0; flex:1; margin-right:5px;">
                            <span style="font-size:13px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p ? p.name : '未知產品'}</span>
-                           <small style="color:var(--gray)">${s ? s.name : '未知規格'}</small>
+                           <small style="color:var(--gray)">${s ? s.name : '<span style="color:red">規格已失效</span>'}</small>
                         </div>
                         <div style="display:flex; align-items:center; gap:8px;">
                             <div class="qty-ctrl">
@@ -399,15 +409,17 @@
 
     function addToCartFromPlan(gi, ii) {
         const item = planGroups[gi].items[ii];
+        const qty = parseInt(item.qty) || 1;
         const existingIdx = cart.findIndex(c => c.prodId === item.prodId && c.specId === item.specId);
         
         if(existingIdx > -1) {
-            cart[existingIdx].qty += item.qty;
+            cart[existingIdx].qty += qty;
         } else {
-            cart.push({prodId: item.prodId, specId: item.specId, qty: item.qty});
+            cart.push({prodId: item.prodId, specId: item.specId, qty: qty});
         }
         
         saveAndRender();
+        // 自動切換到籃子頁面確認 (可選，這裡只提示)
         alert("已加入籃子！");
     }
 
@@ -488,7 +500,11 @@
 
     function addEditSpecRow(data = null) {
         const d = document.createElement('div');
-        d.className='edit-spec-item'; d.style='border:1px solid #eee; padding:10px; border-radius:12px; margin-bottom:10px; background:#fafafa; position:relative;';
+        d.className='edit-spec-item'; 
+        // 修正：保存原始 specId，防止編輯後 ID 變更導致計畫/籃子連結斷裂
+        d.dataset.sid = data ? data.specId : Math.random();
+        
+        d.style='border:1px solid #eee; padding:10px; border-radius:12px; margin-bottom:10px; background:#fafafa; position:relative;';
         d.innerHTML=`<button onclick="this.parentElement.remove()" style="position:absolute; right:5px; top:5px; border:none; background:none; color:red;">×</button>
             <input type="text" class="es-name" placeholder="規格" value="${data?data.name:''}">
             <div class="spec-input-grid">
@@ -502,7 +518,8 @@
     function updateProduct() {
         const pIdx = db.findIndex(x => x.id === editingProdId);
         const specs = Array.from(document.querySelectorAll('.edit-spec-item')).map(c => ({
-            specId: Math.random(), 
+            // 修正：優先使用 dataset.sid，如果沒有才生成新的
+            specId: Number(c.dataset.sid), 
             name: c.querySelector('.es-name').value||"標準", 
             price: Number(c.querySelector('.es-price').value)||0, 
             salePrice: Number(c.querySelector('.es-sale').value)||null, 
