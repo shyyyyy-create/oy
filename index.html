@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>買不完的OY Pro+ Ultimate</title>
+    <title>買不完的OY</title>
     <style>
         :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --plan: #9b59b6; --gray: #8e8e93; --highlight: #fff9c4; --sale: #ff5252; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 160px; color: #333; overflow-x: hidden; }
@@ -149,6 +149,25 @@
 </div>
 
 <script>
+    // 退稅級距表資料 (根據圖片內容錄入)
+    const refundTable = [
+        { min: 15000, refund: 1000 }, { min: 30000, refund: 2000 }, { min: 50000, refund: 3000 },
+        { min: 75000, refund: 5000 }, { min: 100000, refund: 7000 }, { min: 125000, refund: 8000 },
+        { min: 150000, refund: 9000 }, { min: 175000, refund: 10000 }, { min: 200000, refund: 12000 },
+        { min: 225000, refund: 13000 }, { min: 250000, refund: 15000 }, { min: 275000, refund: 17000 },
+        { min: 300000, refund: 19000 }, { min: 325000, refund: 21000 }, { min: 350000, refund: 23000 },
+        { min: 375000, refund: 25000 }, { min: 400000, refund: 27000 }, { min: 425000, refund: 28000 },
+        { min: 450000, refund: 30000 }, { min: 475000, refund: 32000 }, { min: 500000, refund: 35000 },
+        { min: 550000, refund: 37000 }, { min: 600000, refund: 41000 }, { min: 650000, refund: 45000 },
+        { min: 700000, refund: 50000 }, { min: 750000, refund: 53000 }, { min: 800000, refund: 57000 },
+        { min: 850000, refund: 60000 }, { min: 900000, refund: 65000 }, { min: 950000, refund: 68000 },
+        { min: 1000000, refund: 75000 }, { min: 1100000, refund: 80000 }, { min: 1200000, refund: 90000 },
+        { min: 1300000, refund: 95000 }, { min: 1400000, refund: 105000 }, { min: 1500000, refund: 110000 },
+        { min: 1600000, refund: 115000 }, { min: 1700000, refund: 127000 }, { min: 1800000, refund: 135000 },
+        { min: 1900000, refund: 140000 }, { min: 2000000, refund: 150000 }
+        // 級距表上限可視需要繼續增加，目前已錄入至200萬級距
+    ];
+
     const catConfig = {
         "護膚品": ["化妝水", "精華", "乳液", "面霜", "面膜", "防曬", "潔面", "卸妝"],
         "化妝品-Base": ["妝前", "氣墊", "粉底", "遮瑕", "腮紅", "高光", "修容"],
@@ -184,16 +203,10 @@
         }
     }
 
-    // --- 修正後的儲存函式 ---
     function saveProduct() {
         const nameInput = document.getElementById('name');
         const name = nameInput.value.trim();
-        
-        if(!name) {
-            alert("請輸入名稱！");
-            return;
-        }
-
+        if(!name) { alert("請輸入名稱！"); return; }
         const specs = Array.from(document.querySelectorAll('.spec-input')).map(c => ({
             specId: Date.now() + Math.random(),
             name: c.querySelector('.s-name').value || "標準",
@@ -201,77 +214,32 @@
             salePrice: Number(c.querySelector('.s-sale').value) || null,
             saleDate: c.querySelector('.s-date').value || null
         }));
-
-        const newProd = {
-            id: Date.now(),
-            name: name,
-            img: tempImgBase64,
-            main: document.getElementById('mainCat').value,
-            sub: document.getElementById('subCat').value,
-            priority: document.getElementById('priority').value,
-            specs: specs
-        };
-
+        const newProd = { id: Date.now(), name: name, img: tempImgBase64, main: document.getElementById('mainCat').value, sub: document.getElementById('subCat').value, priority: document.getElementById('priority').value, specs: specs };
         db.push(newProd);
-        
-        // 重要：完全重置表單與變數
-        nameInput.value = "";
-        tempImgBase64 = ""; 
-        document.getElementById('imgUrl').value = "";
-        document.getElementById('imgFile').value = "";
-        document.getElementById('imgPreview').innerHTML = "預覽";
-        document.getElementById('specContainer').innerHTML = `
-            <div class="card spec-input" style="background:#f9f9f9; padding:10px; margin-bottom:8px;">
-                <input type="text" class="s-name" placeholder="規格 (如: 50ml)">
-                <div style="display: flex; gap:5px;">
-                    <input type="number" class="s-price" placeholder="原價 ₩">
-                    <input type="number" class="s-sale" placeholder="特價 ₩">
-                </div>
-                <input type="date" class="s-date">
-            </div>`;
-
-        saveAndRender();
-        alert("已存入清單！");
+        nameInput.value = ""; tempImgBase64 = ""; document.getElementById('imgUrl').value = ""; document.getElementById('imgFile').value = ""; document.getElementById('imgPreview').innerHTML = "預覽";
+        document.getElementById('specContainer').innerHTML = `<div class="card spec-input" style="background:#f9f9f9; padding:10px; margin-bottom:8px;"><input type="text" class="s-name" placeholder="規格 (如: 50ml)"><div style="display: flex; gap:5px;"><input type="number" class="s-price" placeholder="原價 ₩"><input type="number" class="s-sale" placeholder="特價 ₩"></div><input type="date" class="s-date"></div>`;
+        saveAndRender(); alert("已存入清單！");
     }
 
     function render() {
         document.getElementById('rateInput').value = currentRate;
         document.getElementById('display-rate').innerText = currentRate;
-
         const dashCont = document.getElementById('dash-list');
         dashCont.innerHTML = '';
         const fMain = document.getElementById('fMain').value;
         const fSub = document.getElementById('fSub').value;
         const fPri = document.getElementById('fPri').value;
         const sText = document.getElementById('searchBar').value.toLowerCase();
-
         db.forEach(p => {
             if(fMain !== '全部' && p.main !== fMain) return;
             if(fSub !== '全部' && p.sub !== fSub) return;
             if(fPri !== '全部' && p.priority !== fPri) return;
             if(sText && !p.name.toLowerCase().includes(sText)) return;
-
             const hasSale = p.specs.some(s => isSale(s));
             const imgHtml = p.img ? `<img src="${p.img}" class="prod-img" onclick="showFullImg('${p.img}')">` : `<div class="prod-img" style="line-height:70px;text-align:center;color:#ccc;">?</div>`;
-            
-            dashCont.innerHTML += `
-                <div class="item-card card" data-pri="${p.priority}">
-                    ${hasSale ? '<div class="sale-tag">🔥 SALE</div>' : ''}
-                    ${imgHtml}
-                    <div class="prod-info">
-                        <b>${p.name}</b><br>
-                        <small>${p.sub}</small>
-                        <div class="action-group" style="display:flex; gap:5px; margin-top:5px;">
-                            <button class="btn-small" style="background:var(--cart);color:white;border:none;" onclick="openSelector(${p.id},'cart')">🛒</button>
-                            <button class="btn-small" onclick="handlePlanAdd(${p.id})">📝</button>
-                            <button class="btn-small" onclick="deleteProduct(${p.id})">×</button>
-                        </div>
-                    </div>
-                </div>`;
+            dashCont.innerHTML += `<div class="item-card card" data-pri="${p.priority}">${hasSale ? '<div class="sale-tag">🔥 SALE</div>' : ''}${imgHtml}<div class="prod-info"><b>${p.name}</b><br><small>${p.sub}</small><div class="action-group" style="display:flex; gap:5px; margin-top:5px;"><button class="btn-small" style="background:var(--cart);color:white;border:none;" onclick="openSelector(${p.id},'cart')">🛒</button><button class="btn-small" onclick="handlePlanAdd(${p.id})">📝</button><button class="btn-small" onclick="deleteProduct(${p.id})">×</button></div></div></div>`;
         });
-        renderPlans();
-        renderCart();
-        renderHistory();
+        renderPlans(); renderCart(); renderHistory();
     }
 
     function renderCart() {
@@ -284,61 +252,43 @@
             if(!s) return;
             const price = getActivePrice(s);
             total += price * i.qty;
-            cartCont.innerHTML += `
-                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="flex:1"><b>${p.name}</b><br><small>${s.name} (₩${price.toLocaleString()})</small></div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <button class="qty-btn" onclick="updateQty('cart', null, ${idx}, -1)">-</button>
-                        <b>${i.qty}</b>
-                        <button class="qty-btn" onclick="updateQty('cart', null, ${idx}, 1)">+</button>
-                        <button class="btn-small" style="color:red; border:none;" onclick="cart.splice(${idx},1); saveAndRender();">×</button>
-                    </div>
-                </div>`;
+            cartCont.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><div style="flex:1"><b>${p.name}</b><br><small>${s.name} (₩${price.toLocaleString()})</small></div><div style="display:flex; align-items:center; gap:8px;"><button class="qty-btn" onclick="updateQty('cart', null, ${idx}, -1)">-</button><b>${i.qty}</b><button class="qty-btn" onclick="updateQty('cart', null, ${idx}, 1)">+</button><button class="btn-small" style="color:red; border:none;" onclick="cart.splice(${idx},1); saveAndRender();">×</button></div></div>`;
         });
 
-        // 退稅計算
-        let refund = 0; 
-        if(total >= 15000) { 
-            if(total >= 100000) refund = Math.floor(total * 0.07); // 簡化估算
-            else if(total >= 50000) refund = Math.floor(total * 0.05);
-            else refund = Math.floor(total * 0.03);
+        // 精確查表退稅計算 (根據圖片級距)
+        let refund = 0;
+        // 逆向查找，找到符合的最大級距
+        for (let i = refundTable.length - 1; i >= 0; i--) {
+            if (total >= refundTable[i].min) {
+                refund = refundTable[i].refund;
+                break;
+            }
         }
 
         const afterRefund = total - refund;
-
         document.getElementById('cart-total').innerText = total.toLocaleString();
         document.getElementById('local-total').innerText = Math.round(total * currentRate).toLocaleString();
         document.getElementById('tax-refund-display').innerHTML = `估計退稅: <span style="color:var(--cart)">- ₩${refund.toLocaleString()}</span>`;
-        
-        // 實付金額顯示
         document.getElementById('after-refund-total').innerText = afterRefund.toLocaleString();
         document.getElementById('local-after-refund').innerText = Math.round(afterRefund * currentRate).toLocaleString();
     }
 
-    // 其餘渲染函式保持原狀
     function renderPlans() {
-        document.getElementById('plan-groups').innerHTML = planGroups.map((g, gi) => `
-            <div class="card">
-                <div style="font-weight:bold; color:var(--plan); display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:5px;">
-                    <span>📌 ${g.title}</span>
-                    <button onclick="if(confirm('刪除？')){planGroups.splice(${gi},1); saveAndRender();}" style="border:none; color:red; background:none;">×</button>
+        document.getElementById('plan-groups').innerHTML = planGroups.map((g, gi) => `<div class="card"><div style="font-weight:bold; color:var(--plan); display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:5px;"><span>📌 ${g.title}</span><button onclick="if(confirm('刪除？')){planGroups.splice(${gi},1); saveAndRender();}" style="border:none; color:red; background:none;">×</button></div>${g.items.map((i, ii) => {
+            const p = db.find(x => x.id === i.prodId);
+            if(!p) return '';
+            const spec = p.specs.find(x=>x.specId===i.specId);
+            const isDone = g.checks && g.checks[ii];
+            return `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f9f9f9; ${isDone?'opacity:0.4':''}">
+                <div style="flex:1;">${p.name}<br><small>${spec.name}</small></div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, -1)">-</button>
+                    <b>${i.qty}</b>
+                    <button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, 1)">+</button>
+                    <button class="btn-small" onclick="transferToCart(${gi}, ${ii})">${isDone?'✅':'🛒'}</button>
                 </div>
-                ${g.items.map((i, ii) => {
-                    const p = db.find(x => x.id === i.prodId);
-                    if(!p) return '';
-                    const spec = p.specs.find(x=>x.specId===i.specId);
-                    const isDone = g.checks && g.checks[ii];
-                    return `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f9f9f9; ${isDone?'opacity:0.4':''}">
-                        <div style="flex:1;">${p.name}<br><small>${spec.name}</small></div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, -1)">-</button>
-                            <b>${i.qty}</b>
-                            <button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, 1)">+</button>
-                            <button class="btn-small" onclick="transferToCart(${gi}, ${ii})">${isDone?'✅':'🛒'}</button>
-                        </div>
-                    </div>`;
-                }).join('')}
-            </div>`).join('');
+            </div>`;
+        }).join('')}</div>`).join('');
     }
 
     function renderHistory() {
@@ -346,52 +296,15 @@
         histCont.innerHTML = historyDB.length === 0 ? '<p style="color:#999; text-align:center;">尚無購買紀錄</p>' : '';
         historyDB.forEach((session, sIdx) => {
             let sTotal = session.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            histCont.innerHTML += `<div class="history-item">
-                <div class="history-header">
-                    <div><b>${session.title}</b><br><small style="color:#999;">${session.date} | ₩${sTotal.toLocaleString()}</small></div>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn-small" onclick="editHistoryTitle(${sIdx})">改名</button>
-                        <button class="btn-small" style="color:red;" onclick="deleteHistorySession(${sIdx})">刪除</button>
-                    </div>
-                </div>
-                <div style="padding-left:10px; border-left:2px solid #eee;">
-                    ${session.items.map((item, iIdx) => `
-                        <div style="display:flex; justify-content:space-between; font-size:12px; margin:4px 0;">
-                            <span>• ${item.name}</span>
-                            <span>x${item.qty}</span>
-                        </div>`).join('')}
-                </div>
-            </div>`;
+            histCont.innerHTML += `<div class="history-item"><div class="history-header"><div><b>${session.title}</b><br><small style="color:#999;">${session.date} | ₩${sTotal.toLocaleString()}</small></div><div style="display:flex; gap:5px;"><button class="btn-small" onclick="editHistoryTitle(${sIdx})">改名</button><button class="btn-small" style="color:red;" onclick="deleteHistorySession(${sIdx})">刪除</button></div></div><div style="padding-left:10px; border-left:2px solid #eee;">${session.items.map((item, iIdx) => `<div style="display:flex; justify-content:space-between; font-size:12px; margin:4px 0;"><span>• ${item.name}</span><span>x${item.qty}</span></div>`).join('')}</div></div>`;
         });
     }
 
-    // 工具函式
-    function switchPage(p, btn) {
-        document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-        document.getElementById(p + '-page').classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active'); render();
-    }
-    function saveAndRender() {
-        localStorage.setItem('oy_db_v14', JSON.stringify(db));
-        localStorage.setItem('oy_cart_v14', JSON.stringify(cart));
-        localStorage.setItem('oy_plans_v14', JSON.stringify(planGroups));
-        localStorage.setItem('oy_history_v14', JSON.stringify(historyDB));
-        render();
-    }
-    function addSpecRow() {
-        const div = document.createElement('div'); div.className = 'card spec-input'; div.style = 'background:#f9f9f9; padding:10px; margin-bottom:8px;';
-        div.innerHTML = `<input type="text" class="s-name" placeholder="規格"><div style="display: flex; gap:5px;"><input type="number" class="s-price" placeholder="原價 ₩"><input type="number" class="s-sale" placeholder="特價 ₩"></div><input type="date" class="s-date">`;
-        document.getElementById('specContainer').appendChild(div);
-    }
-    function updateSubCats(mainId, subId) {
-        const m = document.getElementById(mainId).value;
-        document.getElementById(subId).innerHTML = catConfig[m].map(c => `<option value="${c}">${c}</option>`).join('');
-    }
-    function syncSubFilter() {
-        const m = document.getElementById('fMain').value;
-        document.getElementById('fSub').innerHTML = '<option value="全部">所有子類</option>' + (m !== '全部' ? catConfig[m].map(c => `<option value="${c}">${c}</option>`).join('') : '');
-    }
+    function switchPage(p, btn) { document.querySelectorAll('.page').forEach(x => x.classList.remove('active')); document.getElementById(p + '-page').classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); render(); }
+    function saveAndRender() { localStorage.setItem('oy_db_v14', JSON.stringify(db)); localStorage.setItem('oy_cart_v14', JSON.stringify(cart)); localStorage.setItem('oy_plans_v14', JSON.stringify(planGroups)); localStorage.setItem('oy_history_v14', JSON.stringify(historyDB)); render(); }
+    function addSpecRow() { const div = document.createElement('div'); div.className = 'card spec-input'; div.style = 'background:#f9f9f9; padding:10px; margin-bottom:8px;'; div.innerHTML = `<input type="text" class="s-name" placeholder="規格"><div style="display: flex; gap:5px;"><input type="number" class="s-price" placeholder="原價 ₩"><input type="number" class="s-sale" placeholder="特價 ₩"></div><input type="date" class="s-date">`; document.getElementById('specContainer').appendChild(div); }
+    function updateSubCats(mainId, subId) { const m = document.getElementById(mainId).value; document.getElementById(subId).innerHTML = catConfig[m].map(c => `<option value="${c}">${c}</option>`).join(''); }
+    function syncSubFilter() { const m = document.getElementById('fMain').value; document.getElementById('fSub').innerHTML = '<option value="全部">所有子類</option>' + (m !== '全部' ? catConfig[m].map(c => `<option value="${c}">${c}</option>`).join('') : ''); }
     function saveRate() { currentRate = parseFloat(document.getElementById('rateInput').value) || 0; localStorage.setItem('oy_rate', currentRate); render(); }
     function openSelector(prodId, targetType, planIdx = null) {
         const p = db.find(x => x.id === prodId);
@@ -411,26 +324,15 @@
     function adjModalQty(v) { modalQty = Math.max(1, modalQty + v); document.getElementById('modalQtyDisplay').innerText = modalQty; }
     function showFullImg(src) { document.getElementById('fullImg').src = src; document.getElementById('imgModal').style.display = 'flex'; }
     function deleteProduct(id) { if(confirm('確定刪除此商品？')) { db = db.filter(x => x.id !== id); saveAndRender(); } }
-    function handlePlanAdd(pid) {
-        let c = prompt("計畫清單編號：\n" + planGroups.map((g,i)=>`[${i}] ${g.title}`).join('\n'), "0");
-        if(c !== null && planGroups[c]) openSelector(pid, 'plan', parseInt(c));
-    }
+    function handlePlanAdd(pid) { let c = prompt("計畫清單編號：\n" + planGroups.map((g,i)=>`[${i}] ${g.title}`).join('\n'), "0"); if(c !== null && planGroups[c]) openSelector(pid, 'plan', parseInt(c)); }
     function createNewPlanGroup() { let t = prompt("計畫清單名稱:"); if(t) { planGroups.push({title:t, items:[], checks:[]}); saveAndRender(); } }
     function transferToCart(gi, ii) { if(!planGroups[gi].checks[ii]) { cart.push({...planGroups[gi].items[ii]}); planGroups[gi].checks[ii] = true; saveAndRender(); } }
-    function updateQty(type, gi, ii, delta) {
-        let list = (type === 'cart') ? cart : planGroups[gi].items;
-        list[ii].qty = Math.max(1, list[ii].qty + delta);
-        saveAndRender();
-    }
+    function updateQty(type, gi, ii, delta) { let list = (type === 'cart') ? cart : planGroups[gi].items; list[ii].qty = Math.max(1, list[ii].qty + delta); saveAndRender(); }
     function checkoutCart() {
         if(!cart.length) return alert("籃子是空的");
         let title = prompt("請輸入這筆購買名稱：", "購物紀錄 " + new Date().toLocaleDateString());
         if(!title) return;
-        historyDB.unshift({ id: Date.now(), title, date: new Date().toLocaleString(), items: cart.map(i => {
-            const p = db.find(x => x.id === i.prodId);
-            const s = p.specs.find(x => x.specId === i.specId);
-            return { name: p.name, qty: i.qty, price: getActivePrice(s) };
-        })});
+        historyDB.unshift({ id: Date.now(), title, date: new Date().toLocaleString(), items: cart.map(i => { const p = db.find(x => x.id === i.prodId); const s = p.specs.find(x => x.specId === i.specId); return { name: p.name, qty: i.qty, price: getActivePrice(s) }; })});
         cart = []; saveAndRender();
     }
     function editHistoryTitle(sIdx) { let n = prompt("新名稱：", historyDB[sIdx].title); if(n) { historyDB[sIdx].title = n; saveAndRender(); } }
