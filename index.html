@@ -355,8 +355,12 @@
                 </div>
                 ${g.items.map((i, ii) => {
                     const p = db.find(x => x.id === i.prodId);
+                    const s = p?.specs.find(x => x.specId === i.specId);
                     return `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid #f5f5f5;">
-                        <span style="font-size:13px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; margin-right:5px;">${p ? p.name : '未知產品'}</span>
+                        <div style="min-width:0; flex:1; margin-right:5px;">
+                           <span style="font-size:13px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p ? p.name : '未知產品'}</span>
+                           <small style="color:var(--gray)">${s ? s.name : '未知規格'}</small>
+                        </div>
                         <div style="display:flex; align-items:center; gap:8px;">
                             <div class="qty-ctrl">
                                 <button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, -1)">-</button>
@@ -372,7 +376,7 @@
         `).join('');
     }
 
-    // 新增：處理計畫項加入購物籃
+    // --- 修復：計畫加入購物籃 ---
     function addToCartFromPlan(gi, ii) {
         const item = planGroups[gi].items[ii];
         if (item) {
@@ -380,7 +384,7 @@
             if (ext) {
                 ext.qty += item.qty;
             } else {
-                cart.push({ ...item });
+                cart.push({ prodId: item.prodId, specId: item.specId, qty: item.qty });
             }
             saveAndRender();
             alert("已成功加入購物籃！");
@@ -397,6 +401,52 @@
                 </div>
             </div>`;
         }).join('');
+    }
+
+    // --- 修復：歷史紀錄編輯 ---
+    function openHistoryEdit(idx) {
+        editingHistIdx = idx;
+        const hist = historyDB[idx];
+        document.getElementById('histEditTitleInput').value = hist.title;
+        const container = document.getElementById('histEditItems');
+        container.innerHTML = hist.items.map((item, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
+                <div style="flex:1; font-size:12px;">${item.name}</div>
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <input type="number" value="${item.qty}" onchange="updateHistItemQty(${i}, this.value)" style="width:50px; height:30px; margin:0; text-align:center;">
+                    <button onclick="removeHistItem(${i})" style="color:red; border:none; background:none;">×</button>
+                </div>
+            </div>
+        `).join('');
+        
+        calcHistEditTotal();
+        document.getElementById('modalOverlay').style.display = 'flex';
+        document.getElementById('historyEditModal').style.display = 'block';
+        document.getElementById('selectorModal').style.display = 'none';
+        document.getElementById('editProductModal').style.display = 'none';
+        document.getElementById('planPickerModal').style.display = 'none';
+    }
+
+    function updateHistItemQty(iIdx, val) {
+        historyDB[editingHistIdx].items[iIdx].qty = Math.max(1, parseInt(val) || 1);
+        calcHistEditTotal();
+    }
+
+    function removeHistItem(iIdx) {
+        historyDB[editingHistIdx].items.splice(iIdx, 1);
+        openHistoryEdit(editingHistIdx);
+    }
+
+    function calcHistEditTotal() {
+        const hist = historyDB[editingHistIdx];
+        let total = hist.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        document.getElementById('histEditTotal').innerText = total.toLocaleString();
+    }
+
+    function saveHistChanges() {
+        historyDB[editingHistIdx].title = document.getElementById('histEditTitleInput').value;
+        saveAndRender();
+        closeModal();
     }
 
     // --- 編輯產品邏輯 ---
@@ -464,6 +514,7 @@
         document.getElementById('selectorModal').style.display = 'block';
         document.getElementById('editProductModal').style.display = 'none';
         document.getElementById('planPickerModal').style.display = 'none';
+        document.getElementById('historyEditModal').style.display = 'none';
 
         document.getElementById('modalConfirmBtn').onclick = () => {
             const sid = Number(document.getElementById('modalSpecSelect').value);
@@ -506,6 +557,7 @@
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('planPickerModal').style.display = 'block';
         document.getElementById('selectorModal').style.display = 'none';
+        document.getElementById('historyEditModal').style.display = 'none';
         document.getElementById('planOptionsList').innerHTML = planGroups.map((g, i) => 
             `<button class="btn-main" style="background:white; color:var(--plan); border:1px solid var(--plan); margin-bottom:8px;" 
             onclick="openSelector(${pid}, 'plan', ${i})">${g.title}</button>`
@@ -518,7 +570,6 @@
         if(!title) return;
         const today = new Date().toISOString().split('T')[0];
         
-        // 修正：在結帳時動態抓取當下 db 中的價格並建立快照
         const checkoutItems = cart.map(i => {
             const p = db.find(x => x.id === i.prodId);
             if (!p) return null;
