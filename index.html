@@ -7,9 +7,8 @@
     <style>
         :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --plan: #9b59b6; --gray: #8e8e93; --highlight: #fff9c4; --sale: #ff5252; --shadow: 0 4px 12px rgba(0,0,0,0.08); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding: 10px 10px 200px 10px; color: #333; line-height: 1.4; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding: 10px 10px 220px 10px; color: #333; line-height: 1.4; }
         
-        /* 防止內容溢出的卡片設計 */
         .card { background: white; border-radius: 18px; padding: 15px; box-shadow: var(--shadow); margin-bottom: 12px; width: 100%; overflow: hidden; }
         
         /* 導航列 */
@@ -17,7 +16,7 @@
         .nav-btn { flex: 1; padding: 10px 2px; border: none; background: none; font-weight: bold; color: #888; border-radius: 10px; font-size: 13px; cursor: pointer; }
         .nav-btn.active { background: var(--primary); color: white; }
 
-        /* 分類篩選區 */
+        /* 分類篩選 */
         .filter-section { background: white; margin: -10px -10px 12px -10px; padding: 12px; border-bottom: 1px solid #eee; position: sticky; top: 60px; z-index: 998; }
         .tab-scroll { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 8px; scrollbar-width: none; }
         .tab-scroll::-webkit-scrollbar { display: none; }
@@ -25,39 +24,41 @@
         .tab-item.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: bold; }
         
         .sub-bar { display: flex; overflow-x: auto; gap: 8px; margin-top: 8px; padding-bottom: 5px; scrollbar-width: none; }
-        .sub-bar::-webkit-scrollbar { display: none; }
         .chip { white-space: nowrap; font-size: 12px; background: #f0f0f0; color: #666; padding: 6px 12px; border-radius: 20px; border: 1px solid transparent; }
         .chip.active { background: #333; color: white; }
         .chip.pri { border: 1px solid #ddd; background: white; }
         .chip.pri.active { border-color: var(--primary); color: var(--primary); background: #fff5f2; }
 
-        /* 產品列表項 */
+        /* 產品清單 */
         .item-card { display: flex; gap: 12px; align-items: center; border-left: 5px solid #ccc; }
         .item-card[data-pri="必買"] { border-left-color: var(--sale); }
         .item-card[data-pri="需要"] { border-left-color: #ffb142; }
         .item-card[data-pri="想買"] { border-left-color: #34ace0; }
         .prod-img { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
         
-        /* 輸入元件 */
-        input, select { width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 8px; font-size: 14px; outline: none; }
-        input:focus { border-color: var(--primary); }
-        .btn-main { background: var(--primary); color: white; padding: 12px; border: none; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-main:active { transform: scale(0.98); opacity: 0.9; }
-        .btn-small { padding: 6px 10px; font-size: 11px; border-radius: 8px; border: 1px solid #ddd; background: white; color: #555; }
+        /* 輸入方塊優化 */
+        input, select { width: 100%; height: 42px; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 8px; font-size: 14px; outline: none; background: #fff; }
+        .spec-input-grid { display: flex; gap: 8px; margin-bottom: 5px; }
+        .spec-input-grid input { flex: 1; min-width: 0; }
         
-        /* 規格編輯區優化 (防止溢出) */
-        .spec-input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 5px; }
-        .spec-full { grid-column: span 2; }
-        .date-label { font-size: 11px; color: var(--gray); margin-bottom: 2px; display: block; }
+        .btn-main { background: var(--primary); color: white; padding: 12px; border: none; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; }
+        .btn-small { padding: 6px 10px; font-size: 11px; border-radius: 8px; border: 1px solid #ddd; background: white; color: #555; display: inline-flex; align-items: center; justify-content: center; }
+        
+        /* 數量調整器 */
+        .qty-ctrl { display: flex; align-items: center; gap: 5px; background: #f8f8f8; border-radius: 8px; padding: 2px; }
+        .qty-btn { width: 28px; height: 28px; border: none; background: white; border-radius: 6px; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; }
 
         .page { display: none; }
         .page.active { display: block; }
         
+        /* 結帳列優化 */
+        .checkout-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 12px 15px 30px 15px; border-top: 1px solid #eee; z-index: 1500; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
+        .price-summary { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .total-box { min-width: 0; overflow: hidden; }
+
         /* 彈窗 */
-        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center; padding: 20px; }
-        .modal-content { background:white; padding:20px; border-radius:24px; width:100%; max-width:400px; max-height: 90vh; overflow-y: auto; }
-        
-        .checkout-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px 20px 30px 20px; border-top: 1px solid #eee; z-index: 1500; }
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center; padding: 15px; }
+        .modal-content { background:white; padding:20px; border-radius:24px; width:100%; max-width:360px; max-height: 85vh; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -71,12 +72,12 @@
 
 <div id="wishlist-page" class="page active">
     <div class="card" style="background: var(--highlight);">
-        <label style="font-size: 12px; font-weight: bold;">💰 匯率設定 (KRW ➔ HKD)</label>
-        <input type="number" id="rateInput" step="0.0001" onchange="saveRate()">
+        <label style="font-size: 11px; font-weight: bold; color: #666;">💰 匯率設定 (KRW ➔ HKD)</label>
+        <input type="number" id="rateInput" step="0.0001" onchange="saveRate()" style="margin-top:5px; margin-bottom:0;">
     </div>
     
     <div class="card">
-        <h3 style="margin:0 0 15px 0; font-size: 18px;">✨ 登記新產品</h3>
+        <h3 style="margin:0 0 12px 0; font-size: 16px;">✨ 登記新產品</h3>
         <input type="text" id="name" placeholder="產品名稱 (必填)">
         <input type="text" id="imgUrl" placeholder="圖片連結 URL">
         <div style="display: flex; gap: 8px;">
@@ -96,19 +97,17 @@
                     <input type="number" class="s-price" placeholder="原價 ₩">
                     <input type="number" class="s-sale" placeholder="特價 ₩">
                 </div>
-                <div>
-                    <span class="date-label">📅 特價到期日 (留空代表無期限)</span>
-                    <input type="date" class="s-date">
-                </div>
+                <label style="font-size: 11px; color: var(--gray);">📅 特價到期日</label>
+                <input type="date" class="s-date">
             </div>
         </div>
         
-        <button onclick="addSpecRow()" class="btn-small" style="width:100%; margin-bottom:15px; border-style:dashed; color:var(--primary);">+ 新增更多規格</button>
+        <button onclick="addSpecRow()" class="btn-small" style="width:100%; margin-bottom:12px; border-style:dashed; height:40px;">+ 新增規格</button>
         <button class="btn-main" onclick="saveProduct()">存入我的清單</button>
     </div>
 
     <div class="card" style="background: #f8f9fa;">
-        <h4 style="margin:0 0 10px 0;">💾 資料管理</h4>
+        <h4 style="margin:0 0 10px 0; font-size:14px;">💾 資料管理</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
             <button class="btn-small" onclick="exportCSV()">📊 匯出 CSV</button>
             <button class="btn-small" onclick="exportJSON()">備份 JSON</button>
@@ -134,7 +133,7 @@
 
 <div id="plan-page" class="page">
     <div class="card" style="text-align:center;">
-        <button class="btn-main" style="background:var(--plan); width:auto; padding:10px 20px;" onclick="createNewPlanGroup()">➕ 創建新計畫清單</button>
+        <button class="btn-main" style="background:var(--plan); width:auto; padding:8px 20px;" onclick="createNewPlanGroup()">➕ 創建新計畫清單</button>
     </div>
     <div id="plan-groups"></div>
 </div>
@@ -142,31 +141,34 @@
 <div id="cart-page" class="page">
     <div id="cart-list"></div>
     <div class="card" style="margin-top:20px; border-top:5px solid var(--secondary);">
-        <h3 style="font-size:16px;">📜 歷史購買紀錄</h3>
+        <h3 style="font-size:15px; margin-top:0;">📜 歷史購買紀錄</h3>
         <div id="history-list"></div>
     </div>
 </div>
 
 <div class="checkout-bar">
-    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
-        <div style="font-size: 13px;">
-            總計: <b id="cart-total">0</b><br>
-            <span style="color:var(--primary); font-weight:bold; font-size:15px;">實付: ₩<span id="after-refund-total">0</span></span>
+    <div class="price-summary">
+        <div class="total-box">
+            <div style="font-size: 11px; color: var(--gray);">總計: <span id="cart-total">₩0</span></div>
+            <div style="color:var(--primary); font-weight:900; font-size:18px; white-space:nowrap;">實付: ₩<span id="after-refund-total">0</span></div>
         </div>
-        <div id="tax-refund-display" style="text-align:right; font-weight:bold; color:var(--cart); font-size:13px;">退稅: ₩0</div>
+        <div style="text-align:right;">
+            <div id="tax-refund-display" style="font-weight:bold; color:var(--cart); font-size:13px;">退稅: ₩0</div>
+            <div style="font-size:11px; color:var(--gray);">≈ HKD $<span id="hkd-total">0</span></div>
+        </div>
     </div>
-    <button class="btn-main" style="background:var(--cart);" onclick="checkoutCart()">✅ 完成購買並存檔紀錄</button>
+    <button class="btn-main" style="background:var(--cart); font-size:16px;" onclick="checkoutCart()">✅ 完成購買並存檔</button>
 </div>
 
 <div id="modalOverlay" class="modal-overlay">
     <div class="modal-content" id="selectorModal" style="display:none;">
-        <h4 id="modalProdName" style="margin:0 0 15px 0;"></h4>
+        <h4 id="modalProdName" style="margin:0 0 15px 0; border-bottom:1px solid #eee; padding-bottom:10px;"></h4>
         <label style="font-size:12px; color:var(--gray);">選擇規格：</label>
-        <select id="modalSpecSelect"></select>
-        <div style="display:flex; align-items:center; justify-content:center; gap:20px; margin: 20px 0;">
-            <button class="btn-small" style="width:40px; height:40px; font-size:20px;" onclick="adjModalQty(-1)">-</button>
-            <b id="modalQtyDisplay" style="font-size:24px;">1</b>
-            <button class="btn-small" style="width:40px; height:40px; font-size:20px;" onclick="adjModalQty(1)">+</button>
+        <select id="modalSpecSelect" style="margin-top:5px;"></select>
+        <div style="display:flex; align-items:center; justify-content:center; gap:25px; margin: 25px 0;">
+            <button class="qty-btn" style="width:45px; height:45px; font-size:20px;" onclick="adjModalQty(-1)">-</button>
+            <b id="modalQtyDisplay" style="font-size:28px; min-width:30px; text-align:center;">1</b>
+            <button class="qty-btn" style="width:45px; height:45px; font-size:20px;" onclick="adjModalQty(1)">+</button>
         </div>
         <div style="display:flex; gap:10px;">
             <button class="btn-main" style="background:#eee; color:#333; flex:1;" onclick="closeModal()">取消</button>
@@ -175,19 +177,19 @@
     </div>
 
     <div class="modal-content" id="planPickerModal" style="display:none;">
-        <h3 style="margin:0 0 15px 0;">選取計畫清單</h3>
+        <h3 style="margin:0 0 15px 0; font-size:18px;">選取目標計畫</h3>
         <div id="planOptionsList"></div>
         <button class="btn-main" style="background:#eee; color:#333; margin-top:10px;" onclick="closeModal()">關閉</button>
     </div>
 
     <div class="modal-content" id="historyEditModal" style="display:none;">
-        <input type="text" id="histEditTitleInput" style="font-weight:bold; font-size:18px; margin-bottom:15px;">
+        <input type="text" id="histEditTitleInput" style="font-weight:bold; font-size:16px;">
         <div id="histEditItems"></div>
         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-        <div style="text-align: right; font-weight: bold; margin-bottom: 15px;">金額: ₩<span id="histEditTotal">0</span></div>
-        <div style="display:flex; gap:10px;">
-            <button class="btn-main" style="background:#eee; color:#333; flex:1;" onclick="closeModal()">取消</button>
-            <button class="btn-main" style="flex:2;" onclick="saveHistChanges()">儲存修改</button>
+        <div style="text-align: right; font-weight: bold;">總額: ₩<span id="histEditTotal">0</span></div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="btn-main" style="background:#eee; color:#333; flex:1;" onclick="closeModal()">關閉</button>
+            <button class="btn-main" style="flex:2;" onclick="saveHistChanges()">儲存</button>
         </div>
     </div>
 </div>
@@ -197,10 +199,10 @@
     const catConfig = {"護膚品":["化妝水","精華","乳液","面霜","面膜","防曬","潔面"],"化妝品-Base":["妝前","氣墊","粉底","遮瑕","腮紅"],"化妝品-Eyes":["眉筆","眼線/臥蠶","眼影","睫毛膏"],"化妝品-Lip":["唇線筆","唇釉","唇膏"],"其他類":["香水","零食","生活雜貨"]};
 
     let currentRate = parseFloat(localStorage.getItem('oy_rate')) || 0.0058;
-    let db = JSON.parse(localStorage.getItem('oy_db_v17')) || [];
-    let cart = JSON.parse(localStorage.getItem('oy_cart_v17')) || [];
-    let historyDB = JSON.parse(localStorage.getItem('oy_history_v17')) || [];
-    let planGroups = JSON.parse(localStorage.getItem('oy_plans_v17')) || [{title: "首爾行", items: []}];
+    let db = JSON.parse(localStorage.getItem('oy_db_v18')) || [];
+    let cart = JSON.parse(localStorage.getItem('oy_cart_v18')) || [];
+    let historyDB = JSON.parse(localStorage.getItem('oy_history_v18')) || [];
+    let planGroups = JSON.parse(localStorage.getItem('oy_plans_v18')) || [{title: "首爾必買", items: []}];
     
     let activeMain = "全部", activeSub = "全部", activePri = "全部";
     let modalQty = 1, editingHistIdx = null, tempHistItems = [];
@@ -215,10 +217,10 @@
     }
 
     function saveAndRender() {
-        localStorage.setItem('oy_db_v17', JSON.stringify(db));
-        localStorage.setItem('oy_cart_v17', JSON.stringify(cart));
-        localStorage.setItem('oy_plans_v17', JSON.stringify(planGroups));
-        localStorage.setItem('oy_history_v17', JSON.stringify(historyDB));
+        localStorage.setItem('oy_db_v18', JSON.stringify(db));
+        localStorage.setItem('oy_cart_v18', JSON.stringify(cart));
+        localStorage.setItem('oy_plans_v18', JSON.stringify(planGroups));
+        localStorage.setItem('oy_history_v18', JSON.stringify(historyDB));
         render();
     }
 
@@ -258,16 +260,16 @@
             const isSale = p.specs.some(s => s.salePrice && (!s.saleDate || new Date().toISOString().split('T')[0] <= s.saleDate));
 
             dashCont.innerHTML += `<div class="item-card card" data-pri="${p.priority}">
-                <img src="${p.img || 'https://via.placeholder.com/100?text=NO+IMG'}" class="prod-img">
+                <img src="${p.img || 'https://via.placeholder.com/100?text=OY'}" class="prod-img">
                 <div style="flex:1; min-width:0;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
                         <b style="font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</b>
-                        ${isSale ? '<span style="color:var(--sale); font-size:10px; font-weight:bold; flex-shrink:0; margin-left:5px;">SALE</span>' : ''}
+                        ${isSale ? '<span style="color:var(--sale); font-size:10px; font-weight:bold; margin-left:5px;">SALE</span>' : ''}
                     </div>
-                    <div style="font-size:11px; color:var(--gray); margin-bottom:8px;">${p.sub} · ${p.priority}</div>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn-small" onclick="openSelector(${p.id},'cart')" style="background:var(--cart); color:white; border:none;">+🛒</button>
-                        <button class="btn-small" onclick="openPlanPicker(${p.id})">+📝</button>
+                    <div style="font-size:11px; color:var(--gray); margin-bottom:8px;">${p.sub} | ${p.priority}</div>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn-small" onclick="openSelector(${p.id},'cart')" style="background:var(--cart); color:white; border:none;">+ 🛒</button>
+                        <button class="btn-small" onclick="openPlanPicker(${p.id})">+ 📝</button>
                         <button class="btn-small" onclick="deleteProduct(${p.id})" style="color:red">×</button>
                     </div>
                 </div>
@@ -276,24 +278,28 @@
         renderCart(); renderPlans(); renderHistory();
     }
 
-    // --- 購物車與紀錄 ---
     function renderCart() {
         let total = 0;
         const cont = document.getElementById('cart-list');
-        cont.innerHTML = '<h3 style="font-size:16px;">🛒 準備購買</h3>';
+        cont.innerHTML = '<h3 style="font-size:15px;">🛒 待購籃子</h3>';
         cart.forEach((i, idx) => {
             const p = db.find(x => x.id === i.prodId);
             const s = p?.specs.find(x => x.specId === i.specId);
             if(!s) return;
             const price = (s.salePrice && (!s.saleDate || new Date().toISOString().split('T')[0] <= s.saleDate)) ? s.salePrice : s.price;
             total += price * i.qty;
-            cont.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:10px;">
-                <div style="min-width:0; flex:1;"><b style="font-size:13px;">${p.name}</b><br><small>${s.name} (₩${price})</small></div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <button class="btn-small" style="padding:4px 8px" onclick="updateQty('cart', null, idx, -1)">-</button>
-                    <b>${i.qty}</b>
-                    <button class="btn-small" style="padding:4px 8px" onclick="updateQty('cart', null, idx, 1)">+</button>
-                    <button onclick="cart.splice(${idx},1); saveAndRender();" style="border:none; color:red; background:none;">×</button>
+            cont.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px;">
+                <div style="min-width:0; flex:1; margin-right:10px;">
+                    <b style="font-size:13px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</b>
+                    <small style="color:var(--gray);">${s.name} (₩${price.toLocaleString()})</small>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                    <div class="qty-ctrl">
+                        <button class="qty-btn" onclick="updateQty('cart', null, idx, -1)">-</button>
+                        <span style="min-width:20px; text-align:center; font-weight:bold;">${i.qty}</span>
+                        <button class="qty-btn" onclick="updateQty('cart', null, idx, 1)">+</button>
+                    </div>
+                    <button onclick="cart.splice(${idx},1); saveAndRender();" style="border:none; color:red; background:none; font-size:18px; padding:0 5px;">×</button>
                 </div>
             </div>`;
         });
@@ -302,35 +308,28 @@
         document.getElementById('cart-total').innerText = `₩${total.toLocaleString()}`;
         document.getElementById('tax-refund-display').innerText = `退稅: ₩${refund.toLocaleString()}`;
         document.getElementById('after-refund-total').innerText = (total - refund).toLocaleString();
+        document.getElementById('hkd-total').innerText = Math.round((total-refund) * currentRate).toLocaleString();
     }
 
-    function renderHistory() {
-        document.getElementById('history-list').innerHTML = historyDB.map((s, idx) => {
-            let total = s.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            return `<div class="card" onclick="openHistoryEdit(${idx})" style="padding:10px; border-left:4px solid #333;">
-                <div style="display:flex; justify-content:space-between;">
-                    <div style="min-width:0;"><b style="font-size:13px;">${s.title}</b><br><small style="color:var(--gray)">${s.date}</small></div>
-                    <div style="text-align:right; flex-shrink:0;"><b>₩${total.toLocaleString()}</b><br><small style="color:red" onclick="event.stopPropagation(); deleteHistory(${idx})">刪除</small></div>
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-    // --- 計畫與編輯 ---
     function renderPlans() {
         document.getElementById('plan-groups').innerHTML = planGroups.map((g, gi) => `
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <b onclick="editPlanName(${gi})" style="color:var(--plan); font-size:16px;">📌 ${g.title} ✎</b>
-                    <button onclick="deletePlan(${gi})" style="border:none; background:none; color:red; font-size:12px;">刪除計畫</button>
+                    <b onclick="editPlanName(${gi})" style="color:var(--plan); font-size:15px; min-width:0; overflow:hidden; text-overflow:ellipsis;">📌 ${g.title} ✎</b>
+                    <button onclick="deletePlan(${gi})" style="border:none; background:none; color:red; font-size:11px; flex-shrink:0;">刪除</button>
                 </div>
                 ${g.items.map((i, ii) => {
                     const p = db.find(x => x.id === i.prodId);
-                    return `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-top:1px solid #f5f5f5;">
-                        <span style="font-size:13px;">${p?.name} (x${i.qty})</span>
-                        <div style="display:flex; gap:5px;">
-                            <button class="btn-small" onclick="cart.push({...planGroups[${gi}].items[${ii}]}); saveAndRender();">🛒</button>
-                            <button class="btn-small" onclick="planGroups[${gi}].items.splice(${ii},1); saveAndRender();">×</button>
+                    return `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid #f5f5f5;">
+                        <span style="font-size:13px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; margin-right:5px;">${p?.name}</span>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="qty-ctrl">
+                                <button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, -1)">-</button>
+                                <span style="min-width:18px; text-align:center; font-size:12px;">${i.qty}</span>
+                                <button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, 1)">+</button>
+                            </div>
+                            <button class="btn-small" style="padding:4px 8px;" onclick="cart.push({...planGroups[${gi}].items[${ii}]}); saveAndRender();">🛒</button>
+                            <button onclick="planGroups[${gi}].items.splice(${ii},1); saveAndRender();" style="border:none; background:none; color:red; padding:0 5px;">×</button>
                         </div>
                     </div>`;
                 }).join('')}
@@ -338,12 +337,24 @@
         `).join('');
     }
 
-    // --- 彈窗交互 ---
+    function renderHistory() {
+        document.getElementById('history-list').innerHTML = historyDB.map((s, idx) => {
+            let total = s.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            return `<div class="card" onclick="openHistoryEdit(${idx})" style="padding:10px; border-left:4px solid #333;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="min-width:0;"><b style="font-size:13px; display:block; overflow:hidden; text-overflow:ellipsis;">${s.title}</b><small style="color:var(--gray)">${s.date}</small></div>
+                    <div style="text-align:right; flex-shrink:0; margin-left:10px;"><b>₩${total.toLocaleString()}</b><br><small style="color:red" onclick="event.stopPropagation(); deleteHistory(${idx})">刪除</small></div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // --- 彈窗邏輯 ---
     function openSelector(pid, target, pIdx=null) {
         const p = db.find(x => x.id === pid);
         modalQty = 1; document.getElementById('modalQtyDisplay').innerText = 1;
         document.getElementById('modalProdName').innerText = p.name;
-        document.getElementById('modalSpecSelect').innerHTML = p.specs.map(s => `<option value="${s.specId}">${s.name} (₩${s.price})</option>`).join('');
+        document.getElementById('modalSpecSelect').innerHTML = p.specs.map(s => `<option value="${s.specId}">${s.name} (₩${s.price.toLocaleString()})</option>`).join('');
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('selectorModal').style.display = 'block';
         document.getElementById('planPickerModal').style.display = 'none';
@@ -364,7 +375,7 @@
         document.getElementById('selectorModal').style.display = 'none';
         document.getElementById('historyEditModal').style.display = 'none';
         document.getElementById('planOptionsList').innerHTML = planGroups.map((g, i) => 
-            `<button class="btn-main" style="background:white; color:var(--plan); border:1px solid var(--plan); margin-bottom:8px;" 
+            `<button class="btn-main" style="background:white; color:var(--plan); border:1px solid var(--plan); margin-bottom:8px; height:45px;" 
             onclick="openSelector(${pid}, 'plan', ${i})">${g.title}</button>`
         ).join('');
     }
@@ -385,22 +396,24 @@
         let total = 0;
         document.getElementById('histEditItems').innerHTML = tempHistItems.map((item, i) => {
             total += item.price * item.qty;
-            return `<div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-                <div style="flex:1; font-size:12px;">${item.name}</div>
-                <button class="btn-small" onclick="tempHistItems[${i}].qty=Math.max(1,tempHistItems[${i}].qty-1); renderHistEditItems();">-</button>
-                <b>${item.qty}</b>
-                <button class="btn-small" onclick="tempHistItems[${i}].qty+=1; renderHistEditItems();">+</button>
+            return `<div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+                <div style="flex:1; font-size:12px; min-width:0; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
+                <div class="qty-ctrl">
+                    <button class="qty-btn" onclick="tempHistItems[${i}].qty=Math.max(1,tempHistItems[${i}].qty-1); renderHistEditItems();">-</button>
+                    <b style="min-width:15px; text-align:center;">${item.qty}</b>
+                    <button class="qty-btn" onclick="tempHistItems[${i}].qty+=1; renderHistEditItems();">+</button>
+                </div>
                 <button onclick="tempHistItems.splice(${i},1); renderHistEditItems();" style="color:red; border:none; background:none;">×</button>
             </div>`;
         }).join('');
         document.getElementById('histEditTotal').innerText = total.toLocaleString();
     }
 
-    // --- 功能函式 ---
+    // --- 基礎核心函式 ---
     function addSpecRow() {
         const d = document.createElement('div');
         d.className='spec-input-item'; d.style='border:1px solid #eee; padding:10px; border-radius:12px; margin-bottom:10px; background:#fafafa;';
-        d.innerHTML=`<input type="text" class="s-name" placeholder="規格名稱"><div class="spec-input-grid"><input type="number" class="s-price" placeholder="原價"><input type="number" class="s-sale" placeholder="特價"></div><div><span class="date-label">📅 特價到期日</span><input type="date" class="s-date"></div>`;
+        d.innerHTML=`<input type="text" class="s-name" placeholder="規格名稱"><div class="spec-input-grid"><input type="number" class="s-price" placeholder="原價"><input type="number" class="s-sale" placeholder="特價"></div><label style="font-size: 11px; color: var(--gray);">📅 特價到期日</label><input type="date" class="s-date">`;
         document.getElementById('specContainer').appendChild(d);
     }
 
@@ -419,7 +432,7 @@
 
     function checkoutCart() {
         if(!cart.length) return;
-        const title = prompt("紀錄名稱：", "購物紀錄 " + new Date().toLocaleDateString());
+        const title = prompt("本次購物名稱：", "購物紀錄 " + new Date().toLocaleDateString());
         if(!title) return;
         historyDB.unshift({id:Date.now(), title, date:new Date().toLocaleString(), items: cart.map(i => {
             const p=db.find(x=>x.id===i.prodId); const s=p.specs.find(x=>x.specId===i.specId);
@@ -432,7 +445,7 @@
     function saveHistChanges() { historyDB[editingHistIdx].title = document.getElementById('histEditTitleInput').value; historyDB[editingHistIdx].items = tempHistItems; saveAndRender(); closeModal(); }
     function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
     function adjModalQty(v) { modalQty = Math.max(1, modalQty+v); document.getElementById('modalQtyDisplay').innerText = modalQty; }
-    function editPlanName(idx) { let n = prompt("修改名稱：", planGroups[idx].title); if(n) { planGroups[idx].title = n; saveAndRender(); } }
+    function editPlanName(idx) { let n = prompt("修改計畫名稱：", planGroups[idx].title); if(n) { planGroups[idx].title = n; saveAndRender(); } }
     function deletePlan(idx) { if(confirm("確定刪除此計畫？")) { planGroups.splice(idx,1); saveAndRender(); } }
     function createNewPlanGroup() { let t = prompt("計畫名稱:"); if(t) { planGroups.push({title:t, items:[]}); saveAndRender(); } }
     function updateQty(t, gi, ii, d) { let l = (t==='cart') ? cart : planGroups[gi].items; l[ii].qty = Math.max(1, l[ii].qty+d); saveAndRender(); }
@@ -441,23 +454,18 @@
     function deleteHistory(idx) { if(confirm("刪除此紀錄？")) { historyDB.splice(idx,1); saveAndRender(); } }
     function updateSubCats(mId, sId) { const m = document.getElementById(mId).value; document.getElementById(sId).innerHTML = catConfig[m].map(c => `<option value="${c}">${c}</option>`).join(''); }
 
-    // CSV / JSON 匯出入 (保留原始邏輯)
     function exportCSV() {
         let csv = "\uFEFF名稱,分類,優先級,規格,原價,特價\n";
         db.forEach(p => p.specs.forEach(s => csv += `${p.name},${p.sub},${p.priority},${s.name},${s.price},${s.salePrice||''}\n`));
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `OY_List_${new Date().toLocaleDateString()}.csv`;
-        link.click();
+        link.href = URL.createObjectURL(blob); link.download = `OY_List.csv`; link.click();
     }
     function exportJSON() {
         const data = { db, historyDB, planGroups, rate: currentRate };
         const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
         const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `OY_Backup.json`;
-        link.click();
+        link.href = URL.createObjectURL(blob); link.download = `OY_Backup.json`; link.click();
     }
     function importJSON() {
         const input = document.createElement('input'); input.type = 'file';
@@ -465,7 +473,7 @@
             const reader = new FileReader();
             reader.onload = ev => {
                 const data = JSON.parse(ev.target.result);
-                if(data.db) { db=data.db; historyDB=data.historyDB; planGroups=data.planGroups; currentRate=data.rate||0.0058; saveAndRender(); alert("匯入完成"); }
+                if(data.db) { db=data.db; historyDB=data.historyDB; planGroups=data.planGroups; currentRate=data.rate||0.0058; saveAndRender(); alert("匯入成功"); }
             };
             reader.readAsText(e.target.files[0]);
         };
