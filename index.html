@@ -63,6 +63,11 @@
         /* 彈窗 */
         .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center; padding: 15px; }
         .modal-content { background:white; padding:20px; border-radius:24px; width:100%; max-width:380px; max-height: 85vh; overflow-y: auto; }
+        
+        /* 優先級按鈕專用 */
+        .pri-btns { display: flex; gap: 4px; margin-top: 8px; border-top: 1px solid #f0f0f0; padding-top: 8px; }
+        .btn-pri-tag { border: 1px solid #ddd; background: white; padding: 4px 6px; border-radius: 6px; font-size: 10px; cursor: pointer; }
+        .btn-pri-tag.active { color: white; border-color: transparent; }
     </style>
 </head>
 <body>
@@ -270,6 +275,15 @@
         render(); 
     }
 
+    // 快速切換優先級功能
+    function fastSetPriority(pid, newPri) {
+        const pIdx = db.findIndex(x => x.id === pid);
+        if (pIdx > -1) {
+            db[pIdx].priority = newPri;
+            saveAndRender();
+        }
+    }
+
     function render() {
         document.getElementById('rateInput').value = currentRate;
         const dashCont = document.getElementById('dash-list');
@@ -300,6 +314,13 @@
                         <span style="font-size:10px; color:var(--gray); flex-shrink:0;">${p.sub}</span>
                     </div>
                     <div style="margin:5px 0;">${specSummary}</div>
+                    
+                    <div class="pri-btns">
+                        <button class="btn-pri-tag ${p.priority==='想買'?'active':''}" style="${p.priority==='想買'?'background:#34ace0':''}" onclick="fastSetPriority(${p.id}, '想買')">想買</button>
+                        <button class="btn-pri-tag ${p.priority==='需要'?'active':''}" style="${p.priority==='需要'?'background:#ffb142':''}" onclick="fastSetPriority(${p.id}, '需要')">需要</button>
+                        <button class="btn-pri-tag ${p.priority==='必買'?'active':''}" style="${p.priority==='必買'?'background:var(--sale)':''}" onclick="fastSetPriority(${p.id}, '必買')">必買</button>
+                    </div>
+
                     <div style="display:flex; gap:6px; margin-top:8px;">
                         <button class="btn-small" onclick="openSelector(${p.id},'cart')" style="background:var(--cart); color:white; border:none;">+🛒</button>
                         <button class="btn-small" onclick="openPlanPicker(${p.id})">+📝</button>
@@ -376,22 +397,25 @@
         `).join('');
     }
 
-    // --- 修復：計畫加入購物籃 ---
+    // 修復：計畫加入購物籃 (核心邏輯修正)
     function addToCartFromPlan(gi, ii) {
         const item = planGroups[gi].items[ii];
-        if (item) {
-            let ext = cart.find(x => x.prodId === item.prodId && x.specId === item.specId);
-            if (ext) {
-                ext.qty += item.qty;
-            } else {
-                cart.push({ prodId: item.prodId, specId: item.specId, qty: item.qty });
-            }
-            saveAndRender();
-            if(confirm("已成功加入購物籃！要現在去查看嗎？")) {
-                const cartBtn = document.querySelectorAll('.nav-btn')[3];
-                switchPage('cart', cartBtn);
-            }
+        if (!item) return;
+        
+        // 檢查產品和規格是否存在
+        const p = db.find(x => x.id === item.prodId);
+        if(!p) return alert("產品已刪除");
+        
+        let existing = cart.find(x => x.prodId === item.prodId && x.specId === item.specId);
+        if (existing) {
+            existing.qty += item.qty;
+        } else {
+            cart.push({ prodId: item.prodId, specId: item.specId, qty: item.qty });
         }
+        
+        // 重要：必須保存並重新渲染購物車
+        saveAndRender();
+        alert("已成功將「" + p.name + "」加入購物籃");
     }
 
     function renderHistory() {
@@ -406,7 +430,6 @@
         }).join('');
     }
 
-    // --- 修復：歷史紀錄編輯 ---
     function openHistoryEdit(idx) {
         editingHistIdx = idx;
         const hist = historyDB[idx];
@@ -421,7 +444,6 @@
                 </div>
             </div>
         `).join('');
-        
         calcHistEditTotal();
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('historyEditModal').style.display = 'block';
@@ -452,7 +474,6 @@
         closeModal();
     }
 
-    // --- 編輯產品邏輯 ---
     function openEditProduct(pid) {
         editingProdId = pid;
         const p = db.find(x => x.id === pid);
@@ -462,11 +483,9 @@
         updateSubCats('editMainCat', 'editSubCat');
         document.getElementById('editSubCat').value = p.sub;
         document.getElementById('editPriority').value = p.priority;
-        
         const container = document.getElementById('editSpecContainer');
         container.innerHTML = '';
         p.specs.forEach(s => addEditSpecRow(s));
-        
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('editProductModal').style.display = 'block';
         document.getElementById('selectorModal').style.display = 'none';
@@ -507,7 +526,6 @@
         saveAndRender(); closeModal();
     }
 
-    // --- 其他邏輯 ---
     function openSelector(pid, target, pIdx=null) {
         const p = db.find(x => x.id === pid);
         modalQty = 1; document.getElementById('modalQtyDisplay').innerText = 1;
@@ -572,7 +590,6 @@
         const title = prompt("本次紀錄名稱：", "購物紀錄 " + new Date().toLocaleDateString());
         if(!title) return;
         const today = new Date().toISOString().split('T')[0];
-        
         const checkoutItems = cart.map(i => {
             const p = db.find(x => x.id === i.prodId);
             if (!p) return null;
@@ -581,18 +598,9 @@
             const pr = (s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price;
             return { name: `${p.name} (${s.name})`, qty: i.qty, price: pr };
         }).filter(item => item !== null);
-
         if (checkoutItems.length === 0) return alert("資料錯誤，無法存檔。");
-
-        historyDB.unshift({
-            id: Date.now(), 
-            title: title, 
-            date: new Date().toLocaleString(), 
-            items: checkoutItems
-        });
-        
-        cart = []; 
-        saveAndRender();
+        historyDB.unshift({id: Date.now(), title: title, date: new Date().toLocaleString(), items: checkoutItems});
+        cart = []; saveAndRender();
         alert("已成功完成購買紀錄！");
     }
 
@@ -606,7 +614,6 @@
     function deleteHistory(idx) { if(confirm("刪除此紀錄？")) { historyDB.splice(idx,1); saveAndRender(); } }
     function updateSubCats(mId, sId) { const m = document.getElementById(mId).value; document.getElementById(sId).innerHTML = catConfig[m].map(c => `<option value="${c}">${c}</option>`).join(''); }
     
-    // 匯出入
     function exportCSV() {
         let csv = "\uFEFF名稱,分類,規格,原價,特價\n";
         db.forEach(p => p.specs.forEach(s => csv += `${p.name},${p.sub},${s.name},${s.price},${s.salePrice||''}\n`));
