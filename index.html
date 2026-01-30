@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OY Pro+ Ultimate</title>
+    <title>買不完的OY</title>
     <style>
         :root { --primary: #f05a28; --secondary: #97c024; --bg: #f2f2f7; --cart: #2ecc71; --plan: #9b59b6; --gray: #8e8e93; --highlight: #fff9c4; --sale: #ff5252; --shadow: 0 4px 12px rgba(0,0,0,0.08); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -221,7 +221,7 @@
 
 <script>
     const refundTable = [{min:15000,refund:1000},{min:30000,refund:2000},{min:50000,refund:3000},{min:75000,refund:5000},{min:100000,refund:7000},{min:125000,refund:8000},{min:150000,refund:9000},{min:175000,refund:10000},{min:200000,refund:12000},{min:225000,refund:13000},{min:250000,refund:15000},{min:275000,refund:17000},{min:300000,refund:19000},{min:325000,refund:21000},{min:350000,refund:23000},{min:375000,refund:25000},{min:400000,refund:27000},{min:425000,refund:28000},{min:450000,refund:30000},{min:475000,refund:32000},{min:500000,refund:35000},{min:1000000,refund:75000},{min:2000000,refund:150000}];
-    const catConfig = {"護膚品":["化妝水","精華","乳液","面霜","面膜","防曬","潔面"],"化妝品-Base":["妝前","氣墊","粉底","遮瑕","腮紅"],"化妝品-Eyes":["眉筆","眼線/臥蠶","眼影","睫毛膏"],"化妝品-Lip":["唇線筆","唇釉","唇膏"],"其他類":["香水","零食","生活雜貨"]};
+    const catConfig = {"護膚品":["化妝水","精華","乳液","面霜","面膜","防曬","潔面","卸妝"],"化妝品-Base":["妝前","氣墊","粉底","遮瑕","腮紅","光/陰影"],"化妝品-Eyes":["眉筆","眼線/臥蠶","眼影","睫毛膏"],"化妝品-Lip":["唇線筆","唇釉","唇膏"],"其他類":["手部膚理","身體護理","香水","零食","生活雜貨"]};
 
     let currentRate = parseFloat(localStorage.getItem('oy_rate')) || 0.0058;
     let db = JSON.parse(localStorage.getItem('oy_db_v18')) || [];
@@ -367,7 +367,7 @@
                                 <span style="min-width:18px; text-align:center;">${i.qty}</span>
                                 <button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, 1)">+</button>
                             </div>
-                            <button class="btn-small" style="padding:4px 8px;" onclick="addToCartFromPlan(${gi}, ${ii})">🛒</button>
+                            <button class="btn-small" style="padding:4px 8px; background:var(--cart); color:white; border:none;" onclick="addToCartFromPlan(${gi}, ${ii})">🛒</button>
                             <button onclick="planGroups[${gi}].items.splice(${ii},1); saveAndRender();" style="border:none; background:none; color:red;">×</button>
                         </div>
                     </div>`;
@@ -387,7 +387,10 @@
                 cart.push({ prodId: item.prodId, specId: item.specId, qty: item.qty });
             }
             saveAndRender();
-            alert("已成功加入購物籃！");
+            if(confirm("已成功加入購物籃！要現在去查看嗎？")) {
+                const cartBtn = document.querySelectorAll('.nav-btn')[3];
+                switchPage('cart', cartBtn);
+            }
         }
     }
 
