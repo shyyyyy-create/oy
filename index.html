@@ -30,11 +30,16 @@
         .chip.pri.active { border-color: var(--primary); color: var(--primary); background: #fff5f2; }
 
         /* 產品清單 */
-        .item-card { display: flex; gap: 12px; align-items: center; border-left: 5px solid #ccc; }
+        .item-card { display: flex; gap: 12px; align-items: flex-start; border-left: 5px solid #ccc; position: relative; }
         .item-card[data-pri="必買"] { border-left-color: var(--sale); }
         .item-card[data-pri="需要"] { border-left-color: #ffb142; }
         .item-card[data-pri="想買"] { border-left-color: #34ace0; }
-        .prod-img { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; }
+        .prod-img { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; background: #eee; flex-shrink: 0; margin-top: 5px; }
+        
+        /* 價格顯示優化 */
+        .price-tag { font-size: 11px; margin-top: 4px; border-top: 1px dashed #eee; padding-top: 4px; }
+        .sale-price { color: var(--sale); font-weight: bold; }
+        .origin-price { color: var(--gray); text-decoration: line-through; margin-right: 5px; }
         
         /* 輸入方塊優化 */
         input, select { width: 100%; height: 42px; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 10px; margin-bottom: 8px; font-size: 14px; outline: none; background: #fff; }
@@ -51,14 +56,13 @@
         .page { display: none; }
         .page.active { display: block; }
         
-        /* 結帳列優化 */
+        /* 結帳列 */
         .checkout-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 12px 15px 30px 15px; border-top: 1px solid #eee; z-index: 1500; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
         .price-summary { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .total-box { min-width: 0; overflow: hidden; }
 
         /* 彈窗 */
         .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center; padding: 15px; }
-        .modal-content { background:white; padding:20px; border-radius:24px; width:100%; max-width:360px; max-height: 85vh; overflow-y: auto; }
+        .modal-content { background:white; padding:20px; border-radius:24px; width:100%; max-width:380px; max-height: 85vh; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -176,6 +180,27 @@
         </div>
     </div>
 
+    <div class="modal-content" id="editProductModal" style="display:none;">
+        <h3 style="margin:0 0 15px 0; font-size:18px;">✏️ 編輯產品資料</h3>
+        <input type="text" id="editName" placeholder="產品名稱">
+        <input type="text" id="editImgUrl" placeholder="圖片連結">
+        <div style="display: flex; gap: 8px;">
+            <select id="editMainCat" onchange="updateSubCats('editMainCat', 'editSubCat')"></select>
+            <select id="editSubCat"></select>
+        </div>
+        <select id="editPriority">
+            <option value="想買">☁️ 優先級：想買</option>
+            <option value="需要">⚡ 優先級：需要</option>
+            <option value="必買">🔥 優先級：必買</option>
+        </select>
+        <div id="editSpecContainer"></div>
+        <button onclick="addEditSpecRow()" class="btn-small" style="width:100%; margin-bottom:12px; border-style:dashed;">+ 新增規格</button>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-main" style="background:#eee; color:#333; flex:1;" onclick="closeModal()">取消</button>
+            <button class="btn-main" style="flex:2;" onclick="updateProduct()">儲存修改</button>
+        </div>
+    </div>
+
     <div class="modal-content" id="planPickerModal" style="display:none;">
         <h3 style="margin:0 0 15px 0; font-size:18px;">選取目標計畫</h3>
         <div id="planOptionsList"></div>
@@ -205,7 +230,7 @@
     let planGroups = JSON.parse(localStorage.getItem('oy_plans_v18')) || [{title: "首爾必買", items: []}];
     
     let activeMain = "全部", activeSub = "全部", activePri = "全部";
-    let modalQty = 1, editingHistIdx = null, tempHistItems = [];
+    let modalQty = 1, editingHistIdx = null, editingProdId = null;
 
     function switchPage(p, btn) {
         document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
@@ -250,6 +275,7 @@
         const dashCont = document.getElementById('dash-list');
         dashCont.innerHTML = '';
         const sText = document.getElementById('searchBar').value.toLowerCase();
+        const today = new Date().toISOString().split('T')[0];
 
         db.forEach(p => {
             if(activeMain !== '全部' && p.main !== activeMain) return;
@@ -257,19 +283,27 @@
             if(activePri !== '全部' && p.priority !== activePri) return;
             if(sText && !p.name.toLowerCase().includes(sText)) return;
             
-            const isSale = p.specs.some(s => s.salePrice && (!s.saleDate || new Date().toISOString().split('T')[0] <= s.saleDate));
+            let specSummary = p.specs.map(s => {
+                const hasSale = s.salePrice && (!s.saleDate || today <= s.saleDate);
+                return `<div class="price-tag">
+                    <span style="color:#555; font-weight:bold;">${s.name}:</span> 
+                    ${hasSale ? `<span class="origin-price">₩${s.price.toLocaleString()}</span><span class="sale-price">₩${s.salePrice.toLocaleString()}</span>` : `<span>₩${s.price.toLocaleString()}</span>`}
+                    ${s.saleDate && hasSale ? `<br><small style="color:var(--sale)">截止: ${s.saleDate}</small>` : ''}
+                </div>`;
+            }).join('');
 
             dashCont.innerHTML += `<div class="item-card card" data-pri="${p.priority}">
                 <img src="${p.img || 'https://via.placeholder.com/100?text=OY'}" class="prod-img">
-                <div style="flex:1; min-width:0;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="flex:1; min-width:0; padding-left:5px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <b style="font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</b>
-                        ${isSale ? '<span style="color:var(--sale); font-size:10px; font-weight:bold; margin-left:5px;">SALE</span>' : ''}
+                        <span style="font-size:10px; color:var(--gray); flex-shrink:0;">${p.sub}</span>
                     </div>
-                    <div style="font-size:11px; color:var(--gray); margin-bottom:8px;">${p.sub} | ${p.priority}</div>
-                    <div style="display:flex; gap:6px;">
-                        <button class="btn-small" onclick="openSelector(${p.id},'cart')" style="background:var(--cart); color:white; border:none;">+ 🛒</button>
-                        <button class="btn-small" onclick="openPlanPicker(${p.id})">+ 📝</button>
+                    <div style="margin:5px 0;">${specSummary}</div>
+                    <div style="display:flex; gap:6px; margin-top:8px;">
+                        <button class="btn-small" onclick="openSelector(${p.id},'cart')" style="background:var(--cart); color:white; border:none;">+🛒</button>
+                        <button class="btn-small" onclick="openPlanPicker(${p.id})">+📝</button>
+                        <button class="btn-small" onclick="openEditProduct(${p.id})">✎ 編輯</button>
                         <button class="btn-small" onclick="deleteProduct(${p.id})" style="color:red">×</button>
                     </div>
                 </div>
@@ -281,12 +315,13 @@
     function renderCart() {
         let total = 0;
         const cont = document.getElementById('cart-list');
+        const today = new Date().toISOString().split('T')[0];
         cont.innerHTML = '<h3 style="font-size:15px;">🛒 待購籃子</h3>';
         cart.forEach((i, idx) => {
             const p = db.find(x => x.id === i.prodId);
             const s = p?.specs.find(x => x.specId === i.specId);
             if(!s) return;
-            const price = (s.salePrice && (!s.saleDate || new Date().toISOString().split('T')[0] <= s.saleDate)) ? s.salePrice : s.price;
+            const price = (s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price;
             total += price * i.qty;
             cont.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px;">
                 <div style="min-width:0; flex:1; margin-right:10px;">
@@ -295,11 +330,11 @@
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
                     <div class="qty-ctrl">
-                        <button class="qty-btn" onclick="updateQty('cart', null, idx, -1)">-</button>
+                        <button class="qty-btn" onclick="updateQty('cart', null, ${idx}, -1)">-</button>
                         <span style="min-width:20px; text-align:center; font-weight:bold;">${i.qty}</span>
-                        <button class="qty-btn" onclick="updateQty('cart', null, idx, 1)">+</button>
+                        <button class="qty-btn" onclick="updateQty('cart', null, ${idx}, 1)">+</button>
                     </div>
-                    <button onclick="cart.splice(${idx},1); saveAndRender();" style="border:none; color:red; background:none; font-size:18px; padding:0 5px;">×</button>
+                    <button onclick="cart.splice(${idx},1); saveAndRender();" style="border:none; color:red; background:none; font-size:18px;">×</button>
                 </div>
             </div>`;
         });
@@ -316,7 +351,7 @@
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <b onclick="editPlanName(${gi})" style="color:var(--plan); font-size:15px; min-width:0; overflow:hidden; text-overflow:ellipsis;">📌 ${g.title} ✎</b>
-                    <button onclick="deletePlan(${gi})" style="border:none; background:none; color:red; font-size:11px; flex-shrink:0;">刪除</button>
+                    <button onclick="deletePlan(${gi})" style="border:none; background:none; color:red; font-size:11px;">刪除</button>
                 </div>
                 ${g.items.map((i, ii) => {
                     const p = db.find(x => x.id === i.prodId);
@@ -325,11 +360,11 @@
                         <div style="display:flex; align-items:center; gap:8px;">
                             <div class="qty-ctrl">
                                 <button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, -1)">-</button>
-                                <span style="min-width:18px; text-align:center; font-size:12px;">${i.qty}</span>
+                                <span style="min-width:18px; text-align:center;">${i.qty}</span>
                                 <button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, 1)">+</button>
                             </div>
                             <button class="btn-small" style="padding:4px 8px;" onclick="cart.push({...planGroups[${gi}].items[${ii}]}); saveAndRender();">🛒</button>
-                            <button onclick="planGroups[${gi}].items.splice(${ii},1); saveAndRender();" style="border:none; background:none; color:red; padding:0 5px;">×</button>
+                            <button onclick="planGroups[${gi}].items.splice(${ii},1); saveAndRender();" style="border:none; background:none; color:red;">×</button>
                         </div>
                     </div>`;
                 }).join('')}
@@ -342,14 +377,69 @@
             let total = s.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
             return `<div class="card" onclick="openHistoryEdit(${idx})" style="padding:10px; border-left:4px solid #333;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="min-width:0;"><b style="font-size:13px; display:block; overflow:hidden; text-overflow:ellipsis;">${s.title}</b><small style="color:var(--gray)">${s.date}</small></div>
-                    <div style="text-align:right; flex-shrink:0; margin-left:10px;"><b>₩${total.toLocaleString()}</b><br><small style="color:red" onclick="event.stopPropagation(); deleteHistory(${idx})">刪除</small></div>
+                    <div style="min-width:0;"><b style="font-size:13px; display:block;">${s.title}</b><small style="color:var(--gray)">${s.date}</small></div>
+                    <div style="text-align:right; flex-shrink:0;"><b>₩${total.toLocaleString()}</b><br><small style="color:red" onclick="event.stopPropagation(); deleteHistory(${idx})">刪除</small></div>
                 </div>
             </div>`;
         }).join('');
     }
 
-    // --- 彈窗邏輯 ---
+    // --- 編輯產品邏輯 ---
+    function openEditProduct(pid) {
+        editingProdId = pid;
+        const p = db.find(x => x.id === pid);
+        document.getElementById('editName').value = p.name;
+        document.getElementById('editImgUrl').value = p.img;
+        document.getElementById('editMainCat').innerHTML = Object.keys(catConfig).map(k => `<option value="${k}" ${p.main===k?'selected':''}>${k}</option>`).join('');
+        updateSubCats('editMainCat', 'editSubCat');
+        document.getElementById('editSubCat').value = p.sub;
+        document.getElementById('editPriority').value = p.priority;
+        
+        const container = document.getElementById('editSpecContainer');
+        container.innerHTML = '';
+        p.specs.forEach(s => addEditSpecRow(s));
+        
+        document.getElementById('modalOverlay').style.display = 'flex';
+        document.getElementById('editProductModal').style.display = 'block';
+        document.getElementById('selectorModal').style.display = 'none';
+        document.getElementById('planPickerModal').style.display = 'none';
+        document.getElementById('historyEditModal').style.display = 'none';
+    }
+
+    function addEditSpecRow(data = null) {
+        const d = document.createElement('div');
+        d.className='edit-spec-item'; d.style='border:1px solid #eee; padding:10px; border-radius:12px; margin-bottom:10px; background:#fafafa; position:relative;';
+        d.innerHTML=`<button onclick="this.parentElement.remove()" style="position:absolute; right:5px; top:5px; border:none; background:none; color:red;">×</button>
+            <input type="text" class="es-name" placeholder="規格" value="${data?data.name:''}">
+            <div class="spec-input-grid">
+                <input type="number" class="es-price" placeholder="原價" value="${data?data.price:''}">
+                <input type="number" class="es-sale" placeholder="特價" value="${data?(data.salePrice||''):''}">
+            </div>
+            <input type="date" class="es-date" value="${data?(data.saleDate||''):''}">`;
+        document.getElementById('editSpecContainer').appendChild(d);
+    }
+
+    function updateProduct() {
+        const pIdx = db.findIndex(x => x.id === editingProdId);
+        const specs = Array.from(document.querySelectorAll('.edit-spec-item')).map(c => ({
+            specId: Math.random(), 
+            name: c.querySelector('.es-name').value||"標準", 
+            price: Number(c.querySelector('.es-price').value)||0, 
+            salePrice: Number(c.querySelector('.es-sale').value)||null, 
+            saleDate: c.querySelector('.es-date').value||null
+        }));
+        db[pIdx] = { ...db[pIdx], 
+            name: document.getElementById('editName').value, 
+            img: document.getElementById('editImgUrl').value,
+            main: document.getElementById('editMainCat').value,
+            sub: document.getElementById('editSubCat').value,
+            priority: document.getElementById('editPriority').value,
+            specs 
+        };
+        saveAndRender(); closeModal();
+    }
+
+    // --- 其他邏輯 ---
     function openSelector(pid, target, pIdx=null) {
         const p = db.find(x => x.id === pid);
         modalQty = 1; document.getElementById('modalQtyDisplay').innerText = 1;
@@ -357,8 +447,8 @@
         document.getElementById('modalSpecSelect').innerHTML = p.specs.map(s => `<option value="${s.specId}">${s.name} (₩${s.price.toLocaleString()})</option>`).join('');
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('selectorModal').style.display = 'block';
+        document.getElementById('editProductModal').style.display = 'none';
         document.getElementById('planPickerModal').style.display = 'none';
-        document.getElementById('historyEditModal').style.display = 'none';
 
         document.getElementById('modalConfirmBtn').onclick = () => {
             const sid = Number(document.getElementById('modalSpecSelect').value);
@@ -369,58 +459,25 @@
         };
     }
 
-    function openPlanPicker(pid) {
-        document.getElementById('modalOverlay').style.display = 'flex';
-        document.getElementById('planPickerModal').style.display = 'block';
-        document.getElementById('selectorModal').style.display = 'none';
-        document.getElementById('historyEditModal').style.display = 'none';
-        document.getElementById('planOptionsList').innerHTML = planGroups.map((g, i) => 
-            `<button class="btn-main" style="background:white; color:var(--plan); border:1px solid var(--plan); margin-bottom:8px; height:45px;" 
-            onclick="openSelector(${pid}, 'plan', ${i})">${g.title}</button>`
-        ).join('');
+    function updateQty(type, gi, ii, delta) {
+        let list = (type === 'cart') ? cart : planGroups[gi].items;
+        if (list[ii]) {
+            list[ii].qty = Math.max(1, list[ii].qty + delta);
+            saveAndRender();
+        }
     }
 
-    function openHistoryEdit(idx) {
-        editingHistIdx = idx;
-        const s = historyDB[idx];
-        document.getElementById('histEditTitleInput').value = s.title;
-        tempHistItems = JSON.parse(JSON.stringify(s.items));
-        document.getElementById('modalOverlay').style.display = 'flex';
-        document.getElementById('historyEditModal').style.display = 'block';
-        document.getElementById('selectorModal').style.display = 'none';
-        document.getElementById('planPickerModal').style.display = 'none';
-        renderHistEditItems();
-    }
-
-    function renderHistEditItems() {
-        let total = 0;
-        document.getElementById('histEditItems').innerHTML = tempHistItems.map((item, i) => {
-            total += item.price * item.qty;
-            return `<div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
-                <div style="flex:1; font-size:12px; min-width:0; overflow:hidden; text-overflow:ellipsis;">${item.name}</div>
-                <div class="qty-ctrl">
-                    <button class="qty-btn" onclick="tempHistItems[${i}].qty=Math.max(1,tempHistItems[${i}].qty-1); renderHistEditItems();">-</button>
-                    <b style="min-width:15px; text-align:center;">${item.qty}</b>
-                    <button class="qty-btn" onclick="tempHistItems[${i}].qty+=1; renderHistEditItems();">+</button>
-                </div>
-                <button onclick="tempHistItems.splice(${i},1); renderHistEditItems();" style="color:red; border:none; background:none;">×</button>
-            </div>`;
-        }).join('');
-        document.getElementById('histEditTotal').innerText = total.toLocaleString();
-    }
-
-    // --- 基礎核心函式 ---
     function addSpecRow() {
         const d = document.createElement('div');
         d.className='spec-input-item'; d.style='border:1px solid #eee; padding:10px; border-radius:12px; margin-bottom:10px; background:#fafafa;';
-        d.innerHTML=`<input type="text" class="s-name" placeholder="規格名稱"><div class="spec-input-grid"><input type="number" class="s-price" placeholder="原價"><input type="number" class="s-sale" placeholder="特價"></div><label style="font-size: 11px; color: var(--gray);">📅 特價到期日</label><input type="date" class="s-date">`;
+        d.innerHTML=`<input type="text" class="s-name" placeholder="規格名稱"><div class="spec-input-grid"><input type="number" class="s-price" placeholder="原價"><input type="number" class="s-sale" placeholder="特價"></div><input type="date" class="s-date">`;
         document.getElementById('specContainer').appendChild(d);
     }
 
     function saveProduct() { 
         const name = document.getElementById('name').value; if(!name) return alert("請輸入名稱"); 
         const specs = Array.from(document.querySelectorAll('.spec-input-item')).map(c => ({
-            specId: Date.now()+Math.random(), 
+            specId: Math.random(), 
             name: c.querySelector('.s-name').value||"標準", 
             price: Number(c.querySelector('.s-price').value)||0, 
             salePrice: Number(c.querySelector('.s-sale').value)||null, 
@@ -430,42 +487,50 @@
         saveAndRender(); alert("成功存入清單");
     }
 
+    function openPlanPicker(pid) {
+        document.getElementById('modalOverlay').style.display = 'flex';
+        document.getElementById('planPickerModal').style.display = 'block';
+        document.getElementById('selectorModal').style.display = 'none';
+        document.getElementById('planOptionsList').innerHTML = planGroups.map((g, i) => 
+            `<button class="btn-main" style="background:white; color:var(--plan); border:1px solid var(--plan); margin-bottom:8px;" 
+            onclick="openSelector(${pid}, 'plan', ${i})">${g.title}</button>`
+        ).join('');
+    }
+
     function checkoutCart() {
         if(!cart.length) return;
-        const title = prompt("本次購物名稱：", "購物紀錄 " + new Date().toLocaleDateString());
+        const title = prompt("本次紀錄名稱：", "購物紀錄 " + new Date().toLocaleDateString());
         if(!title) return;
+        const today = new Date().toISOString().split('T')[0];
         historyDB.unshift({id:Date.now(), title, date:new Date().toLocaleString(), items: cart.map(i => {
             const p=db.find(x=>x.id===i.prodId); const s=p.specs.find(x=>x.specId===i.specId);
-            const pr = (s.salePrice && (!s.saleDate || new Date().toISOString().split('T')[0] <= s.saleDate)) ? s.salePrice : s.price;
+            const pr = (s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price;
             return {name:p.name, qty:i.qty, price:pr}
         })});
         cart=[]; saveAndRender();
     }
 
-    function saveHistChanges() { historyDB[editingHistIdx].title = document.getElementById('histEditTitleInput').value; historyDB[editingHistIdx].items = tempHistItems; saveAndRender(); closeModal(); }
     function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
     function adjModalQty(v) { modalQty = Math.max(1, modalQty+v); document.getElementById('modalQtyDisplay').innerText = modalQty; }
-    function editPlanName(idx) { let n = prompt("修改計畫名稱：", planGroups[idx].title); if(n) { planGroups[idx].title = n; saveAndRender(); } }
+    function editPlanName(idx) { let n = prompt("修改名稱：", planGroups[idx].title); if(n) { planGroups[idx].title = n; saveAndRender(); } }
     function deletePlan(idx) { if(confirm("確定刪除此計畫？")) { planGroups.splice(idx,1); saveAndRender(); } }
     function createNewPlanGroup() { let t = prompt("計畫名稱:"); if(t) { planGroups.push({title:t, items:[]}); saveAndRender(); } }
-    function updateQty(t, gi, ii, d) { let l = (t==='cart') ? cart : planGroups[gi].items; l[ii].qty = Math.max(1, l[ii].qty+d); saveAndRender(); }
     function saveRate() { currentRate = parseFloat(document.getElementById('rateInput').value) || 0.0058; localStorage.setItem('oy_rate', currentRate); render(); }
     function deleteProduct(id) { if(confirm('刪除此產品？')) { db = db.filter(x => x.id !== id); saveAndRender(); } }
     function deleteHistory(idx) { if(confirm("刪除此紀錄？")) { historyDB.splice(idx,1); saveAndRender(); } }
     function updateSubCats(mId, sId) { const m = document.getElementById(mId).value; document.getElementById(sId).innerHTML = catConfig[m].map(c => `<option value="${c}">${c}</option>`).join(''); }
-
+    
+    // 匯出入
     function exportCSV() {
-        let csv = "\uFEFF名稱,分類,優先級,規格,原價,特價\n";
-        db.forEach(p => p.specs.forEach(s => csv += `${p.name},${p.sub},${p.priority},${s.name},${s.price},${s.salePrice||''}\n`));
+        let csv = "\uFEFF名稱,分類,規格,原價,特價\n";
+        db.forEach(p => p.specs.forEach(s => csv += `${p.name},${p.sub},${s.name},${s.price},${s.salePrice||''}\n`));
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob); link.download = `OY_List.csv`; link.click();
+        const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `OY_List.csv`; link.click();
     }
     function exportJSON() {
         const data = { db, historyDB, planGroups, rate: currentRate };
         const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob); link.download = `OY_Backup.json`; link.click();
+        const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `OY_Backup.json`; link.click();
     }
     function importJSON() {
         const input = document.createElement('input'); input.type = 'file';
