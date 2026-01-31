@@ -216,7 +216,11 @@
         <input type="text" id="histEditTitleInput" style="font-weight:bold; font-size:16px;">
         <div id="histEditItems"></div>
         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-        <div style="text-align: right; font-weight: bold;">總額: ₩<span id="histEditTotal">0</span></div>
+        <div style="text-align: right; font-size:13px; line-height:1.6;">
+            <div style="color:var(--gray)">總額: ₩<span id="histEditTotal">0</span></div>
+            <div style="color:var(--cart)">退稅: -₩<span id="histEditRefund">0</span></div>
+            <div style="font-weight: bold; font-size:16px; color:var(--primary);">實付: ₩<span id="histEditPaid">0</span></div>
+        </div>
         <div style="display:flex; gap:10px; margin-top:15px;">
             <button class="btn-main" style="background:#eee; color:#333; flex:1;" onclick="closeModal()">關閉</button>
             <button class="btn-main" style="flex:2;" onclick="saveHistChanges()">儲存</button>
@@ -275,7 +279,6 @@
         render(); 
     }
 
-    // 快速切換優先級功能
     function fastSetPriority(pid, newPri) {
         const pIdx = db.findIndex(x => x.id === pid);
         if (pIdx > -1) {
@@ -346,12 +349,9 @@
         cart.forEach((i, idx) => {
             const p = db.find(x => x.id === i.prodId);
             const s = p?.specs.find(x => x.specId === i.specId);
-            
-            // 修正：如果找不到規格(可能是編輯過導致ID變更)，顯示錯誤提示，而不是隱藏
             const displayName = p ? p.name : '未知/已刪除產品';
             const displaySpec = s ? s.name : '<span style="color:red;">規格已失效(請刪除)</span>';
             const price = s ? ((s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price) : 0;
-            
             total += price * i.qty;
             cont.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px;">
                 <div style="min-width:0; flex:1; margin-right:10px;">
@@ -411,25 +411,36 @@
         const item = planGroups[gi].items[ii];
         const qty = parseInt(item.qty) || 1;
         const existingIdx = cart.findIndex(c => c.prodId === item.prodId && c.specId === item.specId);
-        
-        if(existingIdx > -1) {
-            cart[existingIdx].qty += qty;
-        } else {
-            cart.push({prodId: item.prodId, specId: item.specId, qty: qty});
-        }
-        
-        saveAndRender();
-        // 自動切換到籃子頁面確認 (可選，這裡只提示)
-        alert("已加入籃子！");
+        if(existingIdx > -1) cart[existingIdx].qty += qty; else cart.push({prodId: item.prodId, specId: item.specId, qty: qty});
+        saveAndRender(); alert("已加入籃子！");
     }
 
     function renderHistory() {
         document.getElementById('history-list').innerHTML = historyDB.map((s, idx) => {
-            let total = s.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            // 兼容性處理：如果舊紀錄沒有 finalPaid，則即時計算
+            let total = s.total;
+            let refund = s.refund;
+            let finalPaid = s.finalPaid;
+
+            if (total === undefined) {
+                total = s.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+                refund = 0;
+                for (let i = refundTable.length - 1; i >= 0; i--) { if (total >= refundTable[i].min) { refund = refundTable[i].refund; break; } }
+                finalPaid = total - refund;
+            }
+
             return `<div class="card" onclick="openHistoryEdit(${idx})" style="padding:10px; border-left:4px solid #333;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="min-width:0;"><b style="font-size:13px; display:block;">${s.title}</b><small style="color:var(--gray)">${s.date}</small></div>
-                    <div style="text-align:right; flex-shrink:0;"><b>₩${total.toLocaleString()}</b><br><small style="color:red" onclick="event.stopPropagation(); deleteHistory(${idx})">刪除</small></div>
+                    <div style="min-width:0; padding-right:10px;">
+                        <b style="font-size:13px; display:block;">${s.title}</b>
+                        <small style="color:var(--gray)">${s.date}</small>
+                    </div>
+                    <div style="text-align:right; flex-shrink:0; font-size:11px; line-height:1.4;">
+                        <div style="color:var(--gray)">總: ₩${total.toLocaleString()}</div>
+                        <div style="color:var(--cart)">退: -₩${refund.toLocaleString()}</div>
+                        <div style="font-weight:900; color:var(--primary); font-size:13px;">實: ₩${finalPaid.toLocaleString()}</div>
+                        <small style="color:red; display:inline-block; margin-top:2px; cursor:pointer;" onclick="event.stopPropagation(); deleteHistory(${idx})">刪除</small>
+                    </div>
                 </div>
             </div>`;
         }).join('');
@@ -470,11 +481,26 @@
     function calcHistEditTotal() {
         const hist = historyDB[editingHistIdx];
         let total = hist.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        let refund = 0;
+        for (let i = refundTable.length - 1; i >= 0; i--) { if (total >= refundTable[i].min) { refund = refundTable[i].refund; break; } }
+        let finalPaid = total - refund;
+
         document.getElementById('histEditTotal').innerText = total.toLocaleString();
+        document.getElementById('histEditRefund').innerText = refund.toLocaleString();
+        document.getElementById('histEditPaid').innerText = finalPaid.toLocaleString();
     }
 
     function saveHistChanges() {
         historyDB[editingHistIdx].title = document.getElementById('histEditTitleInput').value;
+        
+        // 重新計算並儲存金額
+        let total = historyDB[editingHistIdx].items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        let refund = 0;
+        for (let i = refundTable.length - 1; i >= 0; i--) { if (total >= refundTable[i].min) { refund = refundTable[i].refund; break; } }
+        historyDB[editingHistIdx].total = total;
+        historyDB[editingHistIdx].refund = refund;
+        historyDB[editingHistIdx].finalPaid = total - refund;
+
         saveAndRender();
         closeModal();
     }
@@ -501,9 +527,7 @@
     function addEditSpecRow(data = null) {
         const d = document.createElement('div');
         d.className='edit-spec-item'; 
-        // 修正：保存原始 specId，防止編輯後 ID 變更導致計畫/籃子連結斷裂
         d.dataset.sid = data ? data.specId : Math.random();
-        
         d.style='border:1px solid #eee; padding:10px; border-radius:12px; margin-bottom:10px; background:#fafafa; position:relative;';
         d.innerHTML=`<button onclick="this.parentElement.remove()" style="position:absolute; right:5px; top:5px; border:none; background:none; color:red;">×</button>
             <input type="text" class="es-name" placeholder="規格" value="${data?data.name:''}">
@@ -518,7 +542,6 @@
     function updateProduct() {
         const pIdx = db.findIndex(x => x.id === editingProdId);
         const specs = Array.from(document.querySelectorAll('.edit-spec-item')).map(c => ({
-            // 修正：優先使用 dataset.sid，如果沒有才生成新的
             specId: Number(c.dataset.sid), 
             name: c.querySelector('.es-name').value||"標準", 
             price: Number(c.querySelector('.es-price').value)||0, 
@@ -609,7 +632,22 @@
             return { name: `${p.name} (${s.name})`, qty: i.qty, price: pr };
         }).filter(item => item !== null);
         if (checkoutItems.length === 0) return alert("資料錯誤，無法存檔。");
-        historyDB.unshift({id: Date.now(), title: title, date: new Date().toLocaleString(), items: checkoutItems});
+        
+        // 計算總金額、退稅、實付
+        let total = checkoutItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        let refund = 0;
+        for (let i = refundTable.length - 1; i >= 0; i--) { if (total >= refundTable[i].min) { refund = refundTable[i].refund; break; } }
+        let finalPaid = total - refund;
+
+        historyDB.unshift({
+            id: Date.now(), 
+            title: title, 
+            date: new Date().toLocaleString(), 
+            items: checkoutItems,
+            total: total,
+            refund: refund,
+            finalPaid: finalPaid
+        });
         cart = []; saveAndRender();
         alert("已成功完成購買紀錄！");
     }
