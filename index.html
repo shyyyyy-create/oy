@@ -223,7 +223,7 @@
     
     let activeMain = "全部", activeSub = "全部", activePri = "全部";
     let regActiveMain = Object.keys(catConfig)[0], regActiveSub = catConfig[regActiveMain][0], regActivePri = "想買";
-    let qActiveMain = "全部", qActivePri = "全部"; // 速算過濾用
+    let qActiveMain = "全部", qActivePri = "全部";
     let quickItems = [];
     let modalQty = 1;
     let currentHistIdx = null;
@@ -239,7 +239,7 @@
         render();
     }
 
-    // 速算選取器優化
+    // 速算功能
     function openQuickProdPicker() {
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('quickPickerModal').style.display = 'block';
@@ -277,13 +277,29 @@
         closeModal(); renderQuickCalc();
     }
     function addQuickManualItem() { quickItems.push({ name: "", price: 0, qty: 1 }); renderQuickCalc(); }
+    function updateQuickQty(idx, delta) {
+        quickItems[idx].qty = Math.max(1, quickItems[idx].qty + delta);
+        renderQuickCalc();
+    }
     function renderQuickCalc() {
         const cont = document.getElementById('quick-calc-list');
         cont.innerHTML = quickItems.map((item, idx) => `
-            <div style="display:grid; grid-template-columns: 2fr 1fr 40px; gap:8px; margin-bottom:10px;">
-                <input type="text" value="${item.name}" onchange="quickItems[${idx}].name=this.value" placeholder="項目">
-                <input type="number" value="${item.price}" onchange="quickItems[${idx}].price=Number(this.value); renderQuickCalc();" placeholder="₩">
-                <button onclick="quickItems.splice(${idx},1); renderQuickCalc();" style="border:none; background:none; color:red; font-size:20px;">×</button>
+            <div style="display:flex; flex-direction:column; gap:8px; padding-bottom:15px; border-bottom:1px solid #eee; margin-bottom:15px;">
+                <div style="display:flex; gap:8px;">
+                    <input type="text" value="${item.name}" onchange="quickItems[${idx}].name=this.value" placeholder="項目名稱" style="flex:2; margin:0;">
+                    <button onclick="quickItems.splice(${idx},1); renderQuickCalc();" style="border:none; background:none; color:red; font-size:24px; width:30px;">×</button>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <div style="flex:1; display:flex; align-items:center; background:#fff; border:1px solid #e5e5ea; border-radius:12px; padding-left:10px;">
+                        <span style="color:#999;">₩</span>
+                        <input type="number" value="${item.price}" onchange="quickItems[${idx}].price=Number(this.value); renderQuickCalc();" placeholder="單價" style="border:none; margin:0; width:100%;">
+                    </div>
+                    <div class="qty-ctrl">
+                        <button class="qty-btn" onclick="updateQuickQty(${idx}, -1)">-</button>
+                        <span style="min-width:20px; text-align:center; font-weight:bold;">${item.qty}</span>
+                        <button class="qty-btn" onclick="updateQuickQty(${idx}, 1)">+</button>
+                    </div>
+                </div>
             </div>
         `).join('');
         let total = quickItems.reduce((sum, i) => sum + (i.price * i.qty), 0);
@@ -307,11 +323,9 @@
         document.getElementById('imgUrl').value = p.img || "";
         regActiveMain = p.main; regActiveSub = p.sub; regActivePri = p.priority;
         initRegChips();
-        
         const cont = document.getElementById('specContainer');
         cont.innerHTML = "";
         p.specs.forEach(s => addSpecRow(s));
-        
         document.getElementById('saveBtn').innerText = "儲存修改";
         document.getElementById('cancelEditBtn').style.display = "block";
         document.getElementById('reg-form-card').scrollIntoView();
@@ -336,7 +350,6 @@
             salePrice: Number(c.querySelector('.s-sale').value)||null, 
             saleDate: c.querySelector('.s-date').value||null 
         }));
-        
         if(eid) {
             let idx = db.findIndex(x => x.id == eid);
             db[idx] = { ...db[idx], name, img:document.getElementById('imgUrl').value, main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs };
@@ -364,7 +377,7 @@
         document.getElementById('specContainer').appendChild(d);
     }
 
-    // 歷史紀錄編輯
+    // 歷史紀錄
     function openHistDetail(idx) {
         currentHistIdx = idx;
         const h = historyDB[idx];
@@ -406,7 +419,7 @@
         saveAndRender(); closeModal();
     }
 
-    // 核心邏輯
+    // 核心資料管理
     function saveAndRender() {
         localStorage.setItem('oy_db_v18', JSON.stringify(db));
         localStorage.setItem('oy_cart_v18', JSON.stringify(cart));
@@ -456,6 +469,7 @@
         renderCart();
         renderPlans();
         renderHistory();
+        renderQuickCalc();
     }
 
     function renderCart() {
@@ -488,7 +502,6 @@
                 <div style="padding: 10px;">
                 ${g.items.map((i, ii) => {
                     const p = db.find(x => x.id === i.prodId); const s = p?.specs.find(x => x.specId === i.specId);
-                    // 檢查籃子中是否有相同規格產品
                     const isInCart = cart.some(ci => ci.prodId === i.prodId && ci.specId === i.specId);
                     return `<div class="card ${isInCart?'in-cart-highlight':''}" style="display:flex; justify-content:space-between; padding:8px 10px; margin-bottom:5px; box-shadow:none; border:1px solid #f0f0f0;">
                         <span style="flex:1;">${p?p.name:'--'} (${s?s.name:'--'})</span>
@@ -511,7 +524,7 @@
         `).join('');
     }
 
-    // 輔助與初始化
+    // 過濾器
     function initFilters() {
         document.getElementById('mainTabScroll').innerHTML = ["全部", ...Object.keys(catConfig)].map(cat => `<div class="filter-chip ${cat===activeMain?'active':''}" onclick="activeMain='${cat}'; activeSub='全部'; initFilters(); render();">${cat}</div>`).join('');
         const sScroll = document.getElementById('subTabScroll');
@@ -524,6 +537,8 @@
         document.getElementById('regSubCatChips').innerHTML = catConfig[regActiveMain].map(sub => `<div class="filter-chip sub ${sub === regActiveSub ? 'active' : ''}" onclick="regActiveSub='${sub}'; initRegChips();">${sub}</div>`).join('');
         document.getElementById('regPriChips').innerHTML = ["想買", "需要", "必買"].map(p => `<div class="filter-chip pri-choice ${p === regActivePri ? 'active' : ''}" onclick="regActivePri='${p}'; initRegChips();">${p}</div>`).join('');
     }
+
+    // 購物與計畫輔助
     function openPlanPicker(pid) {
         document.getElementById('modalOverlay').style.display='flex';
         document.getElementById('planPickerModal').style.display='block';
@@ -575,7 +590,7 @@
     function saveRate() { currentRate = parseFloat(document.getElementById('rateInput').value) || 0.0058; localStorage.setItem('oy_rate', currentRate); render(); }
     function adjModalQty(v) { modalQty = Math.max(1, modalQty + v); document.getElementById('modalQtyDisplay').innerText = modalQty; }
 
-    // 初始化規格行
+    // 初始化
     if(document.getElementById('specContainer').children.length === 0) addSpecRow();
     initRegChips(); initFilters(); render();
 </script>
