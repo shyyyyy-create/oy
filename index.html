@@ -7,7 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>買不完的OY Pro</title>
+    <title>買不完的OY</title>
     <style>
         :root { 
             --primary: #f05a28; --secondary: #27ae60; --bg: #f8f9fa; --card-bg: #ffffff;
@@ -22,7 +22,6 @@
             background: var(--bg); margin: 0; padding: 10px 10px 240px 10px; color: #2c3e50; line-height: 1.4; font-size: 14px; 
         }
 
-        /* 導航 */
         .nav-tabs { 
             display: flex; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); 
             border-radius: 20px; margin-bottom: 15px; padding: 6px; position: sticky; top: 10px; 
@@ -33,7 +32,6 @@
 
         .card { background: var(--card-bg); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin-bottom: 15px; border: 1px solid rgba(0,0,0,0.02); }
 
-        /* Filter Chips */
         .chip-group-label { font-size: 11px; color: var(--gray); font-weight: 700; margin: 15px 0 8px 5px; display: block; text-transform: uppercase; }
         .chip-container { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
         .chip-container::-webkit-scrollbar { display: none; }
@@ -49,6 +47,7 @@
         .price-tag { background: #f8f9fa; padding: 6px 10px; border-radius: 8px; margin-top: 6px; border: 1px solid #f1f1f1; }
         .sale-price { color: var(--sale); font-weight: 700; font-size: 14px; }
         .origin-price { color: var(--gray); text-decoration: line-through; margin-right: 5px; font-size: 11px; }
+        .sale-expiry { font-size: 10px; color: #e67e22; display: block; margin-top: 2px; }
         
         input, select { width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #e5e5ea; border-radius: 12px; margin-bottom: 10px; font-size: 14px; background: #fff; transition: 0.2s; }
         .btn-main { background: var(--primary); color: white; padding: 14px; border: none; border-radius: 14px; width: 100%; font-weight: 700; font-size: 15px; box-shadow: 0 4px 12px rgba(240, 90, 40, 0.15); }
@@ -63,6 +62,8 @@
         .checkout-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); padding: 15px 20px 35px 20px; border-top: 1px solid rgba(0,0,0,0.05); z-index: 1500; }
         .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); backdrop-filter: blur(5px); z-index:2000; align-items:center; justify-content:center; padding: 20px; }
         .modal-content { background:white; padding:24px; border-radius:24px; width:100%; max-width:400px; max-height: 85vh; overflow-y: auto; }
+        
+        .in-cart-highlight { background-color: #e8f5e9 !important; border: 1px solid var(--secondary) !important; }
     </style>
 </head>
 <body>
@@ -84,31 +85,20 @@
         </div>
     </div>
     
-    <div class="card">
-        <h3>✨ 登記新產品</h3>
+    <div class="card" id="reg-form-card">
+        <h3 id="regTitle">✨ 登記新產品</h3>
+        <input type="hidden" id="edit-id">
         <input type="text" id="name" placeholder="產品名稱 (必填)">
         <input type="text" id="imgUrl" placeholder="圖片連結 (選填)">
         <span class="chip-group-label">主/子分類</span>
         <div class="chip-container" id="regMainCatChips"></div>
         <div class="chip-container" id="regSubCatChips"></div>
         <span class="chip-group-label">優先級</span>
-        <div class="chip-container">
-            <div class="filter-chip pri-choice pri-want active" onclick="setRegPriority('想買', this)">☁️ 想買</div>
-            <div class="filter-chip pri-choice pri-need" onclick="setRegPriority('需要', this)">⚡ 需要</div>
-            <div class="filter-chip pri-choice pri-must" onclick="setRegPriority('必買', this)">🔥 必買</div>
-        </div>
-        <div id="specContainer" style="margin-top: 10px;">
-            <div class="spec-input-item" style="border:1px solid #f2f2f7; padding:12px; border-radius:12px; margin-bottom:10px;">
-                <input type="text" class="s-name" placeholder="規格 (如: 50ml)">
-                <div style="display: flex; gap: 8px;">
-                    <input type="number" class="s-price" placeholder="原價 ₩">
-                    <input type="number" class="s-sale" placeholder="特價 ₩">
-                </div>
-                <input type="date" class="s-date">
-            </div>
-        </div>
+        <div class="chip-container" id="regPriChips"></div>
+        <div id="specContainer" style="margin-top: 10px;"></div>
         <button onclick="addSpecRow()" style="width:100%; border:1px dashed var(--primary); background:none; color:var(--primary); padding:10px; border-radius:12px; margin-bottom:15px;">+ 新增規格</button>
-        <button class="btn-main" onclick="saveProduct()">存入我的清單</button>
+        <button class="btn-main" id="saveBtn" onclick="saveProduct()">存入我的清單</button>
+        <button class="btn-main" id="cancelEditBtn" style="display:none; background:#eee; color:#333; margin-top:10px;" onclick="cancelEdit()">取消編輯</button>
     </div>
 </div>
 
@@ -116,12 +106,7 @@
     <div style="padding: 10px 0; position: sticky; top: 75px; background: var(--bg); z-index: 998;">
         <div id="mainTabScroll" class="chip-container"></div>
         <div id="subTabScroll" class="chip-container"></div>
-        <div class="chip-container">
-            <div class="filter-chip pri active" onclick="setPriFilter('全部', this)">全部</div>
-            <div class="filter-chip pri pri-must" onclick="setPriFilter('必買', this)">🔥 必買</div>
-            <div class="filter-chip pri pri-need" onclick="setPriFilter('需要', this)">⚡ 需要</div>
-            <div class="filter-chip pri pri-want" onclick="setPriFilter('想買', this)">☁️ 想買</div>
-        </div>
+        <div id="priTabScroll" class="chip-container"></div>
         <input type="text" id="searchBar" placeholder="🔍 搜尋產品..." oninput="render()" style="box-shadow: var(--shadow); border:none;">
     </div>
     <div id="dash-list"></div>
@@ -200,8 +185,8 @@
     </div>
 
     <div class="modal-content" id="historyDetailModal" style="display:none; max-width: 450px;">
-        <h3 id="histDetailTitle" style="margin-bottom:5px;">紀錄詳情</h3>
-        <input type="text" id="editHistName" style="font-weight:700; border-bottom:2px solid var(--primary); margin-bottom:15px;" placeholder="修改名稱">
+        <h3 id="histDetailTitle">紀錄詳情</h3>
+        <input type="text" id="editHistName" style="font-weight:700; border-bottom:2px solid var(--primary); margin-bottom:15px;">
         <div id="histDetailItems" style="max-height:300px; overflow-y:auto; border:1px solid #f0f0f0; border-radius:12px; padding:10px; margin-bottom:15px;"></div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
             <div><label class="small-label">總額 ₩</label><input type="number" id="editHistTotal" oninput="recalcHistPaid()"></div>
@@ -214,10 +199,14 @@
         </div>
     </div>
 
-    <div class="modal-content" id="quickPickerModal" style="display:none;">
-        <h3>選取產品</h3>
-        <input type="text" id="quickSearch" placeholder="🔍 搜尋..." oninput="renderQuickPickerList()">
-        <div id="quickPickerList" style="max-height: 350px; overflow-y: auto;"></div>
+    <div class="modal-content" id="quickPickerModal" style="display:none; max-width: 500px;">
+        <h3>選取產品加入速算</h3>
+        <div id="quickPickerFilters" style="background: #f8f9fa; padding: 10px; border-radius: 12px; margin-bottom: 10px;">
+            <div id="qMainFilter" class="chip-container"></div>
+            <div id="qPriFilter" class="chip-container"></div>
+            <input type="text" id="quickSearch" placeholder="🔍 搜尋名稱..." oninput="renderQuickPickerList()">
+        </div>
+        <div id="quickPickerList" style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 12px;"></div>
         <button class="btn-main" style="background:#eee; color:#333; margin-top:15px;" onclick="closeModal()">關閉</button>
     </div>
 </div>
@@ -234,10 +223,12 @@
     
     let activeMain = "全部", activeSub = "全部", activePri = "全部";
     let regActiveMain = Object.keys(catConfig)[0], regActiveSub = catConfig[regActiveMain][0], regActivePri = "想買";
+    let qActiveMain = "全部", qActivePri = "全部"; // 速算過濾用
     let quickItems = [];
     let modalQty = 1;
     let currentHistIdx = null;
 
+    // 分頁切換
     function switchPage(p, btn) {
         document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
         document.getElementById(p + '-page').classList.add('active');
@@ -248,19 +239,31 @@
         render();
     }
 
-    // 速算功能
-    function addQuickManualItem() { quickItems.push({ name: "", price: 0, qty: 1 }); renderQuickCalc(); }
+    // 速算選取器優化
     function openQuickProdPicker() {
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('quickPickerModal').style.display = 'block';
+        renderQuickPickerFilters();
         renderQuickPickerList();
+    }
+    function renderQuickPickerFilters() {
+        const mCont = document.getElementById('qMainFilter');
+        mCont.innerHTML = ["全部", ...Object.keys(catConfig)].map(c => `<div class="filter-chip ${qActiveMain===c?'active':''}" onclick="qActiveMain='${c}'; renderQuickPickerFilters(); renderQuickPickerList();">${c}</div>`).join('');
+        const pCont = document.getElementById('qPriFilter');
+        pCont.innerHTML = ["全部", "必買", "需要", "想買"].map(p => `<div class="filter-chip ${qActivePri===p?'active':''}" onclick="qActivePri='${p}'; renderQuickPickerFilters(); renderQuickPickerList();">${p}</div>`).join('');
     }
     function renderQuickPickerList() {
         const s = document.getElementById('quickSearch').value.toLowerCase();
         const cont = document.getElementById('quickPickerList');
-        cont.innerHTML = db.filter(p => p.name.toLowerCase().includes(s)).map(p => `
-            <div style="padding:12px; border-bottom:1px solid #eee;" onclick="pickQuickProd(${p.id})">
-                <b>${p.name}</b><br><small>${p.sub}</small>
+        cont.innerHTML = db.filter(p => {
+            if(qActiveMain !== "全部" && p.main !== qActiveMain) return false;
+            if(qActivePri !== "全部" && p.priority !== qActivePri) return false;
+            if(s && !p.name.toLowerCase().includes(s)) return false;
+            return true;
+        }).map(p => `
+            <div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;" onclick="pickQuickProd(${p.id})">
+                <div><b>${p.name}</b><br><small style="color:var(--gray)">${p.sub} | ${p.priority}</small></div>
+                <div style="color:var(--calc); font-weight:bold;">選取 ></div>
             </div>
         `).join('');
     }
@@ -273,6 +276,7 @@
         });
         closeModal(); renderQuickCalc();
     }
+    function addQuickManualItem() { quickItems.push({ name: "", price: 0, qty: 1 }); renderQuickCalc(); }
     function renderQuickCalc() {
         const cont = document.getElementById('quick-calc-list');
         cont.innerHTML = quickItems.map((item, idx) => `
@@ -292,6 +296,74 @@
     }
     function clearQuickCalc() { quickItems = []; renderQuickCalc(); }
 
+    // 產品登記與編輯
+    function editProduct(pid) {
+        const p = db.find(x => x.id === pid);
+        if(!p) return;
+        switchPage('wishlist', document.querySelector('[onclick*="wishlist"]'));
+        document.getElementById('regTitle').innerText = "✏️ 編輯產品";
+        document.getElementById('edit-id').value = p.id;
+        document.getElementById('name').value = p.name;
+        document.getElementById('imgUrl').value = p.img || "";
+        regActiveMain = p.main; regActiveSub = p.sub; regActivePri = p.priority;
+        initRegChips();
+        
+        const cont = document.getElementById('specContainer');
+        cont.innerHTML = "";
+        p.specs.forEach(s => addSpecRow(s));
+        
+        document.getElementById('saveBtn').innerText = "儲存修改";
+        document.getElementById('cancelEditBtn').style.display = "block";
+        document.getElementById('reg-form-card').scrollIntoView();
+    }
+    function cancelEdit() {
+        document.getElementById('regTitle').innerText = "✨ 登記新產品";
+        document.getElementById('edit-id').value = "";
+        document.getElementById('name').value = "";
+        document.getElementById('imgUrl').value = "";
+        document.getElementById('specContainer').innerHTML = "";
+        addSpecRow();
+        document.getElementById('saveBtn').innerText = "存入我的清單";
+        document.getElementById('cancelEditBtn').style.display = "none";
+    }
+    function saveProduct() {
+        const name = document.getElementById('name').value; if(!name) return alert("請輸入名稱");
+        const eid = document.getElementById('edit-id').value;
+        const specs = Array.from(document.querySelectorAll('.spec-input-item')).map(c => ({ 
+            specId: c.dataset.sid ? parseFloat(c.dataset.sid) : Math.random(), 
+            name: c.querySelector('.s-name').value||"標準", 
+            price: Number(c.querySelector('.s-price').value)||0, 
+            salePrice: Number(c.querySelector('.s-sale').value)||null, 
+            saleDate: c.querySelector('.s-date').value||null 
+        }));
+        
+        if(eid) {
+            let idx = db.findIndex(x => x.id == eid);
+            db[idx] = { ...db[idx], name, img:document.getElementById('imgUrl').value, main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs };
+            alert("修改成功！");
+            cancelEdit();
+        } else {
+            db.push({ id:Date.now(), name, img:document.getElementById('imgUrl').value, main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs });
+            alert("已存入清單！");
+            cancelEdit();
+        }
+        saveAndRender();
+    }
+    function addSpecRow(data = null) {
+        const d = document.createElement('div'); d.className='spec-input-item'; d.style='border:1px solid #f2f2f7; padding:12px; border-radius:12px; margin-bottom:10px; position:relative;';
+        if(data) d.dataset.sid = data.specId;
+        d.innerHTML=`
+            <button onclick="this.parentElement.remove()" style="position:absolute; right:5px; top:5px; border:none; background:none; color:red;">×</button>
+            <input type="text" class="s-name" placeholder="規格名稱" value="${data?data.name:''}">
+            <div style="display:flex; gap:8px;">
+                <input type="number" class="s-price" placeholder="原價" value="${data?data.price:''}">
+                <input type="number" class="s-sale" placeholder="特價" value="${data?data.salePrice||'':''}">
+            </div>
+            <label class="small-label" style="font-size:10px;">特價期限 (當天及之前有效)：</label>
+            <input type="date" class="s-date" value="${data?data.saleDate||'':''}">`;
+        document.getElementById('specContainer').appendChild(d);
+    }
+
     // 歷史紀錄編輯
     function openHistDetail(idx) {
         currentHistIdx = idx;
@@ -300,7 +372,6 @@
         document.getElementById('editHistTotal').value = h.total;
         document.getElementById('editHistRefund').value = h.refund;
         document.getElementById('editHistPaid').innerText = h.finalPaid.toLocaleString();
-        
         const itemCont = document.getElementById('histDetailItems');
         itemCont.innerHTML = h.items.map((item, iIdx) => `
             <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px;">
@@ -311,7 +382,6 @@
                 </div>
             </div>
         `).join('');
-        
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('historyDetailModal').style.display = 'block';
     }
@@ -336,18 +406,6 @@
         saveAndRender(); closeModal();
     }
 
-    // 優化計畫選取界面
-    function openPlanPicker(pid) {
-        document.getElementById('modalOverlay').style.display='flex';
-        document.getElementById('planPickerModal').style.display='block';
-        document.getElementById('planOptionsList').innerHTML = planGroups.map((g, gi) => `
-            <div class="card" style="margin:0; padding:15px; border:1px solid #eee; display:flex; justify-content:space-between; align-items:center;" onclick="closeModal(); openSelector(${pid}, 'plan', ${gi})">
-                <b style="color:var(--plan)">📌 ${g.title}</b>
-                <span style="font-size:12px; color:var(--gray)">${g.items.length} 項目</span>
-            </div>
-        `).join('');
-    }
-
     // 核心邏輯
     function saveAndRender() {
         localStorage.setItem('oy_db_v18', JSON.stringify(db));
@@ -361,7 +419,6 @@
         document.getElementById('rateInput').value = currentRate;
         document.getElementById('rateExample').innerText = Math.round(10000 * currentRate).toLocaleString();
         
-        // Dashboard Render
         const dashCont = document.getElementById('dash-list');
         dashCont.innerHTML = '';
         const sText = document.getElementById('searchBar').value.toLowerCase();
@@ -377,7 +434,7 @@
                 const hasSale = s.salePrice && (!s.saleDate || today <= s.saleDate);
                 return `<div class="price-tag">
                     <span style="font-size:11px; font-weight:600;">${s.name}:</span> 
-                    ${hasSale ? `<span class="origin-price">₩${s.price.toLocaleString()}</span><span class="sale-price">₩${s.salePrice.toLocaleString()}</span>` : `<span>₩${s.price.toLocaleString()}</span>`}
+                    ${hasSale ? `<span class="origin-price">₩${s.price.toLocaleString()}</span><span class="sale-price">₩${s.salePrice.toLocaleString()}</span>${s.saleDate?`<span class="sale-expiry">📅 至 ${s.saleDate}</span>`:''}` : `<span>₩${s.price.toLocaleString()}</span>`}
                 </div>`;
             }).join('');
 
@@ -387,9 +444,10 @@
                     <div style="display:flex; justify-content:space-between;"><b>${p.name}</b><small style="color:var(--gray)">${p.sub}</small></div>
                     ${specSummary}
                     <div style="display:flex; gap:6px; margin-top:10px;">
-                        <button style="flex:1; background:var(--cart); color:white; border:none; border-radius:8px; height:32px;" onclick="openSelector(${p.id},'cart')">+🛒</button>
-                        <button style="flex:1; border:1px solid #ddd; border-radius:8px; background:white;" onclick="openPlanPicker(${p.id})">+📝</button>
-                        <button style="width:35px; border:1px solid #ddd; border-radius:8px; background:white;" onclick="deleteProduct(${p.id})">×</button>
+                        <button style="flex:1.5; background:var(--cart); color:white; border:none; border-radius:8px; height:32px;" onclick="openSelector(${p.id},'cart')">+🛒</button>
+                        <button style="flex:1.5; border:1px solid #ddd; border-radius:8px; background:white;" onclick="openPlanPicker(${p.id})">+📝</button>
+                        <button style="flex:1; border:1px solid #ddd; border-radius:8px; background:white; font-size:11px;" onclick="editProduct(${p.id})">編輯</button>
+                        <button style="width:30px; border:1px solid #ddd; border-radius:8px; background:white; color:red;" onclick="deleteProduct(${p.id})">×</button>
                     </div>
                 </div>
             </div>`;
@@ -430,10 +488,13 @@
                 <div style="padding: 10px;">
                 ${g.items.map((i, ii) => {
                     const p = db.find(x => x.id === i.prodId); const s = p?.specs.find(x => x.specId === i.specId);
-                    return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f9f9f9;">
+                    // 檢查籃子中是否有相同規格產品
+                    const isInCart = cart.some(ci => ci.prodId === i.prodId && ci.specId === i.specId);
+                    return `<div class="card ${isInCart?'in-cart-highlight':''}" style="display:flex; justify-content:space-between; padding:8px 10px; margin-bottom:5px; box-shadow:none; border:1px solid #f0f0f0;">
                         <span style="flex:1;">${p?p.name:'--'} (${s?s.name:'--'})</span>
                         <div class="qty-ctrl" style="margin-right:10px;"><button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, -1)">-</button><span>${i.qty}</span><button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, 1)">+</button></div>
                         <button onclick="addToCartFromPlan(${gi}, ${ii})" style="border:none; background:var(--cart); color:white; border-radius:6px; padding:0 8px;">🛒</button>
+                        <button onclick="planGroups[${gi}].items.splice(${ii},1); saveAndRender();" style="border:none; background:none; color:#ccc; margin-left:5px;">×</button>
                     </div>`;
                 }).join('')}
                 </div>
@@ -444,47 +505,34 @@
     function renderHistory() {
         document.getElementById('history-list').innerHTML = historyDB.map((h, idx) => `
             <div class="card" style="padding:12px; margin-bottom:10px;" onclick="openHistDetail(${idx})">
-                <div style="display:flex; justify-content:space-between;">
-                    <b>${h.title}</b>
-                    <b style="color:var(--primary)">₩${h.finalPaid.toLocaleString()}</b>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:11px; color:var(--gray);">
-                    <span>${h.date}</span>
-                    <span>退稅: ₩${h.refund.toLocaleString()}</span>
-                </div>
+                <div style="display:flex; justify-content:space-between;"><b>${h.title}</b><b style="color:var(--primary)">₩${h.finalPaid.toLocaleString()}</b></div>
+                <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:11px; color:var(--gray);"><span>${h.date}</span><span>退稅: ₩${h.refund.toLocaleString()}</span></div>
             </div>
         `).join('');
     }
 
-    // 輔助函數
+    // 輔助與初始化
     function initFilters() {
-        const mScroll = document.getElementById('mainTabScroll');
-        mScroll.innerHTML = ["全部", ...Object.keys(catConfig)].map(cat => `<div class="filter-chip ${cat===activeMain?'active':''}" onclick="setMainFilter('${cat}')">${cat}</div>`).join('');
-        renderSubChips();
-    }
-    function renderSubChips() {
+        document.getElementById('mainTabScroll').innerHTML = ["全部", ...Object.keys(catConfig)].map(cat => `<div class="filter-chip ${cat===activeMain?'active':''}" onclick="activeMain='${cat}'; activeSub='全部'; initFilters(); render();">${cat}</div>`).join('');
         const sScroll = document.getElementById('subTabScroll');
-        if(activeMain === "全部") { sScroll.innerHTML = ""; return; }
-        sScroll.innerHTML = ["全部", ...catConfig[activeMain]].map(sub => `<div class="filter-chip sub ${sub===activeSub?'active':''}" onclick="setSubFilter('${sub}')">${sub}</div>`).join('');
+        if(activeMain === "全部") { sScroll.innerHTML = ""; }
+        else { sScroll.innerHTML = ["全部", ...catConfig[activeMain]].map(sub => `<div class="filter-chip sub ${sub===activeSub?'active':''}" onclick="activeSub='${sub}'; initFilters(); render();">${sub}</div>`).join(''); }
+        document.getElementById('priTabScroll').innerHTML = ["全部", "必買", "需要", "想買"].map(p => `<div class="filter-chip ${p===activePri?'active':''}" onclick="activePri='${p}'; initFilters(); render();">${p}</div>`).join('');
     }
-    function setMainFilter(m) { activeMain = m; activeSub = "全部"; initFilters(); render(); }
-    function setSubFilter(s) { activeSub = s; renderSubChips(); render(); }
-    function setPriFilter(p, el) { activePri = p; document.querySelectorAll('.filter-chip.pri').forEach(c => c.classList.remove('active')); el.classList.add('active'); render(); }
     function initRegChips() {
         document.getElementById('regMainCatChips').innerHTML = Object.keys(catConfig).map(cat => `<div class="filter-chip ${cat === regActiveMain ? 'active' : ''}" onclick="regActiveMain='${cat}'; regActiveSub=catConfig['${cat}'][0]; initRegChips();">${cat}</div>`).join('');
         document.getElementById('regSubCatChips').innerHTML = catConfig[regActiveMain].map(sub => `<div class="filter-chip sub ${sub === regActiveSub ? 'active' : ''}" onclick="regActiveSub='${sub}'; initRegChips();">${sub}</div>`).join('');
+        document.getElementById('regPriChips').innerHTML = ["想買", "需要", "必買"].map(p => `<div class="filter-chip pri-choice ${p === regActivePri ? 'active' : ''}" onclick="regActivePri='${p}'; initRegChips();">${p}</div>`).join('');
     }
-    function setRegPriority(pri, el) { regActivePri = pri; document.querySelectorAll('.pri-choice').forEach(c => c.classList.remove('active')); el.classList.add('active'); }
-    function saveProduct() {
-        const name = document.getElementById('name').value; if(!name) return alert("請輸入名稱");
-        const specs = Array.from(document.querySelectorAll('.spec-input-item')).map(c => ({ specId: Math.random(), name: c.querySelector('.s-name').value||"標準", price: Number(c.querySelector('.s-price').value)||0, salePrice: Number(c.querySelector('.s-sale').value)||null, saleDate: c.querySelector('.s-date').value||null }));
-        db.push({ id:Date.now(), name, img:document.getElementById('imgUrl').value, main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs });
-        saveAndRender(); alert("已存入清單！");
-    }
-    function addSpecRow() {
-        const d = document.createElement('div'); d.className='spec-input-item'; d.style='border:1px solid #f2f2f7; padding:12px; border-radius:12px; margin-bottom:10px;';
-        d.innerHTML=`<input type="text" class="s-name" placeholder="規格名稱"><div style="display:flex; gap:8px;"><input type="number" class="s-price" placeholder="原價"><input type="number" class="s-sale" placeholder="特價"></div><input type="date" class="s-date">`;
-        document.getElementById('specContainer').appendChild(d);
+    function openPlanPicker(pid) {
+        document.getElementById('modalOverlay').style.display='flex';
+        document.getElementById('planPickerModal').style.display='block';
+        document.getElementById('planOptionsList').innerHTML = planGroups.map((g, gi) => `
+            <div class="card" style="margin:0; padding:15px; border:1px solid #eee; display:flex; justify-content:space-between; align-items:center;" onclick="closeModal(); openSelector(${pid}, 'plan', ${gi})">
+                <b style="color:var(--plan)">📌 ${g.title}</b>
+                <span style="font-size:12px; color:var(--gray)">${g.items.length} 項目</span>
+            </div>
+        `).join('');
     }
     function openSelector(pid, target, pIdx=null) {
         const p = db.find(x => x.id === pid); const today = new Date().toISOString().split('T')[0];
@@ -527,6 +575,8 @@
     function saveRate() { currentRate = parseFloat(document.getElementById('rateInput').value) || 0.0058; localStorage.setItem('oy_rate', currentRate); render(); }
     function adjModalQty(v) { modalQty = Math.max(1, modalQty + v); document.getElementById('modalQtyDisplay').innerText = modalQty; }
 
+    // 初始化規格行
+    if(document.getElementById('specContainer').children.length === 0) addSpecRow();
     initRegChips(); initFilters(); render();
 </script>
 </body>
