@@ -21,6 +21,20 @@
             font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: var(--bg); margin: 0; padding: 10px 10px 240px 10px; color: #2c3e50; line-height: 1.4; font-size: 14px; 
         }
+        
+        /* 強制開啟輸入框的文字選取功能 */
+input, textarea, select {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    /* 確保游標顏色可見，避免 outline:none 造成誤會 */
+    caret-color: var(--primary); 
+}
+
+/* 避免長按跳出 iOS 預設的放大鏡或選單干擾操作 (選填) */
+body {
+    -webkit-touch-callout: none;
+}
+
 
         .nav-tabs { 
             display: flex; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); 
