@@ -10,123 +10,48 @@
     <title>買不完的OY Pro</title>
     <style>
         :root { 
-            --primary: #f05a28; 
-            --secondary: #27ae60; 
-            --bg: #f8f9fa; 
-            --card-bg: #ffffff;
-            --cart: #27ae60; 
-            --plan: #8e44ad; 
-            --calc: #2980b9;
-            --gray: #8e8e93; 
-            --light-gray: #f2f2f7;
-            --sale: #eb4d4b; 
-            --shadow: 0 8px 24px rgba(0,0,0,0.05); 
-            --radius: 16px;
-            /* 優先級顏色 */
-            --pri-must: #eb4d4b;
-            --pri-need: #f39c12;
-            --pri-want: #3498db;
+            --primary: #f05a28; --secondary: #27ae60; --bg: #f8f9fa; --card-bg: #ffffff;
+            --cart: #27ae60; --plan: #8e44ad; --calc: #2980b9;
+            --gray: #8e8e93; --light-gray: #f2f2f7; --sale: #eb4d4b; 
+            --shadow: 0 8px 24px rgba(0,0,0,0.05); --radius: 16px;
+            --pri-must: #eb4d4b; --pri-need: #f39c12; --pri-want: #3498db;
         }
-        
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { 
             font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: var(--bg); 
-            margin: 0; 
-            padding: 10px 10px 240px 10px; 
-            color: #2c3e50; 
-            line-height: 1.4; 
-            font-size: 14px; 
+            background: var(--bg); margin: 0; padding: 10px 10px 240px 10px; color: #2c3e50; line-height: 1.4; font-size: 14px; 
         }
 
         /* 導航 */
         .nav-tabs { 
-            display: flex; 
-            background: rgba(255,255,255,0.85); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px; 
-            margin-bottom: 15px; 
-            padding: 6px; 
-            position: sticky; 
-            top: 10px; 
-            z-index: 1000; 
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255,255,255,0.5);
+            display: flex; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); 
+            border-radius: 20px; margin-bottom: 15px; padding: 6px; position: sticky; top: 10px; 
+            z-index: 1000; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.5);
         }
-        .nav-btn { 
-            flex: 1; 
-            padding: 12px 2px; 
-            border: none; 
-            background: none; 
-            font-weight: 600; 
-            color: var(--gray); 
-            border-radius: 15px; 
-            font-size: 12px; 
-            transition: all 0.2s ease;
-        }
+        .nav-btn { flex: 1; padding: 12px 2px; border: none; background: none; font-weight: 600; color: var(--gray); border-radius: 15px; font-size: 12px; transition: 0.2s; }
         .nav-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(240, 90, 40, 0.2); }
 
-        .card { 
-            background: var(--card-bg); 
-            border-radius: var(--radius); 
-            padding: 18px; 
-            box-shadow: var(--shadow); 
-            margin-bottom: 15px; 
-            border: 1px solid rgba(0,0,0,0.02);
-        }
+        .card { background: var(--card-bg); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin-bottom: 15px; border: 1px solid rgba(0,0,0,0.02); }
 
-        /* --- Filter Chips 優化 --- */
-        .chip-group-label { 
-            font-size: 11px; color: var(--gray); font-weight: 700; 
-            margin: 15px 0 8px 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        
-        /* 讓 Chips 可以水平滑動 */
-        .chip-container { 
-            display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px; 
-            margin-bottom: 12px; padding-bottom: 4px;
-            -webkit-overflow-scrolling: touch;
-        }
-        .chip-container::-webkit-scrollbar { display: none; } /* 隱藏捲動條 */
-
-        .filter-chip {
-            white-space: nowrap; padding: 8px 16px; border-radius: 12px; 
-            background: #fff; border: 1px solid #e5e5ea;
-            font-size: 13px; color: #444; cursor: pointer; transition: 0.2s;
-            flex-shrink: 0;
-        }
-        
-        /* 基礎選中樣式 */
+        /* Filter Chips */
+        .chip-group-label { font-size: 11px; color: var(--gray); font-weight: 700; margin: 15px 0 8px 5px; display: block; text-transform: uppercase; }
+        .chip-container { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+        .chip-container::-webkit-scrollbar { display: none; }
+        .filter-chip { white-space: nowrap; padding: 8px 16px; border-radius: 12px; background: #fff; border: 1px solid #e5e5ea; font-size: 13px; color: #444; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
         .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
-        
-        /* 子分類選中樣式 (綠色) */
         .filter-chip.sub.active { background: var(--secondary); border-color: var(--secondary); }
-        
-        /* 優先級顏色強化 */
         .filter-chip.pri-must.active { background: var(--pri-must); border-color: var(--pri-must); }
         .filter-chip.pri-need.active { background: var(--pri-need); border-color: var(--pri-need); }
         .filter-chip.pri-want.active { background: var(--pri-want); border-color: var(--pri-want); }
 
         .item-card { display: flex; gap: 14px; align-items: center; }
         .prod-img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; background: #eee; flex-shrink: 0; }
-        
         .price-tag { background: #f8f9fa; padding: 6px 10px; border-radius: 8px; margin-top: 6px; border: 1px solid #f1f1f1; }
         .sale-price { color: var(--sale); font-weight: 700; font-size: 14px; }
         .origin-price { color: var(--gray); text-decoration: line-through; margin-right: 5px; font-size: 11px; }
         
-        input, select { 
-            width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #e5e5ea; 
-            border-radius: 12px; margin-bottom: 10px; font-size: 14px; background: #fff;
-            transition: 0.2s; appearance: none;
-        }
-        input:focus { border-color: var(--primary); }
-        
-        .btn-main { 
-            background: var(--primary); color: white; padding: 14px; border: none; 
-            border-radius: 14px; width: 100%; font-weight: 700; font-size: 15px;
-            box-shadow: 0 4px 12px rgba(240, 90, 40, 0.15); transition: 0.2s;
-        }
+        input, select { width: 100%; height: 44px; padding: 10px 14px; border: 1px solid #e5e5ea; border-radius: 12px; margin-bottom: 10px; font-size: 14px; background: #fff; transition: 0.2s; }
+        .btn-main { background: var(--primary); color: white; padding: 14px; border: none; border-radius: 14px; width: 100%; font-weight: 700; font-size: 15px; box-shadow: 0 4px 12px rgba(240, 90, 40, 0.15); }
         
         .qty-ctrl { display: flex; align-items: center; gap: 5px; background: #f2f2f7; border-radius: 10px; padding: 3px; }
         .qty-btn { width: 30px; height: 30px; border: none; background: white; border-radius: 8px; font-weight: bold; font-size: 16px; }
@@ -135,16 +60,9 @@
         .page.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        .checkout-bar { 
-            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.9); 
-            backdrop-filter: blur(20px); padding: 15px 20px 35px 20px; 
-            border-top: 1px solid rgba(0,0,0,0.05); z-index: 1500;
-        }
+        .checkout-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); padding: 15px 20px 35px 20px; border-top: 1px solid rgba(0,0,0,0.05); z-index: 1500; }
         .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); backdrop-filter: blur(5px); z-index:2000; align-items:center; justify-content:center; padding: 20px; }
-        .modal-content { background:white; padding:24px; border-radius:24px; width:100%; max-width:400px; max-height: 80vh; overflow-y: auto; }
-        
-        h3 { font-size: 18px; margin-top: 0; }
-        .small-label { font-size: 11px; color: var(--gray); font-weight: 600; margin-bottom: 4px; display: block; }
+        .modal-content { background:white; padding:24px; border-radius:24px; width:100%; max-width:400px; max-height: 85vh; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -162,67 +80,49 @@
         <span class="small-label" style="color: #a08c2a;">💰 當前匯率 (KRW ➔ HKD)</span>
         <div style="display:flex; gap:10px; align-items:center;">
             <input type="number" id="rateInput" step="0.0001" onchange="saveRate()" style="margin:0; flex:1; height: 38px; font-weight: bold;">
-            <span style="font-weight:700; color:var(--primary); font-size: 14px;">1萬₩ ≈ $<span id="rateExample">--</span></span>
+            <span style="font-weight:700; color:var(--primary);">1萬₩ ≈ $<span id="rateExample">--</span></span>
         </div>
     </div>
     
     <div class="card">
-        <h3 style="margin-bottom: 15px;">✨ 登記新產品</h3>
+        <h3>✨ 登記新產品</h3>
         <input type="text" id="name" placeholder="產品名稱 (必填)">
-        <input type="text" id="imgUrl" placeholder="圖片連結 URL (選填)">
-        
-        <span class="chip-group-label">主分類</span>
+        <input type="text" id="imgUrl" placeholder="圖片連結 (選填)">
+        <span class="chip-group-label">主/子分類</span>
         <div class="chip-container" id="regMainCatChips"></div>
-        
-        <span class="chip-group-label">子分類</span>
         <div class="chip-container" id="regSubCatChips"></div>
-
         <span class="chip-group-label">優先級</span>
         <div class="chip-container">
             <div class="filter-chip pri-choice pri-want active" onclick="setRegPriority('想買', this)">☁️ 想買</div>
             <div class="filter-chip pri-choice pri-need" onclick="setRegPriority('需要', this)">⚡ 需要</div>
             <div class="filter-chip pri-choice pri-must" onclick="setRegPriority('必買', this)">🔥 必買</div>
         </div>
-        
-        <div id="specContainer" style="margin-top: 15px;">
-            <div class="spec-input-item" style="border:1px solid #f2f2f7; padding:15px; border-radius:15px; margin-bottom:12px; background:#fafafa;">
-                <input type="text" class="s-name" placeholder="規格 (如: 50ml / 01號色)">
+        <div id="specContainer" style="margin-top: 10px;">
+            <div class="spec-input-item" style="border:1px solid #f2f2f7; padding:12px; border-radius:12px; margin-bottom:10px;">
+                <input type="text" class="s-name" placeholder="規格 (如: 50ml)">
                 <div style="display: flex; gap: 8px;">
                     <input type="number" class="s-price" placeholder="原價 ₩">
                     <input type="number" class="s-sale" placeholder="特價 ₩">
                 </div>
-                <span class="small-label">📅 特價截止日期</span>
-                <input type="date" class="s-date" style="margin-top:0; height: 38px;">
+                <input type="date" class="s-date">
             </div>
         </div>
-        
-        <button onclick="addSpecRow()" class="btn-small" style="width:100%; margin-bottom:15px; height:44px; background:none; border: 1px dashed var(--primary); color:var(--primary); border-radius:12px; font-weight:600;">+ 新增規格</button>
+        <button onclick="addSpecRow()" style="width:100%; border:1px dashed var(--primary); background:none; color:var(--primary); padding:10px; border-radius:12px; margin-bottom:15px;">+ 新增規格</button>
         <button class="btn-main" onclick="saveProduct()">存入我的清單</button>
-    </div>
-
-    <div class="card" style="text-align: center; border: 1px dashed #eee; background: none;">
-        <span class="small-label" style="margin-bottom:10px;">💾 數據備份與管理</span>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <button class="btn-small" onclick="exportCSV()" style="padding:10px; border-radius:10px; border:1px solid #ddd; background:#fff; font-size:12px;">📊 匯出 Excel</button>
-            <button class="btn-small" onclick="exportJSON()" style="padding:10px; border-radius:10px; border:1px solid #ddd; background:#fff; font-size:12px;">💾 備份 JSON</button>
-        </div>
-        <button onclick="importJSON()" style="width:100%; margin-top:8px; height:38px; border-radius:10px; border:none; background:#444; color:white; font-size:12px;">📥 還原資料</button>
     </div>
 </div>
 
 <div id="dashboard-page" class="page">
-    <div style="padding: 10px 0; position: sticky; top: 75px; background: var(--bg); z-index: 998; margin: 0 -10px; padding-left: 10px;">
+    <div style="padding: 10px 0; position: sticky; top: 75px; background: var(--bg); z-index: 998;">
         <div id="mainTabScroll" class="chip-container"></div>
         <div id="subTabScroll" class="chip-container"></div>
-        <div style="display: flex; gap: 6px; margin-top: 5px; overflow-x: auto; padding-bottom: 5px;" class="chip-container">
-            <div class="filter-chip pri active" onclick="setPriFilter('全部', this)" style="font-size:11px;">全部</div>
-            <div class="filter-chip pri pri-must" onclick="setPriFilter('必買', this)" style="font-size:11px;">🔥 必買</div>
-            <div class="filter-chip pri pri-need" onclick="setPriFilter('需要', this)" style="font-size:11px;">⚡ 需要</div>
-            <div class="filter-chip pri pri-want" onclick="setPriFilter('想買', this)" style="font-size:11px;">☁️ 想買</div>
+        <div class="chip-container">
+            <div class="filter-chip pri active" onclick="setPriFilter('全部', this)">全部</div>
+            <div class="filter-chip pri pri-must" onclick="setPriFilter('必買', this)">🔥 必買</div>
+            <div class="filter-chip pri pri-need" onclick="setPriFilter('需要', this)">⚡ 需要</div>
+            <div class="filter-chip pri pri-want" onclick="setPriFilter('想買', this)">☁️ 想買</div>
         </div>
-        <div style="padding-right: 10px;">
-            <input type="text" id="searchBar" placeholder="🔍 搜尋產品..." oninput="render()" style="margin-top: 5px; height: 40px; box-shadow: var(--shadow); border:none;">
-        </div>
+        <input type="text" id="searchBar" placeholder="🔍 搜尋產品..." oninput="render()" style="box-shadow: var(--shadow); border:none;">
     </div>
     <div id="dash-list"></div>
 </div>
@@ -260,8 +160,8 @@
 
 <div id="cart-page" class="page">
     <div id="cart-list"></div>
-    <div class="card" style="margin-top:20px; border-top:4px solid var(--secondary); background: #fafffa;">
-        <h3 style="font-size:16px; color:#2d5a27;">📜 歷史購買紀錄</h3>
+    <div class="card" style="margin-top:20px; border-top:4px solid var(--secondary);">
+        <h3 style="color:#2d5a27;">📜 購買紀錄</h3>
         <div id="history-list"></div>
     </div>
 </div>
@@ -273,61 +173,52 @@
             <div style="color:var(--primary); font-weight:900; font-size:22px;">實付: ₩<span id="after-refund-total">0</span></div>
         </div>
         <div style="text-align:right;">
-            <div id="tax-refund-display" style="font-weight:700; color:var(--cart); font-size:13px; background:#e8f5e9; padding:3px 8px; border-radius:6px;">退稅: ₩0</div>
+            <div id="tax-refund-display" style="font-weight:700; color:var(--cart); font-size:13px;">退稅: ₩0</div>
             <div style="font-size:12px; color:var(--gray); margin-top:4px;">≈ HKD $<span id="hkd-total">0</span></div>
         </div>
     </div>
-    <button class="btn-main" style="background:var(--cart); font-size:16px;" onclick="checkoutCart()">✅ 完成購買並存入紀錄</button>
+    <button class="btn-main" style="background:var(--cart);" onclick="checkoutCart()">✅ 完成購買並存入紀錄</button>
 </div>
 
 <div id="modalOverlay" class="modal-overlay" onclick="if(event.target===this) closeModal()">
     <div class="modal-content" id="selectorModal" style="display:none;">
-        <h4 id="modalProdName" style="margin:0 0 15px 0;"></h4>
+        <h4 id="modalProdName" style="margin-top:0;"></h4>
         <span class="small-label">選擇規格：</span>
-        <select id="modalSpecSelect" style="height:48px;"></select>
-        <div style="display:flex; align-items:center; justify-content:center; gap:30px; margin: 25px 0;">
+        <select id="modalSpecSelect"></select>
+        <div style="display:flex; align-items:center; justify-content:center; gap:30px; margin: 20px 0;">
             <button class="qty-btn" onclick="adjModalQty(-1)">-</button>
-            <b id="modalQtyDisplay" style="font-size:28px;">1</b>
+            <b id="modalQtyDisplay" style="font-size:24px;">1</b>
             <button class="qty-btn" onclick="adjModalQty(1)">+</button>
         </div>
+        <button class="btn-main" id="modalConfirmBtn">確認加入</button>
+    </div>
+    
+    <div class="modal-content" id="planPickerModal" style="display:none;">
+        <h3>選擇要加入的計畫</h3>
+        <div id="planOptionsList" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <button class="btn-main" style="background:#eee; color:#333; margin-top:15px;" onclick="closeModal()">取消</button>
+    </div>
+
+    <div class="modal-content" id="historyDetailModal" style="display:none; max-width: 450px;">
+        <h3 id="histDetailTitle" style="margin-bottom:5px;">紀錄詳情</h3>
+        <input type="text" id="editHistName" style="font-weight:700; border-bottom:2px solid var(--primary); margin-bottom:15px;" placeholder="修改名稱">
+        <div id="histDetailItems" style="max-height:300px; overflow-y:auto; border:1px solid #f0f0f0; border-radius:12px; padding:10px; margin-bottom:15px;"></div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div><label class="small-label">總額 ₩</label><input type="number" id="editHistTotal" oninput="recalcHistPaid()"></div>
+            <div><label class="small-label">退稅 ₩</label><input type="number" id="editHistRefund" oninput="recalcHistPaid()"></div>
+        </div>
+        <div style="text-align:right; margin:10px 0;">實付: <b style="color:var(--primary); font-size:18px;">₩<span id="editHistPaid">0</span></b></div>
         <div style="display:flex; gap:10px;">
             <button class="btn-main" style="background:#eee; color:#333; flex:1;" onclick="closeModal()">取消</button>
-            <button class="btn-main" id="modalConfirmBtn" style="flex:2;">確認加入</button>
+            <button class="btn-main" style="flex:2;" onclick="saveHistEdit()">儲存修改</button>
         </div>
     </div>
+
     <div class="modal-content" id="quickPickerModal" style="display:none;">
-        <h3>選取登記產品</h3>
-        <input type="text" id="quickSearch" placeholder="🔍 搜尋..." oninput="renderQuickPickerList()" style="height:40px;">
-        <div id="quickPickerCats" class="chip-container"></div>
-        <div id="quickPickerList" style="max-height: 300px; overflow-y: auto; border-top: 1px solid #eee;"></div>
+        <h3>選取產品</h3>
+        <input type="text" id="quickSearch" placeholder="🔍 搜尋..." oninput="renderQuickPickerList()">
+        <div id="quickPickerList" style="max-height: 350px; overflow-y: auto;"></div>
         <button class="btn-main" style="background:#eee; color:#333; margin-top:15px;" onclick="closeModal()">關閉</button>
-    </div>
-    <div class="modal-content" id="editProductModal" style="display:none;">
-        <h3>✏️ 編輯產品</h3>
-        <input type="text" id="editName">
-        <input type="text" id="editImgUrl" placeholder="圖片URL">
-        <select id="editMainCat" onchange="updateSubCats('editMainCat', 'editSubCat')"></select>
-        <select id="editSubCat"></select>
-        <select id="editPriority">
-            <option value="想買">☁️ 想買</option>
-            <option value="需要">⚡ 需要</option>
-            <option value="必買">🔥 必買</option>
-        </select>
-        <div id="editSpecContainer"></div>
-        <button onclick="addEditSpecRow()" class="btn-small" style="width:100%; margin-bottom:15px;">+ 新增規格</button>
-        <div style="display:flex; gap:10px;">
-            <button class="btn-main" style="background:#eee; color:#333; flex:1;" onclick="closeModal()">取消</button>
-            <button class="btn-main" style="flex:2;" onclick="updateProduct()">儲存</button>
-        </div>
-    </div>
-    <div class="modal-content" id="planPickerModal" style="display:none;"><div id="planOptionsList"></div></div>
-    <div class="modal-content" id="historyEditModal" style="display:none;">
-        <input type="text" id="histEditTitleInput" style="font-weight:700; border-bottom:2px solid var(--primary);">
-        <div id="histEditItems"></div>
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn-main" style="background:#eee; color:#333; flex:1;" onclick="closeModal()">關閉</button>
-            <button class="btn-main" style="flex:2;" onclick="saveHistChanges()">儲存</button>
-        </div>
     </div>
 </div>
 
@@ -341,9 +232,11 @@
     let historyDB = JSON.parse(localStorage.getItem('oy_history_v18')) || [];
     let planGroups = JSON.parse(localStorage.getItem('oy_plans_v18')) || [{title: "首爾必買", items: []}];
     
-    let regActiveMain = Object.keys(catConfig)[0];
-    let regActiveSub = catConfig[regActiveMain][0];
-    let regActivePri = "想買";
+    let activeMain = "全部", activeSub = "全部", activePri = "全部";
+    let regActiveMain = Object.keys(catConfig)[0], regActiveSub = catConfig[regActiveMain][0], regActivePri = "想買";
+    let quickItems = [];
+    let modalQty = 1;
+    let currentHistIdx = null;
 
     function switchPage(p, btn) {
         document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
@@ -355,55 +248,107 @@
         render();
     }
 
-    function initRegChips() {
-        const mainContainer = document.getElementById('regMainCatChips');
-        mainContainer.innerHTML = Object.keys(catConfig).map(cat => 
-            `<div class="filter-chip ${cat === regActiveMain ? 'active' : ''}" onclick="setRegMainCat('${cat}')">${cat}</div>`
-        ).join('');
-        
-        const subContainer = document.getElementById('regSubCatChips');
-        subContainer.innerHTML = catConfig[regActiveMain].map(sub => 
-            `<div class="filter-chip sub ${sub === regActiveSub ? 'active' : ''}" onclick="setRegSubCat('${sub}')">${sub}</div>`
-        ).join('');
+    // 速算功能
+    function addQuickManualItem() { quickItems.push({ name: "", price: 0, qty: 1 }); renderQuickCalc(); }
+    function openQuickProdPicker() {
+        document.getElementById('modalOverlay').style.display = 'flex';
+        document.getElementById('quickPickerModal').style.display = 'block';
+        renderQuickPickerList();
     }
-
-    function setRegMainCat(cat) {
-        regActiveMain = cat;
-        regActiveSub = catConfig[cat][0];
-        initRegChips();
+    function renderQuickPickerList() {
+        const s = document.getElementById('quickSearch').value.toLowerCase();
+        const cont = document.getElementById('quickPickerList');
+        cont.innerHTML = db.filter(p => p.name.toLowerCase().includes(s)).map(p => `
+            <div style="padding:12px; border-bottom:1px solid #eee;" onclick="pickQuickProd(${p.id})">
+                <b>${p.name}</b><br><small>${p.sub}</small>
+            </div>
+        `).join('');
     }
-
-    function setRegSubCat(sub) {
-        regActiveSub = sub;
-        initRegChips();
-    }
-
-    function setRegPriority(pri, el) {
-        regActivePri = pri;
-        document.querySelectorAll('.pri-choice').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
-    }
-
-    function saveProduct() { 
-        const name = document.getElementById('name').value; if(!name) return alert("請輸入名稱"); 
-        const specs = Array.from(document.querySelectorAll('.spec-input-item')).map(c => ({
-            specId: Math.random(), 
-            name: c.querySelector('.s-name').value||"標準", 
-            price: Number(c.querySelector('.s-price').value)||0, 
-            salePrice: Number(c.querySelector('.s-sale').value)||null, 
-            saleDate: c.querySelector('.s-date').value||null
-        }));
-        db.push({
-            id:Date.now(), name, img:document.getElementById('imgUrl').value, 
-            main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs
+    function pickQuickProd(pid) {
+        const p = db.find(x => x.id === pid);
+        const today = new Date().toISOString().split('T')[0];
+        p.specs.forEach(s => {
+            const price = (s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price;
+            quickItems.push({ name: `${p.name} (${s.name})`, price: price, qty: 1 });
         });
-        saveAndRender(); alert("成功存入清單！");
+        closeModal(); renderQuickCalc();
+    }
+    function renderQuickCalc() {
+        const cont = document.getElementById('quick-calc-list');
+        cont.innerHTML = quickItems.map((item, idx) => `
+            <div style="display:grid; grid-template-columns: 2fr 1fr 40px; gap:8px; margin-bottom:10px;">
+                <input type="text" value="${item.name}" onchange="quickItems[${idx}].name=this.value" placeholder="項目">
+                <input type="number" value="${item.price}" onchange="quickItems[${idx}].price=Number(this.value); renderQuickCalc();" placeholder="₩">
+                <button onclick="quickItems.splice(${idx},1); renderQuickCalc();" style="border:none; background:none; color:red; font-size:20px;">×</button>
+            </div>
+        `).join('');
+        let total = quickItems.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        let refund = 0;
+        for (let i = refundTable.length - 1; i >= 0; i--) { if (total >= refundTable[i].min) { refund = refundTable[i].refund; break; } }
+        document.getElementById('quick-total-won').innerText = `₩${total.toLocaleString()}`;
+        document.getElementById('quick-refund-won').innerText = `₩${refund.toLocaleString()}`;
+        document.getElementById('quick-final-won').innerText = (total - refund).toLocaleString();
+        document.getElementById('quick-final-hkd').innerText = Math.round((total-refund) * currentRate).toLocaleString();
+    }
+    function clearQuickCalc() { quickItems = []; renderQuickCalc(); }
+
+    // 歷史紀錄編輯
+    function openHistDetail(idx) {
+        currentHistIdx = idx;
+        const h = historyDB[idx];
+        document.getElementById('editHistName').value = h.title;
+        document.getElementById('editHistTotal').value = h.total;
+        document.getElementById('editHistRefund').value = h.refund;
+        document.getElementById('editHistPaid').innerText = h.finalPaid.toLocaleString();
+        
+        const itemCont = document.getElementById('histDetailItems');
+        itemCont.innerHTML = h.items.map((item, iIdx) => `
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px;">
+                <span style="flex:1;">${item.name}</span>
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <input type="number" value="${item.qty}" style="width:50px; height:25px; margin:0;" onchange="updateHistItemQty(${iIdx}, this.value)">
+                    <span>₩${(item.price * item.qty).toLocaleString()}</span>
+                </div>
+            </div>
+        `).join('');
+        
+        document.getElementById('modalOverlay').style.display = 'flex';
+        document.getElementById('historyDetailModal').style.display = 'block';
+    }
+    function updateHistItemQty(iIdx, newQty) {
+        const h = historyDB[currentHistIdx];
+        h.items[iIdx].qty = parseInt(newQty) || 0;
+        h.total = h.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        document.getElementById('editHistTotal').value = h.total;
+        recalcHistPaid();
+    }
+    function recalcHistPaid() {
+        const total = parseInt(document.getElementById('editHistTotal').value) || 0;
+        const refund = parseInt(document.getElementById('editHistRefund').value) || 0;
+        document.getElementById('editHistPaid').innerText = (total - refund).toLocaleString();
+    }
+    function saveHistEdit() {
+        const h = historyDB[currentHistIdx];
+        h.title = document.getElementById('editHistName').value;
+        h.total = parseInt(document.getElementById('editHistTotal').value);
+        h.refund = parseInt(document.getElementById('editHistRefund').value);
+        h.finalPaid = h.total - h.refund;
+        saveAndRender(); closeModal();
     }
 
-    let quickItems = []; 
-    let activeMain = "全部", activeSub = "全部", activePri = "全部";
-    let modalQty = 1;
+    // 優化計畫選取界面
+    function openPlanPicker(pid) {
+        document.getElementById('modalOverlay').style.display='flex';
+        document.getElementById('planPickerModal').style.display='block';
+        document.getElementById('planOptionsList').innerHTML = planGroups.map((g, gi) => `
+            <div class="card" style="margin:0; padding:15px; border:1px solid #eee; display:flex; justify-content:space-between; align-items:center;" onclick="closeModal(); openSelector(${pid}, 'plan', ${gi})">
+                <b style="color:var(--plan)">📌 ${g.title}</b>
+                <span style="font-size:12px; color:var(--gray)">${g.items.length} 項目</span>
+            </div>
+        `).join('');
+    }
 
+    // 核心邏輯
     function saveAndRender() {
         localStorage.setItem('oy_db_v18', JSON.stringify(db));
         localStorage.setItem('oy_cart_v18', JSON.stringify(cart));
@@ -412,30 +357,11 @@
         render();
     }
 
-    function initFilters() {
-        const mScroll = document.getElementById('mainTabScroll');
-        mScroll.innerHTML = ["全部", ...Object.keys(catConfig)].map(cat => `<div class="filter-chip ${cat===activeMain?'active':''}" onclick="setMainFilter('${cat}')">${cat}</div>`).join('');
-        renderSubChips();
-    }
-
-    function renderSubChips() {
-        const sScroll = document.getElementById('subTabScroll');
-        if(activeMain === "全部") { sScroll.innerHTML = ""; return; }
-        sScroll.innerHTML = ["全部", ...catConfig[activeMain]].map(sub => `<div class="filter-chip sub ${sub===activeSub?'active':''}" onclick="setSubFilter('${sub}')">${sub}</div>`).join('');
-    }
-
-    function setMainFilter(m) { activeMain = m; activeSub = "全部"; initFilters(); render(); }
-    function setSubFilter(s) { activeSub = s; renderSubChips(); render(); }
-    function setPriFilter(p, el) { 
-        activePri = p; 
-        document.querySelectorAll('.filter-chip.pri').forEach(c => c.classList.remove('active')); 
-        el.classList.add('active'); 
-        render(); 
-    }
-
     function render() {
         document.getElementById('rateInput').value = currentRate;
         document.getElementById('rateExample').innerText = Math.round(10000 * currentRate).toLocaleString();
+        
+        // Dashboard Render
         const dashCont = document.getElementById('dash-list');
         dashCont.innerHTML = '';
         const sText = document.getElementById('searchBar').value.toLowerCase();
@@ -451,51 +377,120 @@
                 const hasSale = s.salePrice && (!s.saleDate || today <= s.saleDate);
                 return `<div class="price-tag">
                     <span style="font-size:11px; font-weight:600;">${s.name}:</span> 
-                    ${hasSale ? `<span class="origin-price">₩${s.price.toLocaleString()}</span><span class="sale-price">₩${s.salePrice.toLocaleString()}</span>` : `<span style="font-weight:700;">₩${s.price.toLocaleString()}</span>`}
+                    ${hasSale ? `<span class="origin-price">₩${s.price.toLocaleString()}</span><span class="sale-price">₩${s.salePrice.toLocaleString()}</span>` : `<span>₩${s.price.toLocaleString()}</span>`}
                 </div>`;
             }).join('');
 
             dashCont.innerHTML += `<div class="item-card card" style="border-left: 5px solid ${p.priority==='必買'?'var(--pri-must)':p.priority==='需要'?'var(--pri-need)':'var(--pri-want)'}">
-                <img src="${p.img || 'https://via.placeholder.com/100?text=OY'}" class="prod-img">
+                <img src="${p.img || 'https://via.placeholder.com/100'}" class="prod-img">
                 <div style="flex:1; min-width:0;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <b style="font-size:14px;">${p.name}</b>
-                        <span style="font-size:10px; color:var(--gray); background:#f0f0f0; padding:2px 6px; border-radius:4px;">${p.sub}</span>
-                    </div>
-                    <div>${specSummary}</div>
+                    <div style="display:flex; justify-content:space-between;"><b>${p.name}</b><small style="color:var(--gray)">${p.sub}</small></div>
+                    ${specSummary}
                     <div style="display:flex; gap:6px; margin-top:10px;">
-                        <button class="btn-small" onclick="openSelector(${p.id},'cart')" style="background:var(--cart); color:white; border:none; border-radius:6px; flex:1; font-size:12px; height:30px;">+🛒</button>
-                        <button class="btn-small" onclick="openPlanPicker(${p.id})" style="flex:1; font-size:12px; height:30px; border-radius:6px; border:1px solid #ddd; background:white;">+📝</button>
-                        <button class="btn-small" onclick="openEditProduct(${p.id})" style="font-size:12px; height:30px; width:35px; border-radius:6px; border:1px solid #ddd; background:white;">✎</button>
-                        <button class="btn-small" onclick="deleteProduct(${p.id})" style="color:var(--sale); font-size:12px; height:30px; width:35px; border-radius:6px; border:1px solid #ddd; background:white;">×</button>
+                        <button style="flex:1; background:var(--cart); color:white; border:none; border-radius:8px; height:32px;" onclick="openSelector(${p.id},'cart')">+🛒</button>
+                        <button style="flex:1; border:1px solid #ddd; border-radius:8px; background:white;" onclick="openPlanPicker(${p.id})">+📝</button>
+                        <button style="width:35px; border:1px solid #ddd; border-radius:8px; background:white;" onclick="deleteProduct(${p.id})">×</button>
                     </div>
                 </div>
             </div>`;
         });
-        renderCart(); renderPlans(); renderHistory();
+
+        renderCart();
+        renderPlans();
+        renderHistory();
     }
 
-    // 以下為其餘原始邏輯 (不變)
-    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; document.getElementById('selectorModal').style.display = 'none'; document.getElementById('quickPickerModal').style.display = 'none'; document.getElementById('editProductModal').style.display = 'none'; }
-    function adjModalQty(v) { modalQty = Math.max(1, modalQty+v); document.getElementById('modalQtyDisplay').innerText = modalQty; }
-    function saveRate() { currentRate = parseFloat(document.getElementById('rateInput').value) || 0.0058; localStorage.setItem('oy_rate', currentRate); render(); }
+    function renderCart() {
+        let total = 0; const cont = document.getElementById('cart-list'); const today = new Date().toISOString().split('T')[0];
+        cont.innerHTML = '<h3>🛒 購物籃</h3>';
+        cart.forEach((i, idx) => {
+            const p = db.find(x => x.id === i.prodId); const s = p?.specs.find(x => x.specId === i.specId);
+            const price = s ? ((s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price) : 0;
+            total += price * i.qty;
+            cont.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px;">
+                <div style="flex:1;"><b>${p?p.name:'--'}</b><br><small>${s?s.name:'--'}</small></div>
+                <div class="qty-ctrl"><button class="qty-btn" onclick="updateQty('cart', null, ${idx}, -1)">-</button><span>${i.qty}</span><button class="qty-btn" onclick="updateQty('cart', null, ${idx}, 1)">+</button></div>
+                <button onclick="cart.splice(${idx},1); saveAndRender();" style="border:none; color:red; background:none; margin-left:10px;">×</button>
+            </div>`;
+        });
+        let refund = 0; for (let i = refundTable.length - 1; i >= 0; i--) { if (total >= refundTable[i].min) { refund = refundTable[i].refund; break; } }
+        document.getElementById('cart-total').innerText = `₩${total.toLocaleString()}`;
+        document.getElementById('tax-refund-display').innerText = `退稅: ₩${refund.toLocaleString()}`;
+        document.getElementById('after-refund-total').innerText = (total - refund).toLocaleString();
+        document.getElementById('hkd-total').innerText = Math.round((total-refund) * currentRate).toLocaleString();
+    }
+
+    function renderPlans() {
+        document.getElementById('plan-groups').innerHTML = planGroups.map((g, gi) => `
+            <div class="card" style="padding:0; overflow:hidden;">
+                <div style="display:flex; justify-content:space-between; background:#f3e5f5; padding:10px 15px;">
+                    <b style="color:var(--plan)">📌 ${g.title}</b>
+                    <button onclick="deletePlan(${gi})" style="border:none; background:none; color:red;">刪除</button>
+                </div>
+                <div style="padding: 10px;">
+                ${g.items.map((i, ii) => {
+                    const p = db.find(x => x.id === i.prodId); const s = p?.specs.find(x => x.specId === i.specId);
+                    return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f9f9f9;">
+                        <span style="flex:1;">${p?p.name:'--'} (${s?s.name:'--'})</span>
+                        <div class="qty-ctrl" style="margin-right:10px;"><button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, -1)">-</button><span>${i.qty}</span><button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, 1)">+</button></div>
+                        <button onclick="addToCartFromPlan(${gi}, ${ii})" style="border:none; background:var(--cart); color:white; border-radius:6px; padding:0 8px;">🛒</button>
+                    </div>`;
+                }).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function renderHistory() {
+        document.getElementById('history-list').innerHTML = historyDB.map((h, idx) => `
+            <div class="card" style="padding:12px; margin-bottom:10px;" onclick="openHistDetail(${idx})">
+                <div style="display:flex; justify-content:space-between;">
+                    <b>${h.title}</b>
+                    <b style="color:var(--primary)">₩${h.finalPaid.toLocaleString()}</b>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:11px; color:var(--gray);">
+                    <span>${h.date}</span>
+                    <span>退稅: ₩${h.refund.toLocaleString()}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 輔助函數
+    function initFilters() {
+        const mScroll = document.getElementById('mainTabScroll');
+        mScroll.innerHTML = ["全部", ...Object.keys(catConfig)].map(cat => `<div class="filter-chip ${cat===activeMain?'active':''}" onclick="setMainFilter('${cat}')">${cat}</div>`).join('');
+        renderSubChips();
+    }
+    function renderSubChips() {
+        const sScroll = document.getElementById('subTabScroll');
+        if(activeMain === "全部") { sScroll.innerHTML = ""; return; }
+        sScroll.innerHTML = ["全部", ...catConfig[activeMain]].map(sub => `<div class="filter-chip sub ${sub===activeSub?'active':''}" onclick="setSubFilter('${sub}')">${sub}</div>`).join('');
+    }
+    function setMainFilter(m) { activeMain = m; activeSub = "全部"; initFilters(); render(); }
+    function setSubFilter(s) { activeSub = s; renderSubChips(); render(); }
+    function setPriFilter(p, el) { activePri = p; document.querySelectorAll('.filter-chip.pri').forEach(c => c.classList.remove('active')); el.classList.add('active'); render(); }
+    function initRegChips() {
+        document.getElementById('regMainCatChips').innerHTML = Object.keys(catConfig).map(cat => `<div class="filter-chip ${cat === regActiveMain ? 'active' : ''}" onclick="regActiveMain='${cat}'; regActiveSub=catConfig['${cat}'][0]; initRegChips();">${cat}</div>`).join('');
+        document.getElementById('regSubCatChips').innerHTML = catConfig[regActiveMain].map(sub => `<div class="filter-chip sub ${sub === regActiveSub ? 'active' : ''}" onclick="regActiveSub='${sub}'; initRegChips();">${sub}</div>`).join('');
+    }
+    function setRegPriority(pri, el) { regActivePri = pri; document.querySelectorAll('.pri-choice').forEach(c => c.classList.remove('active')); el.classList.add('active'); }
+    function saveProduct() {
+        const name = document.getElementById('name').value; if(!name) return alert("請輸入名稱");
+        const specs = Array.from(document.querySelectorAll('.spec-input-item')).map(c => ({ specId: Math.random(), name: c.querySelector('.s-name').value||"標準", price: Number(c.querySelector('.s-price').value)||0, salePrice: Number(c.querySelector('.s-sale').value)||null, saleDate: c.querySelector('.s-date').value||null }));
+        db.push({ id:Date.now(), name, img:document.getElementById('imgUrl').value, main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs });
+        saveAndRender(); alert("已存入清單！");
+    }
     function addSpecRow() {
-        const d = document.createElement('div'); d.className='spec-input-item'; d.style='border:1px solid #f2f2f7; padding:15px; border-radius:15px; margin-bottom:12px; background:#fafafa;';
+        const d = document.createElement('div'); d.className='spec-input-item'; d.style='border:1px solid #f2f2f7; padding:12px; border-radius:12px; margin-bottom:10px;';
         d.innerHTML=`<input type="text" class="s-name" placeholder="規格名稱"><div style="display:flex; gap:8px;"><input type="number" class="s-price" placeholder="原價"><input type="number" class="s-sale" placeholder="特價"></div><input type="date" class="s-date">`;
         document.getElementById('specContainer').appendChild(d);
     }
-    function updateQty(type, gi, ii, delta) { let list = (type === 'cart') ? cart : planGroups[gi].items; if (list[ii]) { list[ii].qty = Math.max(1, list[ii].qty + delta); saveAndRender(); } }
-    function addToCartFromPlan(gi, ii) { const item = planGroups[gi].items[ii]; const ext = cart.find(c => c.prodId === item.prodId && c.specId === item.specId); if(ext) ext.qty += item.qty; else cart.push({...item}); saveAndRender(); }
-    function deleteProduct(id) { if(confirm('刪除？')) { db = db.filter(x => x.id !== id); saveAndRender(); } }
-    function createNewPlanGroup() { let t = prompt("名稱:"); if(t) { planGroups.push({title:t, items:[]}); saveAndRender(); } }
     function openSelector(pid, target, pIdx=null) {
         const p = db.find(x => x.id === pid); const today = new Date().toISOString().split('T')[0];
         modalQty = 1; document.getElementById('modalQtyDisplay').innerText = 1;
         document.getElementById('modalProdName').innerText = p.name;
-        document.getElementById('modalSpecSelect').innerHTML = p.specs.map(s => {
-            const finalP = (s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price;
-            return `<option value="${s.specId}">${s.name} (₩${finalP.toLocaleString()})</option>`;
-        }).join('');
+        document.getElementById('modalSpecSelect').innerHTML = p.specs.map(s => `<option value="${s.specId}">${s.name} (₩${((s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price).toLocaleString()})</option>`).join('');
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('selectorModal').style.display = 'block';
         document.getElementById('modalConfirmBtn').onclick = () => {
@@ -506,68 +501,14 @@
             saveAndRender(); closeModal();
         };
     }
-    function renderCart() {
-        let total = 0; const cont = document.getElementById('cart-list'); const today = new Date().toISOString().split('T')[0];
-        cont.innerHTML = '<h3 style="font-size:16px;">🛒 我的購物籃</h3>';
-        cart.forEach((i, idx) => {
-            const p = db.find(x => x.id === i.prodId); const s = p?.specs.find(x => x.specId === i.specId);
-            const price = s ? ((s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price) : 0;
-            total += price * i.qty;
-            cont.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center; padding:12px;">
-                <div style="min-width:0; flex:1;"><b style="font-size:13px;">${p?p.name:'--'}</b><br><small style="color:var(--gray)">${s?s.name:'--'}</small></div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <div class="qty-ctrl"><button class="qty-btn" onclick="updateQty('cart', null, ${idx}, -1)">-</button><span>${i.qty}</span><button class="qty-btn" onclick="updateQty('cart', null, ${idx}, 1)">+</button></div>
-                    <button onclick="cart.splice(${idx},1); saveAndRender();" style="border:none; color:var(--sale); background:none; font-size:20px;">×</button>
-                </div>
-            </div>`;
-        });
-        let refund = 0; for (let i = refundTable.length - 1; i >= 0; i--) { if (total >= refundTable[i].min) { refund = refundTable[i].refund; break; } }
-        document.getElementById('cart-total').innerText = `₩${total.toLocaleString()}`;
-        document.getElementById('tax-refund-display').innerText = `退稅: ₩${refund.toLocaleString()}`;
-        document.getElementById('after-refund-total').innerText = (total - refund).toLocaleString();
-        document.getElementById('hkd-total').innerText = Math.round((total-refund) * currentRate).toLocaleString();
-    }
-    function renderPlans() {
-        document.getElementById('plan-groups').innerHTML = planGroups.map((g, gi) => `
-            <div class="card" style="padding:0; overflow:hidden; margin-bottom:15px;">
-                <div style="display:flex; justify-content:space-between; background:#f3e5f5; padding:10px 15px;">
-                    <b style="color:var(--plan); font-size:14px;">📌 ${g.title}</b>
-                    <button onclick="deletePlan(${gi})" style="border:none; background:none; color:var(--sale); font-size:11px;">刪除</button>
-                </div>
-                <div style="padding: 10px;">
-                ${g.items.map((i, ii) => {
-                    const p = db.find(x => x.id === i.prodId); const s = p?.specs.find(x => x.specId === i.specId);
-                    return `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f9f9f9;">
-                        <div style="flex:1; min-width:0;"><span style="font-size:13px;">${p?p.name:'--'}</span><br><small style="color:var(--gray)">${s?s.name:'--'}</small></div>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <div class="qty-ctrl"><button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, -1)">-</button><span>${i.qty}</span><button class="qty-btn" onclick="updateQty('plan', ${gi}, ${ii}, 1)">+</button></div>
-                            <button onclick="addToCartFromPlan(${gi}, ${ii})" style="border:none; background:var(--cart); color:white; padding:5px 8px; border-radius:6px; font-size:12px;">🛒</button>
-                        </div>
-                    </div>`;
-                }).join('')}
-                </div>
-            </div>
-        `).join('');
-    }
-    function renderHistory() {
-        document.getElementById('history-list').innerHTML = historyDB.map((s, idx) => `
-            <div class="card" style="padding:10px 15px; margin-bottom:8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-size:13px;"><b>${s.title}</b><br><small style="color:var(--gray)">${s.date}</small></div>
-                    <div style="text-align:right;"><b style="color:var(--primary)">₩${s.finalPaid.toLocaleString()}</b><br><small onclick="historyDB.splice(${idx},1); saveAndRender();" style="color:red">刪除</small></div>
-                </div>
-            </div>
-        `).join('');
-    }
-    function openPlanPicker(pid) {
-        document.getElementById('modalOverlay').style.display='flex';
-        document.getElementById('planPickerModal').style.display='block';
-        document.getElementById('planOptionsList').innerHTML = '<h3>選取計畫</h3>' + planGroups.map((g, gi) => `
-            <button class="btn-main" style="margin-bottom:8px; background:white; color:var(--plan); border:1px solid var(--plan);" onclick="closeModal(); openSelector(${pid}, 'plan', ${gi})">${g.title}</button>
-        `).join('');
-    }
+    function updateQty(type, gi, ii, delta) { let list = (type === 'cart') ? cart : planGroups[gi].items; if (list[ii]) { list[ii].qty = Math.max(1, list[ii].qty + delta); saveAndRender(); } }
+    function addToCartFromPlan(gi, ii) { const item = planGroups[gi].items[ii]; const ext = cart.find(c => c.prodId === item.prodId && c.specId === item.specId); if(ext) ext.qty += item.qty; else cart.push({...item}); saveAndRender(); }
+    function deleteProduct(id) { if(confirm('刪除？')) { db = db.filter(x => x.id !== id); saveAndRender(); } }
+    function deletePlan(idx) { if(confirm('刪除計畫？')) { planGroups.splice(idx,1); saveAndRender(); } }
+    function createNewPlanGroup() { let t = prompt("名稱:"); if(t) { planGroups.push({title:t, items:[]}); saveAndRender(); } }
     function checkoutCart() {
-        if(!cart.length) return; const title = prompt("紀錄名稱：", "購物 " + new Date().toLocaleDateString()); if(!title) return;
+        if(!cart.length) return; 
+        const title = prompt("紀錄名稱：", "購物 " + new Date().toLocaleDateString()); if(!title) return;
         const today = new Date().toISOString().split('T')[0];
         const checkoutItems = cart.map(i => {
             const p = db.find(x => x.id === i.prodId); const s = p.specs.find(x => x.specId === i.specId);
@@ -577,14 +518,16 @@
         let total = checkoutItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
         let refund = 0; for (let i = refundTable.length - 1; i >= 0; i--) { if (total >= refundTable[i].min) { refund = refundTable[i].refund; break; } }
         historyDB.unshift({ id: Date.now(), title, date: new Date().toLocaleString(), items: checkoutItems, total, refund, finalPaid: total - refund });
-        cart = []; saveAndRender(); alert("已完成！");
+        cart = []; saveAndRender();
     }
-    function deletePlan(idx) { if(confirm('刪除計畫？')) { planGroups.splice(idx,1); saveAndRender(); } }
-    
-    // 初始化
-    initRegChips();
-    initFilters();
-    render();
+    function closeModal() { 
+        document.getElementById('modalOverlay').style.display = 'none'; 
+        document.querySelectorAll('.modal-content').forEach(m => m.style.display = 'none');
+    }
+    function saveRate() { currentRate = parseFloat(document.getElementById('rateInput').value) || 0.0058; localStorage.setItem('oy_rate', currentRate); render(); }
+    function adjModalQty(v) { modalQty = Math.max(1, modalQty + v); document.getElementById('modalQtyDisplay').innerText = modalQty; }
+
+    initRegChips(); initFilters(); render();
 </script>
 </body>
 </html>
