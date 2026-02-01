@@ -62,9 +62,10 @@
         .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); backdrop-filter: blur(5px); z-index:2000; align-items:center; justify-content:center; padding: 20px; }
         .modal-content { background:white; padding:24px; border-radius:24px; width:100%; max-width:400px; max-height: 85vh; overflow-y: auto; }
         
-        .hist-tag { font-size: 10px; background: #fff3e0; color: #e67e22; padding: 2px 6px; border-radius: 4px; margin-left: 5px; border: 1px solid #ffe0b2; }
-        .label-reg { font-size: 10px; color: #27ae60; background: #e8f5e9; padding: 2px 6px; border-radius: 4px; margin-right: 5px; }
+        .label-reg { font-size: 10px; color: #27ae60; background: #e8f5e9; padding: 2px 6px; border-radius: 4px; margin-right: 5px; border: 1px solid #c8e6c9; }
         .small-label { font-size: 12px; color: var(--gray); margin-bottom: 4px; display: block; }
+        
+        .in-cart-highlight { background-color: #e8f5e9 !important; border: 1px solid var(--secondary) !important; }
     </style>
 </head>
 <body>
@@ -153,8 +154,8 @@
 <div id="pricehistory-page" class="page">
     <div class="card" style="background: #fff3e0; border: 1px solid #ffe0b2;">
         <h3 style="color:var(--price-hist); margin-top:0;">📉 比價追蹤</h3>
-        <p style="font-size:12px; color:#666;">這裡會自動顯示「登記中」的價格。您也可以點擊下方按鈕新增不同地點的報價。</p>
-        <button class="btn-main" style="background:var(--price-hist);" onclick="openPriceRecordModal()">+ 新增比價記錄</button>
+        <p style="font-size:12px; color:#666;">這裡會自動顯示「登記中」的價格。您也可以新增不同店舖的現場報價。</p>
+        <button class="btn-main" style="background:var(--price-hist);" onclick="openPriceRecordModal()">+ 新增現場報價</button>
     </div>
     <div id="price-history-list"></div>
 </div>
@@ -200,17 +201,18 @@
             <div><label class="small-label">原價 (₩)：</label><input type="number" id="recordPrice"></div>
             <div><label class="small-label">特價 (₩)：</label><input type="number" id="recordSalePrice"></div>
         </div>
-        <label class="small-label">特價期限：</label>
+        <label class="small-label">特價期限 (選填)：</label>
         <input type="date" id="recordSaleDate">
-        <label class="small-label">備註 (如：地點)：</label>
-        <input type="text" id="recordNote">
-        <label class="small-label">日期：</label>
+        <label class="small-label">備註 (如：店名/地點)：</label>
+        <input type="text" id="recordNote" placeholder="例如：弘大店">
+        <label class="small-label">記錄日期：</label>
         <input type="date" id="recordDate">
         <div style="display:flex; gap:10px; margin-top:15px;">
             <button class="btn-main" style="background:#eee; color:#333; flex:1;" onclick="closeModal()">取消</button>
             <button class="btn-main" style="flex:2; background:var(--price-hist);" onclick="savePriceRecord()">儲存記錄</button>
         </div>
     </div>
+
     <div class="modal-content" id="selectorModal" style="display:none;">
         <h4 id="modalProdName" style="margin-top:0;"></h4>
         <span class="small-label">選擇規格：</span>
@@ -222,15 +224,25 @@
         </div>
         <button class="btn-main" id="modalConfirmBtn">確認加入</button>
     </div>
+
     <div class="modal-content" id="planPickerModal" style="display:none;">
-        <h3>選擇計畫</h3>
-        <div id="planOptionsList"></div>
+        <h3>選擇要加入的計畫</h3>
+        <div id="planOptionsList" style="display:flex; flex-direction:column; gap:10px;"></div>
         <button class="btn-main" style="background:#eee; color:#333; margin-top:15px;" onclick="closeModal()">取消</button>
+    </div>
+
+    <div class="modal-content" id="quickPickerModal" style="display:none; max-width: 500px;">
+        <h3>選取產品加入速算</h3>
+        <div id="quickPickerFilters" style="background: #f8f9fa; padding: 10px; border-radius: 12px; margin-bottom: 10px;">
+            <div id="qMainFilter" class="chip-container"></div>
+            <input type="text" id="quickSearch" placeholder="🔍 搜尋名稱..." oninput="renderQuickPickerList()">
+        </div>
+        <div id="quickPickerList" style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 12px;"></div>
+        <button class="btn-main" style="background:#eee; color:#333; margin-top:15px;" onclick="closeModal()">關閉</button>
     </div>
 </div>
 
 <script>
-    // 更新後的退稅級距
     const refundTable = [{min:15000,refund:1000},{min:30000,refund:2000},{min:50000,refund:3000},{min:75000,refund:5000},{min:100000,refund:7000},{min:125000,refund:8000},{min:150000,refund:9000},{min:175000,refund:10000},{min:200000,refund:12000},{min:225000,refund:13000},{min:250000,refund:15000},{min:275000,refund:17000},{min:300000,refund:19000},{min:325000,refund:21000},{min:350000,refund:23000},{min:375000,refund:25000},{min:400000,refund:27000},{min:425000,refund:28000},{min:450000,refund:30000},{min:475000,refund:32000},{min:500000,refund:35000},{min:1000000,refund:75000},{min:2000000,refund:150000}];
     const catConfig = {"護膚品":["化妝水","精華","乳液","面霜","面膜","防曬","潔面","卸妝"],"化妝品-Base":["妝前","氣墊","粉底","遮瑕","腮紅","光/陰影"],"化妝品-Eyes":["眉筆","眼線/臥蠶","眼影","睫毛膏"],"化妝品-Lip":["唇線筆","唇釉","唇膏"],"其他類":["手部膚理","身體護理","香水","零食","生活雜貨"]};
 
@@ -240,84 +252,232 @@
     let historyDB = JSON.parse(localStorage.getItem('oy_history_v18')) || [];
     let planGroups = JSON.parse(localStorage.getItem('oy_plans_v18')) || [{title: "首爾必買", items: []}];
     let priceHistory = JSON.parse(localStorage.getItem('oy_price_hist_v18')) || [];
-    let quickItems = [];
     
     let activeMain = "全部", activeSub = "全部", activePri = "全部";
     let regActiveMain = Object.keys(catConfig)[0], regActiveSub = catConfig[regActiveMain][0], regActivePri = "想買";
+    let quickItems = [];
     let modalQty = 1;
 
-    // --- 通用退稅計算 ---
-    function calcRefund(total) {
-        let r = 0;
-        for(let i = refundTable.length - 1; i >= 0; i--) {
-            if(total >= refundTable[i].min) { r = refundTable[i].refund; break; }
+    // --- 核心邏輯 ---
+    function saveAndRender() {
+        localStorage.setItem('oy_db_v18', JSON.stringify(db));
+        localStorage.setItem('oy_cart_v18', JSON.stringify(cart));
+        localStorage.setItem('oy_plans_v18', JSON.stringify(planGroups));
+        localStorage.setItem('oy_history_v18', JSON.stringify(historyDB));
+        localStorage.setItem('oy_price_hist_v18', JSON.stringify(priceHistory));
+        localStorage.setItem('oy_rate', currentRate);
+        render();
+    }
+
+    function switchPage(p, btn) {
+        document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+        document.getElementById(p + '-page').classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if(p === 'dashboard') initFilters();
+        if(p === 'wishlist') initRegChips();
+        if(p === 'pricehistory') renderPriceHistory();
+        render();
+    }
+
+    // --- 比價追蹤核心 ---
+    function renderPriceHistory() {
+        const cont = document.getElementById('price-history-list');
+        if(db.length === 0) { cont.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">請先在登記頁面新增產品</p>'; return; }
+        
+        const grouped = {};
+        db.forEach(p => {
+            grouped[p.id] = { name: p.name, items: [] };
+            p.specs.forEach(s => {
+                grouped[p.id].items.push({ isReg: true, specId: s.specId, specName: s.name, price: s.price, salePrice: s.salePrice, saleDate: s.saleDate, note: "原始登記資料", date: "登記" });
+            });
+        });
+
+        priceHistory.forEach((h, idx) => {
+            if(!grouped[h.prodId]) return;
+            const s = db.find(x => x.id === h.prodId)?.specs.find(x => x.specId === h.specId);
+            grouped[h.prodId].items.push({ ...h, specName: s ? s.name : "未知規格", originalIdx: idx, isReg: false });
+        });
+
+        cont.innerHTML = Object.values(grouped).map(group => `
+            <div class="card" style="border-left: 4px solid var(--price-hist);">
+                <b style="font-size:15px;">${group.name}</b>
+                <div style="margin-top:10px;">
+                    ${group.items.map(item => `
+                        <div style="padding:10px 0; border-bottom:1px solid #f2f2f7; display:flex; justify-content:space-between; align-items:center;">
+                            <div style="flex:1;">
+                                <div style="font-size:11px; color:#666;">
+                                    ${item.isReg ? '<span class="label-reg">登記</span>' : ''} ${item.specName} (${item.date})
+                                </div>
+                                <div style="margin: 4px 0;">
+                                    <span style="text-decoration:line-through; color:#bbb; font-size:12px;">₩${item.price.toLocaleString()}</span>
+                                    <b style="color:var(--sale); font-size:15px; margin-left:5px;">₩${(item.salePrice || item.price).toLocaleString()}</b>
+                                </div>
+                                ${item.note ? `<div style="font-size:11px; color:var(--gray);">📍 ${item.note}</div>` : ''}
+                            </div>
+                            <div style="display:flex; gap:5px;">
+                                ${!item.isReg ? `
+                                    <button onclick="openPriceRecordModal(${item.originalIdx})" style="border:none; background:#eee; padding:6px; border-radius:8px;">✏️</button>
+                                    <button onclick="deletePriceRecord(${item.originalIdx})" style="border:none; background:#fff0f0; color:red; padding:6px; border-radius:8px;">×</button>
+                                ` : ''}
+                            </div>
+                        </div>`).join('')}
+                </div>
+            </div>`).join('');
+    }
+
+    function openPriceRecordModal(editIdx = null) {
+        if(db.length === 0) return alert("請先登記產品！");
+        document.getElementById('modalOverlay').style.display = 'flex';
+        document.getElementById('priceRecordModal').style.display = 'block';
+        const pSel = document.getElementById('priceProdSelect');
+        pSel.innerHTML = db.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        
+        if(editIdx !== null) {
+            const h = priceHistory[editIdx];
+            document.getElementById('priceModalTitle').innerText = "編輯報價";
+            document.getElementById('edit-price-idx').value = editIdx;
+            pSel.value = h.prodId; updatePriceSpecSelect();
+            document.getElementById('priceSpecSelect').value = h.specId;
+            document.getElementById('recordPrice').value = h.price;
+            document.getElementById('recordSalePrice').value = h.salePrice || "";
+            document.getElementById('recordSaleDate').value = h.saleDate || "";
+            document.getElementById('recordNote').value = h.note || "";
+            document.getElementById('recordDate').value = h.date;
+        } else {
+            document.getElementById('priceModalTitle').innerText = "新增現場報價";
+            document.getElementById('edit-price-idx').value = "";
+            document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
+            updatePriceSpecSelect();
         }
-        return r;
+    }
+
+    function updatePriceSpecSelect() {
+        const pid = Number(document.getElementById('priceProdSelect').value);
+        const p = db.find(x => x.id === pid);
+        if(p) {
+            document.getElementById('priceSpecSelect').innerHTML = p.specs.map(s => `<option value="${s.specId}">${s.name}</option>`).join('');
+            if(document.getElementById('edit-price-idx').value === "") {
+                document.getElementById('recordPrice').value = p.specs[0].price;
+                document.getElementById('recordSalePrice').value = p.specs[0].salePrice || "";
+            }
+        }
+    }
+
+    function savePriceRecord() {
+        const prodId = Number(document.getElementById('priceProdSelect').value);
+        const specId = Number(document.getElementById('priceSpecSelect').value);
+        const price = Number(document.getElementById('recordPrice').value);
+        const salePrice = Number(document.getElementById('recordSalePrice').value) || null;
+        const record = { prodId, specId, price, salePrice, saleDate: document.getElementById('recordSaleDate').value, note: document.getElementById('recordNote').value, date: document.getElementById('recordDate').value };
+        const editIdx = document.getElementById('edit-price-idx').value;
+        if(editIdx !== "") priceHistory[editIdx] = record; else priceHistory.unshift(record);
+        saveAndRender(); closeModal(); renderPriceHistory();
+    }
+
+    function deletePriceRecord(idx) { if(confirm("刪除此報價？")) { priceHistory.splice(idx,1); saveAndRender(); renderPriceHistory(); } }
+
+    // --- 登記功能 ---
+    function addSpecRow(data = null) {
+        const d = document.createElement('div'); d.className='spec-input-item'; d.style='border:1px solid #f2f2f7; padding:12px; border-radius:12px; margin-bottom:10px; position:relative;';
+        if(data) d.dataset.sid = data.specId;
+        d.innerHTML=`<button onclick="this.parentElement.remove()" style="position:absolute; right:5px; top:5px; border:none; background:none; color:red;">×</button>
+            <input type="text" class="s-name" placeholder="規格名稱" value="${data?data.name:''}">
+            <div style="display:flex; gap:8px;"><input type="number" class="s-price" placeholder="原價" value="${data?data.price:''}">
+            <input type="number" class="s-sale" placeholder="特價" value="${data?data.salePrice||'':''}"></div>
+            <input type="date" class="s-date" value="${data?data.saleDate||'':''}">`;
+        document.getElementById('specContainer').appendChild(d);
+    }
+
+    function saveProduct() {
+        const name = document.getElementById('name').value; if(!name) return alert("請輸入名稱");
+        const eid = document.getElementById('edit-id').value;
+        const specs = Array.from(document.querySelectorAll('.spec-input-item')).map(c => ({ 
+            specId: c.dataset.sid ? parseFloat(c.dataset.sid) : Math.random(), 
+            name: c.querySelector('.s-name').value||"標準", 
+            price: Number(c.querySelector('.s-price').value)||0, 
+            salePrice: Number(c.querySelector('.s-sale').value)||null, 
+            saleDate: c.querySelector('.s-date').value||null 
+        }));
+        if(eid) {
+            let idx = db.findIndex(x => x.id == eid);
+            db[idx] = { ...db[idx], name, img:document.getElementById('imgUrl').value, main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs };
+        } else {
+            db.push({ id:Date.now(), name, img:document.getElementById('imgUrl').value, main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs });
+        }
+        saveAndRender(); cancelEdit();
+    }
+
+    function cancelEdit() {
+        document.getElementById('regTitle').innerText = "✨ 登記新產品"; document.getElementById('edit-id').value = "";
+        document.getElementById('name').value = ""; document.getElementById('imgUrl').value = "";
+        document.getElementById('specContainer').innerHTML = ""; addSpecRow();
+        document.getElementById('saveBtn').innerText = "存入我的清單"; document.getElementById('cancelEditBtn').style.display = "none";
+    }
+
+    function editProduct(pid) {
+        const p = db.find(x => x.id === pid); if(!p) return;
+        switchPage('wishlist', document.querySelector('[onclick*="wishlist"]'));
+        document.getElementById('regTitle').innerText = "✏️ 編輯產品"; document.getElementById('edit-id').value = p.id;
+        document.getElementById('name').value = p.name; document.getElementById('imgUrl').value = p.img || "";
+        regActiveMain = p.main; regActiveSub = p.sub; regActivePri = p.priority; initRegChips();
+        const cont = document.getElementById('specContainer'); cont.innerHTML = "";
+        p.specs.forEach(s => addSpecRow(s));
+        document.getElementById('saveBtn').innerText = "儲存修改"; document.getElementById('cancelEditBtn').style.display = "block";
     }
 
     // --- 速算功能 ---
-    function addQuickManualItem() {
-        const n = prompt("項目名稱:", "現場加購");
-        const p = parseInt(prompt("價格 (₩):", "0"));
-        if(n && !isNaN(p)) { quickItems.push({ name: n, price: p, qty: 1 }); renderQuickCalc(); }
-    }
     function openQuickProdPicker() {
-        if(db.length === 0) return alert("請先登記產品");
-        const names = db.map((p, i) => `${i}: ${p.name}`).join('\n');
-        const idx = prompt("輸入產品編號:\n" + names);
-        if(db[idx]) { quickItems.push({ name: db[idx].name, price: db[idx].specs[0].price, qty: 1 }); renderQuickCalc(); }
+        document.getElementById('modalOverlay').style.display = 'flex';
+        document.getElementById('quickPickerModal').style.display = 'block';
+        renderQuickPickerFilters(); renderQuickPickerList();
     }
+    function renderQuickPickerFilters() {
+        const mCont = document.getElementById('qMainFilter');
+        mCont.innerHTML = ["全部", ...Object.keys(catConfig)].map(c => `<div class="filter-chip ${activeMain===c?'active':''}" onclick="activeMain='${c}'; renderQuickPickerFilters(); renderQuickPickerList();">${c}</div>`).join('');
+    }
+    function renderQuickPickerList() {
+        const s = document.getElementById('quickSearch').value.toLowerCase();
+        const cont = document.getElementById('quickPickerList');
+        cont.innerHTML = db.filter(p => {
+            if(activeMain !== "全部" && p.main !== activeMain) return false;
+            if(s && !p.name.toLowerCase().includes(s)) return false;
+            return true;
+        }).map(p => `<div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;" onclick="pickQuickProd(${p.id})"><b>${p.name}</b><span style="color:var(--calc);">選取 ></span></div>`).join('');
+    }
+    function pickQuickProd(pid) {
+        const p = db.find(x => x.id === pid); const today = new Date().toISOString().split('T')[0];
+        p.specs.forEach(s => {
+            const pr = (s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price;
+            quickItems.push({ name: `${p.name} (${s.name})`, price: pr, qty: 1 });
+        });
+        closeModal(); renderQuickCalc();
+    }
+    function addQuickManualItem() { quickItems.push({ name: "", price: 0, qty: 1 }); renderQuickCalc(); }
     function renderQuickCalc() {
         const cont = document.getElementById('quick-calc-list');
         cont.innerHTML = quickItems.map((item, idx) => `
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center; background:white; padding:8px; border-radius:8px;">
-                <span>${item.name} (₩${item.price.toLocaleString()})</span>
+            <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center;">
+                <input type="text" value="${item.name}" onchange="quickItems[${idx}].name=this.value" placeholder="項目" style="flex:1.5; margin:0;">
+                <input type="number" value="${item.price}" onchange="quickItems[${idx}].price=Number(this.value); renderQuickCalc();" style="flex:1; margin:0;">
                 <div class="qty-ctrl">
-                    <button class="qty-btn" onclick="quickItems[${idx}].qty=Math.max(1,quickItems[${idx}].qty-1);renderQuickCalc();">-</button>
+                    <button class="qty-btn" onclick="quickItems[${idx}].qty=Math.max(1,quickItems[${idx}].qty-1); renderQuickCalc();">-</button>
                     <span>${item.qty}</span>
-                    <button class="qty-btn" onclick="quickItems[${idx}].qty++;renderQuickCalc();">+</button>
-                    <button onclick="quickItems.splice(${idx},1);renderQuickCalc();" style="border:none; background:none; color:red; margin-left:5px;">×</button>
+                    <button class="qty-btn" onclick="quickItems[${idx}].qty++; renderQuickCalc();">+</button>
                 </div>
-            </div>`).join('');
-        const total = quickItems.reduce((sum, i) => sum + (i.price * i.qty), 0);
-        const refund = calcRefund(total);
+                <button onclick="quickItems.splice(${idx},1); renderQuickCalc();" style="border:none; color:red; background:none;">×</button>
+            </div>
+        `).join('');
+        let total = quickItems.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        let rf = 0; for (let i = refundTable.length - 1; i >= 0; i--) { if (total >= refundTable[i].min) { rf = refundTable[i].refund; break; } }
         document.getElementById('quick-total-won').innerText = `₩${total.toLocaleString()}`;
-        document.getElementById('quick-refund-won').innerText = `₩${refund.toLocaleString()}`;
-        document.getElementById('quick-final-won').innerText = (total - refund).toLocaleString();
-        document.getElementById('quick-final-hkd').innerText = Math.round((total - refund) * currentRate).toLocaleString();
+        document.getElementById('quick-refund-won').innerText = `₩${rf.toLocaleString()}`;
+        document.getElementById('quick-final-won').innerText = (total - rf).toLocaleString();
+        document.getElementById('quick-final-hkd').innerText = Math.round((total-rf) * currentRate).toLocaleString();
     }
     function clearQuickCalc() { quickItems = []; renderQuickCalc(); }
 
-    // --- 歷史紀錄編輯 ---
-    function editHistory(hi) {
-        const h = historyDB[hi];
-        const newTitle = prompt("修改紀錄名稱:", h.title);
-        if(newTitle === null) return;
-        h.title = newTitle;
-        let detailStr = h.items.map((it, idx) => `${idx}: ${it.name} | ₩${it.price} | x${it.qty}`).join('\n');
-        const editIdx = prompt("輸入要修改的項目編號 (留空僅改名):\n" + detailStr);
-        if(editIdx !== "" && h.items[editIdx]) {
-            const it = h.items[editIdx];
-            const np = parseInt(prompt("單價 (₩):", it.price));
-            const nq = parseInt(prompt("數量:", it.qty));
-            if(!isNaN(np)) it.price = np;
-            if(!isNaN(nq)) it.qty = Math.max(1, nq);
-            h.total = h.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            h.refund = calcRefund(h.total);
-            h.finalPaid = h.total - h.refund;
-        }
-        saveAndRender();
-    }
-
-    // --- 計畫與購物車連動 ---
-    function addPlanToCart(gi, ii) {
-        const item = planGroups[gi].items[ii];
-        const existing = cart.find(x => x.prodId === item.prodId && x.specId === item.specId);
-        if(existing) existing.qty += item.qty; else cart.push({ ...item });
-        saveAndRender();
-    }
-
-    // --- UI 渲染核心 ---
+    // --- 其他渲染與初始化 ---
     function render() {
         document.getElementById('rateInput').value = currentRate;
         document.getElementById('rateExample').innerText = Math.round(10000 * currentRate).toLocaleString();
@@ -346,37 +506,38 @@
         renderCart(); renderPlans(); renderHistory();
     }
 
-    function renderCart(){
-        let t=0; const cont=document.getElementById('cart-list'); cont.innerHTML='<h3>🛒 購物籃</h3>';
-        cart.forEach((i,idx)=>{
-            const p=db.find(x=>x.id===i.prodId); const s=p?.specs.find(x=>x.specId===i.specId);
-            const pr=s?((s.salePrice && (new Date().toISOString().split('T')[0] <= s.saleDate))?s.salePrice:s.price):0;
-            t+=pr*i.qty;
-            cont.innerHTML+=`<div class="card" style="display:flex;justify-content:space-between;align-items:center;"><div><b>${p?p.name:'--'}</b><br><small>${s?s.name:'--'}</small></div><div class="qty-ctrl"><button class="qty-btn" onclick="updateQty('cart',null,${idx},-1)">-</button><span>${i.qty}</span><button class="qty-btn" onclick="updateQty('cart',null,${idx},1)">+</button></div><button onclick="cart.splice(${idx},1);saveAndRender();">×</button></div>`;
+    function renderCart() {
+        let t = 0; const cont = document.getElementById('cart-list');
+        cont.innerHTML = '<h3>🛒 購物籃</h3>';
+        cart.forEach((i, idx) => {
+            const p = db.find(x => x.id === i.prodId); const s = p?.specs.find(x => x.specId === i.specId);
+            const pr = s ? ((s.salePrice && (!s.saleDate || new Date().toISOString().split('T')[0] <= s.saleDate))?s.salePrice:s.price) : 0;
+            t += pr * i.qty;
+            cont.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><div><b>${p?p.name:'--'}</b><br><small>${s?s.name:'--'}</small></div><div class="qty-ctrl"><button class="qty-btn" onclick="updateQty('cart',null,${idx},-1)">-</button><span>${i.qty}</span><button class="qty-btn" onclick="updateQty('cart',null,${idx},1)">+</button></div><button onclick="cart.splice(${idx},1);saveAndRender();" style="border:none; color:red; background:none;">×</button></div>`;
         });
-        let r = calcRefund(t);
+        let r = 0; for(let i=refundTable.length-1;i>=0;i--){if(t>=refundTable[i].min){r=refundTable[i].refund;break;}}
         document.getElementById('cart-total').innerText=`₩${t.toLocaleString()}`;
         document.getElementById('tax-refund-display').innerText=`退稅: ₩${r.toLocaleString()}`;
         document.getElementById('after-refund-total').innerText=(t-r).toLocaleString();
         document.getElementById('hkd-total').innerText=Math.round((t-r)*currentRate).toLocaleString();
     }
 
-    function renderPlans(){
+    function renderPlans() {
         document.getElementById('plan-groups').innerHTML = planGroups.map((g, gi) => `
-            <div class="card" style="padding:0;overflow:hidden; margin-bottom:15px;">
-                <div style="background:#f3e5f5;padding:10px 15px;display:flex;justify-content:space-between;"><b>📌 ${g.title}</b><button onclick="deletePlan(${gi})">刪除</button></div>
+            <div class="card" style="padding:0; overflow:hidden;">
+                <div style="background:#f3e5f5; padding:10px 15px; display:flex; justify-content:space-between;">
+                    <b>📌 ${g.title}</b><button onclick="deletePlan(${gi})" style="border:none; background:none; color:red;">刪除</button>
+                </div>
                 <div style="padding:10px;">
                     ${g.items.map((i, ii) => {
                         const p = db.find(x => x.id === i.prodId);
-                        const s = p?.specs.find(x => x.specId === i.specId);
-                        const inCart = cart.some(cx => cx.prodId === i.prodId && cx.specId === i.specId);
-                        return `
-                        <div class="card" style="display:flex;justify-content:space-between;margin-bottom:8px;box-shadow:none;border:2px solid ${inCart ? 'var(--secondary)' : '#eee'};">
-                            <span>${p?p.name:'--'} (${s?s.name:'--'})</span>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <div class="qty-ctrl"><button class="qty-btn" onclick="updateQty('plan',${gi},${ii},-1)">-</button><span>${i.qty}</span><button class="qty-btn" onclick="updateQty('plan',${gi},${ii},1)">+</button></div>
-                                <button onclick="addPlanToCart(${gi},${ii})" style="background:var(--secondary); color:white; border:none; padding:8px; border-radius:8px;">🛒</button>
-                                <button onclick="planGroups[${gi}].items.splice(${ii},1);saveAndRender();">×</button>
+                        const isInCart = cart.some(ci => ci.prodId === i.prodId && ci.specId === i.specId);
+                        return `<div class="card ${isInCart?'in-cart-highlight':''}" style="display:flex; justify-content:space-between; margin-bottom:5px; box-shadow:none; border:1px solid #eee;">
+                            <span>${p?p.name:'--'}</span>
+                            <div class="qty-ctrl">
+                                <button class="qty-btn" onclick="updateQty('plan',${gi},${ii},-1)">-</button>
+                                <span>${i.qty}</span>
+                                <button class="qty-btn" onclick="updateQty('plan',${gi},${ii},1)">+</button>
                             </div>
                         </div>`;
                     }).join('')}
@@ -384,83 +545,76 @@
             </div>`).join('');
     }
 
-    function renderHistory(){
-        document.getElementById('history-list').innerHTML = historyDB.map((h, hi) => `
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:start;">
-                    <div><b>${h.title}</b><br><small>${h.date}</small></div>
-                    <div style="display:flex; gap:5px;">
-                        <button onclick="editHistory(${hi})" style="border:none; background:#eee; padding:5px; border-radius:6px; font-size:11px;">✏️ 編輯</button>
-                        <button onclick="if(confirm('刪除？')){historyDB.splice(${hi},1);saveAndRender();}" style="border:none; background:#fff0f0; color:red; padding:5px; border-radius:6px; font-size:11px;">×</button>
-                    </div>
-                </div>
-                <div style="font-size:12px; color:#666; margin:8px 0;">${h.items.map(it => `• ${it.name} x${it.qty}`).join('<br>')}</div>
-                <div style="text-align:right; border-top:1px solid #eee; pt:8px;">實付: <b>₩${h.finalPaid.toLocaleString()}</b> (退稅: ₩${h.refund.toLocaleString()})</div>
-            </div>`).join('');
+    function renderHistory() {
+        document.getElementById('history-list').innerHTML = historyDB.map(h => `<div class="card"><b>${h.title}</b><br><small>${h.date}</small><div style="text-align:right; color:var(--primary); font-weight:700;">實付: ₩${h.finalPaid.toLocaleString()}</div></div>`).join('');
     }
 
-    // --- 基礎框架函數 (禁止大幅修改) ---
-    function saveAndRender() {
-        localStorage.setItem('oy_db_v18', JSON.stringify(db)); localStorage.setItem('oy_cart_v18', JSON.stringify(cart));
-        localStorage.setItem('oy_plans_v18', JSON.stringify(planGroups)); localStorage.setItem('oy_history_v18', JSON.stringify(historyDB));
-        localStorage.setItem('oy_price_hist_v18', JSON.stringify(priceHistory)); localStorage.setItem('oy_rate', currentRate); render();
+    function initFilters() {
+        document.getElementById('mainTabScroll').innerHTML = ["全部", ...Object.keys(catConfig)].map(c => `<div class="filter-chip ${c===activeMain?'active':''}" onclick="activeMain='${c}'; activeSub='全部'; initFilters(); render();">${c}</div>`).join('');
+        document.getElementById('priTabScroll').innerHTML = ["全部", "必買", "需要", "想買"].map(p => `<div class="filter-chip ${p===activePri?'active':''}" onclick="activePri='${p}'; initFilters(); render();">${p}</div>`).join('');
     }
-    function addSpecRow(data=null){const d=document.createElement('div');d.className='spec-input-item';d.style='border:1px solid #f2f2f7;padding:12px;border-radius:12px;margin-bottom:10px;position:relative;';if(data)d.dataset.sid=data.specId;d.innerHTML=`<button onclick="this.parentElement.remove()" style="position:absolute;right:5px;top:5px;border:none;background:none;color:red;">×</button><input type="text" class="s-name" placeholder="規格名稱" value="${data?data.name:''}"> <div style="display:flex;gap:8px;"><input type="number" class="s-price" placeholder="原價" value="${data?data.price:''}"> <input type="number" class="s-sale" placeholder="特價" value="${data?data.salePrice||'':''}"></div><input type="date" class="s-date" value="${data?data.saleDate||'':''}">`;document.getElementById('specContainer').appendChild(d);}
-    function cancelEdit(){document.getElementById('regTitle').innerText="✨ 登記新產品";document.getElementById('edit-id').value="";document.getElementById('name').value="";document.getElementById('imgUrl').value="";document.getElementById('specContainer').innerHTML="";addSpecRow();document.getElementById('saveBtn').innerText="存入我的清單";document.getElementById('cancelEditBtn').style.display="none";}
-    function saveProduct() {
-        const name = document.getElementById('name').value; if(!name) return alert("請輸入名稱");
-        const eid = document.getElementById('edit-id').value;
-        const specs = Array.from(document.querySelectorAll('.spec-input-item')).map(c => ({ 
-            specId: c.dataset.sid ? parseFloat(c.dataset.sid) : Math.random(), 
-            name: c.querySelector('.s-name').value||"標準", 
-            price: Number(c.querySelector('.s-price').value)||0, 
-            salePrice: Number(c.querySelector('.s-sale').value)||null, 
-            saleDate: c.querySelector('.s-date').value||null 
-        }));
-        if(eid) {
-            let idx = db.findIndex(x => x.id == eid);
-            db[idx] = { ...db[idx], name, img:document.getElementById('imgUrl').value, main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs };
-        } else {
-            db.push({ id:Date.now(), name, img:document.getElementById('imgUrl').value, main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs });
-        }
-        saveAndRender(); cancelEdit();
+    
+    function initRegChips() {
+        document.getElementById('regMainCatChips').innerHTML = Object.keys(catConfig).map(c => `<div class="filter-chip ${c === regActiveMain ? 'active' : ''}" onclick="regActiveMain='${c}'; regActiveSub=catConfig['${c}'][0]; initRegChips();">${c}</div>`).join('');
+        document.getElementById('regSubCatChips').innerHTML = catConfig[regActiveMain].map(s => `<div class="filter-chip sub ${s === regActiveSub ? 'active' : ''}" onclick="regActiveSub='${s}'; initRegChips();">${s}</div>`).join('');
+        document.getElementById('regPriChips').innerHTML = ["想買", "需要", "必買"].map(p => `<div class="filter-chip ${p === regActivePri ? 'active' : ''}" onclick="regActivePri='${p}'; initRegChips();">${p}</div>`).join('');
     }
-    function editProduct(pid){const p=db.find(x=>x.id===pid);if(!p)return;switchPage('wishlist',document.querySelector('[onclick*="wishlist"]'));document.getElementById('regTitle').innerText="✏️ 編輯產品";document.getElementById('edit-id').value=p.id;document.getElementById('name').value=p.name;document.getElementById('imgUrl').value=p.img||"";regActiveMain=p.main;regActiveSub=p.sub;regActivePri=p.priority;initRegChips();document.getElementById('specContainer').innerHTML="";p.specs.forEach(s=>addSpecRow(s));document.getElementById('saveBtn').innerText="更新資料";document.getElementById('cancelEditBtn').style.display="block";}
-    function updateQty(t,gi,ii,d){let l=(t==='cart')?cart:planGroups[gi].items;if(l[ii]){l[ii].qty=Math.max(1,l[ii].qty+d);saveAndRender();}}
-    function deletePlan(i){if(confirm("刪除計畫？")){planGroups.splice(i,1);saveAndRender();}}
-    function openPlanPicker(pid){document.getElementById('modalOverlay').style.display='flex';document.getElementById('planPickerModal').style.display='block';document.getElementById('planOptionsList').innerHTML=planGroups.map((g,gi)=>`<div class="card" onclick="closeModal();openSelector(${pid},'plan',${gi})">${g.title}</div>`).join('');}
-    function initFilters(){document.getElementById('mainTabScroll').innerHTML=["全部",...Object.keys(catConfig)].map(c=>`<div class="filter-chip ${c===activeMain?'active':''}" onclick="activeMain='${c}';activeSub='全部';initFilters();render();">${c}</div>`).join('');document.getElementById('priTabScroll').innerHTML=["全部","必買","需要","想買"].map(p=>`<div class="filter-chip ${p===activePri?'active':''}" onclick="activePri='${p}';initFilters();render();">${p}</div>`).join('');}
-    function initRegChips(){document.getElementById('regMainCatChips').innerHTML=Object.keys(catConfig).map(c=>`<div class="filter-chip ${c===regActiveMain?'active':''}" onclick="regActiveMain='${c}';regActiveSub=catConfig['${c}'][0];initRegChips();">${c}</div>`).join('');document.getElementById('regSubCatChips').innerHTML=catConfig[regActiveMain].map(s=>`<div class="filter-chip sub ${s===regActiveSub?'active':''}" onclick="regActiveSub='${s}';initRegChips();">${s}</div>`).join('');document.getElementById('regPriChips').innerHTML=["想買","需要","必買"].map(p=>`<div class="filter-chip ${p===regActivePri?'active':''}" onclick="regActivePri='${p}';initRegChips();">${p}</div>`).join('');}
-    function closeModal(){document.getElementById('modalOverlay').style.display='none';document.querySelectorAll('.modal-content').forEach(m=>m.style.display='none');}
-    function saveRate(){currentRate=parseFloat(document.getElementById('rateInput').value)||0.0058;saveAndRender();}
-    function adjModalQty(v){modalQty=Math.max(1,modalQty+v);document.getElementById('modalQtyDisplay').innerText=modalQty;}
-    function createNewPlanGroup(){let t=prompt("新計畫名稱:");if(t){planGroups.push({title:t,items:[]});saveAndRender();}}
-    function openSelector(pid,t,idx=null){const p=db.find(x=>x.id===pid);modalQty=1;document.getElementById('modalQtyDisplay').innerText=1;document.getElementById('modalProdName').innerText=p.name;document.getElementById('modalSpecSelect').innerHTML=p.specs.map(s=>`<option value="${s.specId}">${s.name}</option>`).join('');document.getElementById('modalOverlay').style.display='flex';document.getElementById('selectorModal').style.display='block';document.getElementById('modalConfirmBtn').onclick=()=>{const sid=Number(document.getElementById('modalSpecSelect').value);let list=(t==='cart')?cart:planGroups[idx].items;let ext=list.find(x=>x.prodId===pid&&x.specId===sid);if(ext)ext.qty+=modalQty;else list.push({prodId:pid,specId:sid,qty:modalQty});saveAndRender();closeModal();};}
-    function switchPage(p, btn) {
-        document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-        document.getElementById(p + '-page').classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        if(p === 'dashboard') initFilters();
-        if(p === 'wishlist') initRegChips();
-        if(p === 'quickcalc') renderQuickCalc();
-        render();
+
+    function openSelector(pid, t, pIdx=null) {
+        const p = db.find(x => x.id === pid); modalQty = 1;
+        document.getElementById('modalQtyDisplay').innerText = 1;
+        document.getElementById('modalProdName').innerText = p.name;
+        document.getElementById('modalSpecSelect').innerHTML = p.specs.map(s => `<option value="${s.specId}">${s.name}</option>`).join('');
+        document.getElementById('modalOverlay').style.display = 'flex'; document.getElementById('selectorModal').style.display = 'block';
+        document.getElementById('modalConfirmBtn').onclick = () => {
+            const sid = Number(document.getElementById('modalSpecSelect').value);
+            let list = (t==='cart') ? cart : planGroups[pIdx].items;
+            let ext = list.find(x => x.prodId===pid && x.specId===sid);
+            if(ext) ext.qty += modalQty; else list.push({prodId:pid, specId:sid, qty:modalQty});
+            saveAndRender(); closeModal();
+        };
     }
-    function checkoutCart(){
-        if(!cart.length)return; const t=prompt("記錄名稱：","購物 "+new Date().toLocaleDateString()); if(!t)return;
-        let total=0; const itms=cart.map(i=>{
-            const p=db.find(x=>x.id===i.prodId); const s=p.specs.find(x=>x.specId===i.specId);
-            const pr=(s.salePrice && (new Date().toISOString().split('T')[0]<=s.saleDate))?s.salePrice:s.price;
-            total+=pr*i.qty; return{name:p.name,qty:i.qty,price:pr};
+
+    function openPlanPicker(pid) {
+        document.getElementById('modalOverlay').style.display='flex'; document.getElementById('planPickerModal').style.display='block';
+        document.getElementById('planOptionsList').innerHTML = planGroups.map((g, gi) => `<div class="card" onclick="closeModal(); openSelector(${pid}, 'plan', ${gi})">${g.title}</div>`).join('');
+    }
+
+    function checkoutCart() {
+        if(!cart.length) return;
+        const t = prompt("記錄名稱：", "購物 " + new Date().toLocaleDateString()); if(!t) return;
+        let total = 0; const items = cart.map(i => {
+            const p = db.find(x => x.id === i.prodId); const s = p.specs.find(x => x.specId === i.specId);
+            const pr = (s.salePrice && (new Date().toISOString().split('T')[0] <= s.saleDate)) ? s.salePrice : s.price;
+            total += pr * i.qty; return { name: p.name, qty: i.qty, price: pr };
         });
-        const rf=calcRefund(total); historyDB.unshift({id:Date.now(),title:t,date:new Date().toLocaleString(),items:itms,total,refund:rf,finalPaid:total-rf});
-        cart=[]; saveAndRender(); switchPage('cart', document.querySelector('[onclick*="cart"]'));
+        let rf = 0; for(let i=refundTable.length-1;i>=0;i--){if(total>=refundTable[i].min){rf=refundTable[i].refund;break;}}
+        historyDB.unshift({ id: Date.now(), title: t, date: new Date().toLocaleString(), items, total, refund: rf, finalPaid: total - rf });
+        cart = []; saveAndRender();
     }
-    function exportData() { const data = { rate: currentRate, db, cart, history: historyDB, plans: planGroups, priceHistory, exportDate: new Date().toISOString() }; const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `OY_Data.json`; a.click(); }
-    function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { const d = JSON.parse(ev.target.result); if(confirm("即將覆蓋現有數據，確定？")) { db=d.db; cart=d.cart; historyDB=d.history; planGroups=d.plans; priceHistory=d.priceHistory||[]; currentRate=d.rate; saveAndRender(); location.reload(); } }; reader.readAsText(e.target.files[0]); }
-    function hardResetSystem() { if(confirm("警告：這將刪除所有數據！") && prompt("輸入 RESET 以確認")==="RESET") { localStorage.clear(); location.reload(); } }
 
-    // 啟動
+    function exportData() {
+        const data = { rate: currentRate, db, cart, history: historyDB, plans: planGroups, priceHistory, exportDate: new Date().toISOString() };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `OY_Data.json`; a.click();
+    }
+
+    function importData(e) {
+        const reader = new FileReader(); reader.onload = (ev) => {
+            const d = JSON.parse(ev.target.result);
+            if(confirm("即將覆蓋現有數據，確定？")) { db=d.db; cart=d.cart; historyDB=d.history; planGroups=d.plans; priceHistory=d.priceHistory||[]; currentRate=d.rate; saveAndRender(); location.reload(); }
+        }; reader.readAsText(e.target.files[0]);
+    }
+
+    function hardResetSystem() { if(confirm("警告：這將刪除所有數據！") && prompt("輸入 RESET 以確認")==="RESET") { localStorage.clear(); location.reload(); } }
+    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; document.querySelectorAll('.modal-content').forEach(m => m.style.display = 'none'); }
+    function saveRate() { currentRate = parseFloat(document.getElementById('rateInput').value) || 0.0058; saveAndRender(); }
+    function adjModalQty(v) { modalQty = Math.max(1, modalQty + v); document.getElementById('modalQtyDisplay').innerText = modalQty; }
+    function updateQty(t,gi,ii,d){let l=(t==='cart')?cart:planGroups[gi].items; if(l[ii]){l[ii].qty=Math.max(1,l[ii].qty+d);saveAndRender();}}
+    function deletePlan(i){if(confirm("刪除計畫？")){planGroups.splice(i,1);saveAndRender();}}
+    function createNewPlanGroup(){let t=prompt("新計畫名稱:");if(t){planGroups.push({title:t,items:[]});saveAndRender();}}
+
+    // 初始化
     if(document.getElementById('specContainer').children.length === 0) addSpecRow();
     initRegChips(); initFilters(); render();
 </script>
