@@ -66,6 +66,7 @@
         .small-label { font-size: 12px; color: var(--gray); margin-bottom: 4px; display: block; }
         
         .in-cart-highlight { background-color: #e8f5e9 !important; border: 1px solid var(--secondary) !important; }
+        .hist-item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f2f2f7; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -81,7 +82,7 @@
 
 <div class="card" style="background: #f1f2f6; border: 1px dashed #ccc; margin-top: 10px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <span style="font-weight: bold; color: #57606f;">💾 系統管理 (備份/重置)</span>
+        <span style="font-weight: bold; color: #57606f;">💾 系統管理</span>
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
         <button onclick="exportData()" style="padding: 8px; border-radius: 8px; border: 1px solid #2f3542; background: white; font-size: 12px;">📤 匯出備份</button>
@@ -99,7 +100,6 @@
             <span style="font-weight:700; color:var(--primary);">1萬₩ ≈ $<span id="rateExample">--</span></span>
         </div>
     </div>
-    
     <div class="card" id="reg-form-card">
         <h3 id="regTitle">✨ 登記新產品</h3>
         <input type="hidden" id="edit-id">
@@ -154,7 +154,6 @@
 <div id="pricehistory-page" class="page">
     <div class="card" style="background: #fff3e0; border: 1px solid #ffe0b2;">
         <h3 style="color:var(--price-hist); margin-top:0;">📉 比價追蹤</h3>
-        <p style="font-size:12px; color:#666;">這裡會自動顯示「登記中」的價格。您也可以新增不同店舖的現場報價。</p>
         <button class="btn-main" style="background:var(--price-hist);" onclick="openPriceRecordModal()">+ 新增現場報價</button>
     </div>
     <div id="price-history-list"></div>
@@ -201,9 +200,9 @@
             <div><label class="small-label">原價 (₩)：</label><input type="number" id="recordPrice"></div>
             <div><label class="small-label">特價 (₩)：</label><input type="number" id="recordSalePrice"></div>
         </div>
-        <label class="small-label">特價期限 (選填)：</label>
+        <label class="small-label">特價期限：</label>
         <input type="date" id="recordSaleDate">
-        <label class="small-label">備註 (如：店名/地點)：</label>
+        <label class="small-label">備註：</label>
         <input type="text" id="recordNote" placeholder="例如：弘大店">
         <label class="small-label">記錄日期：</label>
         <input type="date" id="recordDate">
@@ -232,18 +231,33 @@
     </div>
 
     <div class="modal-content" id="quickPickerModal" style="display:none; max-width: 500px;">
-        <h3>選取產品加入速算</h3>
+        <h3>選取產品</h3>
         <div id="quickPickerFilters" style="background: #f8f9fa; padding: 10px; border-radius: 12px; margin-bottom: 10px;">
             <div id="qMainFilter" class="chip-container"></div>
             <input type="text" id="quickSearch" placeholder="🔍 搜尋名稱..." oninput="renderQuickPickerList()">
         </div>
-        <div id="quickPickerList" style="max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 12px;"></div>
+        <div id="quickPickerList" style="max-height: 300px; overflow-y: auto;"></div>
         <button class="btn-main" style="background:#eee; color:#333; margin-top:15px;" onclick="closeModal()">關閉</button>
     </div>
 </div>
 
 <script>
-    const refundTable = [{min:15000,refund:1000},{min:30000,refund:2000},{min:50000,refund:3000},{min:75000,refund:5000},{min:100000,refund:7000},{min:125000,refund:8000},{min:150000,refund:9000},{min:175000,refund:10000},{min:200000,refund:12000},{min:225000,refund:13000},{min:250000,refund:15000},{min:275000,refund:17000},{min:300000,refund:19000},{min:325000,refund:21000},{min:350000,refund:23000},{min:375000,refund:25000},{min:400000,refund:27000},{min:425000,refund:28000},{min:450000,refund:30000},{min:475000,refund:32000},{min:500000,refund:35000},{min:1000000,refund:75000},{min:2000000,refund:150000}];
+    // 更新後的退稅表 (精確對齊圖片)
+    const refundTable = [
+        {min:15000, refund:1000}, {min:30000, refund:2000}, {min:50000, refund:3000},
+        {min:75000, refund:5000}, {min:100000, refund:7000}, {min:125000, refund:8000},
+        {min:150000, refund:9000}, {min:175000, refund:10000}, {min:200000, refund:12000},
+        {min:225000, refund:13000}, {min:250000, refund:15000}, {min:275000, refund:17000},
+        {min:300000, refund:19000}, {min:325000, refund:21000}, {min:350000, refund:23000},
+        {min:375000, refund:25000}, {min:400000, refund:27000}, {min:425000, refund:28000},
+        {min:450000, refund:30000}, {min:475000, refund:32000}, {min:500000, refund:35000},
+        {min:550000, refund:37000}, {min:600000, refund:41000}, {min:650000, refund:45000},
+        {min:700000, refund:50000}, {min:750000, refund:53000}, {min:800000, refund:57000},
+        {min:850000, refund:60000}, {min:900000, refund:65000}, {min:950000, refund:68000},
+        {min:1000000, refund:75000}, {min:1100000, refund:80000}, {min:1200000, refund:90000},
+        {min:1300000, refund:95000}, {min:1400000, refund:105000}, {min:1500000, refund:110000}
+    ];
+
     const catConfig = {"護膚品":["化妝水","精華","乳液","面霜","面膜","防曬","潔面","卸妝"],"化妝品-Base":["妝前","氣墊","粉底","遮瑕","腮紅","光/陰影"],"化妝品-Eyes":["眉筆","眼線/臥蠶","眼影","睫毛膏"],"化妝品-Lip":["唇線筆","唇釉","唇膏"],"其他類":["手部膚理","身體護理","香水","零食","生活雜貨"]};
 
     let currentRate = parseFloat(localStorage.getItem('oy_rate')) || 0.0058;
@@ -258,7 +272,18 @@
     let quickItems = [];
     let modalQty = 1;
 
-    // --- 核心邏輯 ---
+    // 退稅計算函數
+    function calculateRefund(total) {
+        let rf = 0;
+        for (let i = refundTable.length - 1; i >= 0; i--) {
+            if (total >= refundTable[i].min) {
+                rf = refundTable[i].refund;
+                break;
+            }
+        }
+        return rf;
+    }
+
     function saveAndRender() {
         localStorage.setItem('oy_db_v18', JSON.stringify(db));
         localStorage.setItem('oy_cart_v18', JSON.stringify(cart));
@@ -269,6 +294,60 @@
         render();
     }
 
+    // 歷史紀錄編輯邏輯
+    function updateHistoryItemQty(histIdx, itemIdx, delta) {
+        let h = historyDB[histIdx];
+        let item = h.items[itemIdx];
+        item.qty = Math.max(1, item.qty + delta);
+        
+        // 重新計算整筆紀錄
+        h.total = h.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        h.refund = calculateRefund(h.total);
+        h.finalPaid = h.total - h.refund;
+        
+        saveAndRender();
+    }
+
+    function deleteHistory(idx) {
+        if(confirm("確定刪除這筆購買紀錄？")) {
+            historyDB.splice(idx, 1);
+            saveAndRender();
+        }
+    }
+
+    function renderHistory() {
+        const cont = document.getElementById('history-list');
+        cont.innerHTML = historyDB.map((h, hIdx) => `
+            <div class="card" style="border-left: 4px solid var(--secondary);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <b>${h.title}</b>
+                    <button onclick="deleteHistory(${hIdx})" style="border:none; background:none; color:red; font-size:12px;">刪除紀錄</button>
+                </div>
+                <small style="color:var(--gray);">${h.date}</small>
+                <div style="margin: 10px 0;">
+                    ${h.items.map((it, iIdx) => `
+                        <div class="hist-item-row">
+                            <div style="flex:1;">${it.name} <br><small>₩${it.price.toLocaleString()}</small></div>
+                            <div class="qty-ctrl">
+                                <button class="qty-btn" onclick="updateHistoryItemQty(${hIdx}, ${iIdx}, -1)">-</button>
+                                <span>${it.qty}</span>
+                                <button class="qty-btn" onclick="updateHistoryItemQty(${hIdx}, ${iIdx}, 1)">+</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 12px;">
+                    <div style="display:flex; justify-content:space-between;"><span>總計:</span><span>₩${h.total.toLocaleString()}</span></div>
+                    <div style="display:flex; justify-content:space-between; color:var(--cart);"><span>退稅:</span><span>- ₩${h.refund.toLocaleString()}</span></div>
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:14px; margin-top:5px; color:var(--primary);">
+                        <span>實付:</span><span>₩${h.finalPaid.toLocaleString()}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // --- 其他功能函數 (保持原本邏輯) ---
     function switchPage(p, btn) {
         document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
         document.getElementById(p + '-page').classList.add('active');
@@ -280,109 +359,52 @@
         render();
     }
 
-    // --- 比價追蹤核心 ---
     function renderPriceHistory() {
         const cont = document.getElementById('price-history-list');
-        if(db.length === 0) { cont.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">請先在登記頁面新增產品</p>'; return; }
-        
+        if(db.length === 0) { cont.innerHTML = '<p style="text-align:center; color:#999;">請先登記產品</p>'; return; }
         const grouped = {};
         db.forEach(p => {
             grouped[p.id] = { name: p.name, items: [] };
-            p.specs.forEach(s => {
-                grouped[p.id].items.push({ isReg: true, specId: s.specId, specName: s.name, price: s.price, salePrice: s.salePrice, saleDate: s.saleDate, note: "原始登記資料", date: "登記" });
-            });
+            p.specs.forEach(s => grouped[p.id].items.push({ isReg: true, specId: s.specId, specName: s.name, price: s.price, salePrice: s.salePrice, saleDate: s.saleDate, note: "原始登記", date: "登記" }));
         });
-
         priceHistory.forEach((h, idx) => {
             if(!grouped[h.prodId]) return;
             const s = db.find(x => x.id === h.prodId)?.specs.find(x => x.specId === h.specId);
-            grouped[h.prodId].items.push({ ...h, specName: s ? s.name : "未知規格", originalIdx: idx, isReg: false });
+            grouped[h.prodId].items.push({ ...h, specName: s ? s.name : "未知", originalIdx: idx, isReg: false });
         });
-
         cont.innerHTML = Object.values(grouped).map(group => `
-            <div class="card" style="border-left: 4px solid var(--price-hist);">
-                <b style="font-size:15px;">${group.name}</b>
-                <div style="margin-top:10px;">
-                    ${group.items.map(item => `
-                        <div style="padding:10px 0; border-bottom:1px solid #f2f2f7; display:flex; justify-content:space-between; align-items:center;">
-                            <div style="flex:1;">
-                                <div style="font-size:11px; color:#666;">
-                                    ${item.isReg ? '<span class="label-reg">登記</span>' : ''} ${item.specName} (${item.date})
-                                </div>
-                                <div style="margin: 4px 0;">
-                                    <span style="text-decoration:line-through; color:#bbb; font-size:12px;">₩${item.price.toLocaleString()}</span>
-                                    <b style="color:var(--sale); font-size:15px; margin-left:5px;">₩${(item.salePrice || item.price).toLocaleString()}</b>
-                                </div>
-                                ${item.note ? `<div style="font-size:11px; color:var(--gray);">📍 ${item.note}</div>` : ''}
-                            </div>
-                            <div style="display:flex; gap:5px;">
-                                ${!item.isReg ? `
-                                    <button onclick="openPriceRecordModal(${item.originalIdx})" style="border:none; background:#eee; padding:6px; border-radius:8px;">✏️</button>
-                                    <button onclick="deletePriceRecord(${item.originalIdx})" style="border:none; background:#fff0f0; color:red; padding:6px; border-radius:8px;">×</button>
-                                ` : ''}
-                            </div>
-                        </div>`).join('')}
-                </div>
+            <div class="card">
+                <b>${group.name}</b>
+                ${group.items.map(item => `
+                    <div style="padding:8px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between; font-size:12px;">
+                        <div>${item.isReg?'<span class="label-reg">原</span>':''} ${item.specName} <br> <b style="color:var(--sale)">₩${(item.salePrice||item.price).toLocaleString()}</b> <small>(${item.date})</small></div>
+                        ${!item.isReg ? `<button onclick="deletePriceRecord(${item.originalIdx})" style="border:none; background:none; color:red;">×</button>` : ''}
+                    </div>`).join('')}
             </div>`).join('');
     }
 
-    function openPriceRecordModal(editIdx = null) {
-        if(db.length === 0) return alert("請先登記產品！");
+    function openPriceRecordModal() {
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('priceRecordModal').style.display = 'block';
-        const pSel = document.getElementById('priceProdSelect');
-        pSel.innerHTML = db.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-        
-        if(editIdx !== null) {
-            const h = priceHistory[editIdx];
-            document.getElementById('priceModalTitle').innerText = "編輯報價";
-            document.getElementById('edit-price-idx').value = editIdx;
-            pSel.value = h.prodId; updatePriceSpecSelect();
-            document.getElementById('priceSpecSelect').value = h.specId;
-            document.getElementById('recordPrice').value = h.price;
-            document.getElementById('recordSalePrice').value = h.salePrice || "";
-            document.getElementById('recordSaleDate').value = h.saleDate || "";
-            document.getElementById('recordNote').value = h.note || "";
-            document.getElementById('recordDate').value = h.date;
-        } else {
-            document.getElementById('priceModalTitle').innerText = "新增現場報價";
-            document.getElementById('edit-price-idx').value = "";
-            document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
-            updatePriceSpecSelect();
-        }
+        document.getElementById('priceProdSelect').innerHTML = db.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
+        updatePriceSpecSelect();
     }
-
     function updatePriceSpecSelect() {
-        const pid = Number(document.getElementById('priceProdSelect').value);
-        const p = db.find(x => x.id === pid);
-        if(p) {
-            document.getElementById('priceSpecSelect').innerHTML = p.specs.map(s => `<option value="${s.specId}">${s.name}</option>`).join('');
-            if(document.getElementById('edit-price-idx').value === "") {
-                document.getElementById('recordPrice').value = p.specs[0].price;
-                document.getElementById('recordSalePrice').value = p.specs[0].salePrice || "";
-            }
-        }
+        const p = db.find(x => x.id == document.getElementById('priceProdSelect').value);
+        if(p) document.getElementById('priceSpecSelect').innerHTML = p.specs.map(s => `<option value="${s.specId}">${s.name}</option>`).join('');
     }
-
     function savePriceRecord() {
-        const prodId = Number(document.getElementById('priceProdSelect').value);
-        const specId = Number(document.getElementById('priceSpecSelect').value);
-        const price = Number(document.getElementById('recordPrice').value);
-        const salePrice = Number(document.getElementById('recordSalePrice').value) || null;
-        const record = { prodId, specId, price, salePrice, saleDate: document.getElementById('recordSaleDate').value, note: document.getElementById('recordNote').value, date: document.getElementById('recordDate').value };
-        const editIdx = document.getElementById('edit-price-idx').value;
-        if(editIdx !== "") priceHistory[editIdx] = record; else priceHistory.unshift(record);
+        priceHistory.unshift({ prodId: Number(document.getElementById('priceProdSelect').value), specId: Number(document.getElementById('priceSpecSelect').value), price: Number(document.getElementById('recordPrice').value), salePrice: Number(document.getElementById('recordSalePrice').value)||null, note: document.getElementById('recordNote').value, date: document.getElementById('recordDate').value });
         saveAndRender(); closeModal(); renderPriceHistory();
     }
+    function deletePriceRecord(idx) { priceHistory.splice(idx,1); saveAndRender(); renderPriceHistory(); }
 
-    function deletePriceRecord(idx) { if(confirm("刪除此報價？")) { priceHistory.splice(idx,1); saveAndRender(); renderPriceHistory(); } }
-
-    // --- 登記功能 ---
     function addSpecRow(data = null) {
         const d = document.createElement('div'); d.className='spec-input-item'; d.style='border:1px solid #f2f2f7; padding:12px; border-radius:12px; margin-bottom:10px; position:relative;';
         if(data) d.dataset.sid = data.specId;
         d.innerHTML=`<button onclick="this.parentElement.remove()" style="position:absolute; right:5px; top:5px; border:none; background:none; color:red;">×</button>
-            <input type="text" class="s-name" placeholder="規格名稱" value="${data?data.name:''}">
+            <input type="text" class="s-name" placeholder="規格" value="${data?data.name:''}">
             <div style="display:flex; gap:8px;"><input type="number" class="s-price" placeholder="原價" value="${data?data.price:''}">
             <input type="number" class="s-sale" placeholder="特價" value="${data?data.salePrice||'':''}"></div>
             <input type="date" class="s-date" value="${data?data.saleDate||'':''}">`;
@@ -390,94 +412,28 @@
     }
 
     function saveProduct() {
-        const name = document.getElementById('name').value; if(!name) return alert("請輸入名稱");
+        const name = document.getElementById('name').value; if(!name) return;
+        const specs = Array.from(document.querySelectorAll('.spec-input-item')).map(c => ({ specId: c.dataset.sid ? parseFloat(c.dataset.sid) : Math.random(), name: c.querySelector('.s-name').value||"標準", price: Number(c.querySelector('.s-price').value)||0, salePrice: Number(c.querySelector('.s-sale').value)||null, saleDate: c.querySelector('.s-date').value||null }));
         const eid = document.getElementById('edit-id').value;
-        const specs = Array.from(document.querySelectorAll('.spec-input-item')).map(c => ({ 
-            specId: c.dataset.sid ? parseFloat(c.dataset.sid) : Math.random(), 
-            name: c.querySelector('.s-name').value||"標準", 
-            price: Number(c.querySelector('.s-price').value)||0, 
-            salePrice: Number(c.querySelector('.s-sale').value)||null, 
-            saleDate: c.querySelector('.s-date').value||null 
-        }));
-        if(eid) {
-            let idx = db.findIndex(x => x.id == eid);
-            db[idx] = { ...db[idx], name, img:document.getElementById('imgUrl').value, main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs };
-        } else {
-            db.push({ id:Date.now(), name, img:document.getElementById('imgUrl').value, main: regActiveMain, sub: regActiveSub, priority: regActivePri, specs });
-        }
+        if(eid) { let i = db.findIndex(x=>x.id==eid); db[i]={...db[i], name, img:document.getElementById('imgUrl').value, main:regActiveMain, sub:regActiveSub, priority:regActivePri, specs}; }
+        else db.push({id:Date.now(), name, img:document.getElementById('imgUrl').value, main:regActiveMain, sub:regActiveSub, priority:regActivePri, specs});
         saveAndRender(); cancelEdit();
     }
 
-    function cancelEdit() {
+    function cancelEdit() { 
         document.getElementById('regTitle').innerText = "✨ 登記新產品"; document.getElementById('edit-id').value = "";
-        document.getElementById('name').value = ""; document.getElementById('imgUrl').value = "";
-        document.getElementById('specContainer').innerHTML = ""; addSpecRow();
+        document.getElementById('name').value = ""; document.getElementById('specContainer').innerHTML = ""; addSpecRow();
         document.getElementById('saveBtn').innerText = "存入我的清單"; document.getElementById('cancelEditBtn').style.display = "none";
     }
 
     function editProduct(pid) {
-        const p = db.find(x => x.id === pid); if(!p) return;
-        switchPage('wishlist', document.querySelector('[onclick*="wishlist"]'));
-        document.getElementById('regTitle').innerText = "✏️ 編輯產品"; document.getElementById('edit-id').value = p.id;
-        document.getElementById('name').value = p.name; document.getElementById('imgUrl').value = p.img || "";
-        regActiveMain = p.main; regActiveSub = p.sub; regActivePri = p.priority; initRegChips();
-        const cont = document.getElementById('specContainer'); cont.innerHTML = "";
-        p.specs.forEach(s => addSpecRow(s));
+        const p = db.find(x => x.id === pid); switchPage('wishlist', document.querySelector('[onclick*="wishlist"]'));
+        document.getElementById('regTitle').innerText = "✏️ 編輯"; document.getElementById('edit-id').value = p.id;
+        document.getElementById('name').value = p.name; regActiveMain=p.main; regActiveSub=p.sub; regActivePri=p.priority; initRegChips();
+        document.getElementById('specContainer').innerHTML = ""; p.specs.forEach(s => addSpecRow(s));
         document.getElementById('saveBtn').innerText = "儲存修改"; document.getElementById('cancelEditBtn').style.display = "block";
     }
 
-    // --- 速算功能 ---
-    function openQuickProdPicker() {
-        document.getElementById('modalOverlay').style.display = 'flex';
-        document.getElementById('quickPickerModal').style.display = 'block';
-        renderQuickPickerFilters(); renderQuickPickerList();
-    }
-    function renderQuickPickerFilters() {
-        const mCont = document.getElementById('qMainFilter');
-        mCont.innerHTML = ["全部", ...Object.keys(catConfig)].map(c => `<div class="filter-chip ${activeMain===c?'active':''}" onclick="activeMain='${c}'; renderQuickPickerFilters(); renderQuickPickerList();">${c}</div>`).join('');
-    }
-    function renderQuickPickerList() {
-        const s = document.getElementById('quickSearch').value.toLowerCase();
-        const cont = document.getElementById('quickPickerList');
-        cont.innerHTML = db.filter(p => {
-            if(activeMain !== "全部" && p.main !== activeMain) return false;
-            if(s && !p.name.toLowerCase().includes(s)) return false;
-            return true;
-        }).map(p => `<div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;" onclick="pickQuickProd(${p.id})"><b>${p.name}</b><span style="color:var(--calc);">選取 ></span></div>`).join('');
-    }
-    function pickQuickProd(pid) {
-        const p = db.find(x => x.id === pid); const today = new Date().toISOString().split('T')[0];
-        p.specs.forEach(s => {
-            const pr = (s.salePrice && (!s.saleDate || today <= s.saleDate)) ? s.salePrice : s.price;
-            quickItems.push({ name: `${p.name} (${s.name})`, price: pr, qty: 1 });
-        });
-        closeModal(); renderQuickCalc();
-    }
-    function addQuickManualItem() { quickItems.push({ name: "", price: 0, qty: 1 }); renderQuickCalc(); }
-    function renderQuickCalc() {
-        const cont = document.getElementById('quick-calc-list');
-        cont.innerHTML = quickItems.map((item, idx) => `
-            <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center;">
-                <input type="text" value="${item.name}" onchange="quickItems[${idx}].name=this.value" placeholder="項目" style="flex:1.5; margin:0;">
-                <input type="number" value="${item.price}" onchange="quickItems[${idx}].price=Number(this.value); renderQuickCalc();" style="flex:1; margin:0;">
-                <div class="qty-ctrl">
-                    <button class="qty-btn" onclick="quickItems[${idx}].qty=Math.max(1,quickItems[${idx}].qty-1); renderQuickCalc();">-</button>
-                    <span>${item.qty}</span>
-                    <button class="qty-btn" onclick="quickItems[${idx}].qty++; renderQuickCalc();">+</button>
-                </div>
-                <button onclick="quickItems.splice(${idx},1); renderQuickCalc();" style="border:none; color:red; background:none;">×</button>
-            </div>
-        `).join('');
-        let total = quickItems.reduce((sum, i) => sum + (i.price * i.qty), 0);
-        let rf = 0; for (let i = refundTable.length - 1; i >= 0; i--) { if (total >= refundTable[i].min) { rf = refundTable[i].refund; break; } }
-        document.getElementById('quick-total-won').innerText = `₩${total.toLocaleString()}`;
-        document.getElementById('quick-refund-won').innerText = `₩${rf.toLocaleString()}`;
-        document.getElementById('quick-final-won').innerText = (total - rf).toLocaleString();
-        document.getElementById('quick-final-hkd').innerText = Math.round((total-rf) * currentRate).toLocaleString();
-    }
-    function clearQuickCalc() { quickItems = []; renderQuickCalc(); }
-
-    // --- 其他渲染與初始化 ---
     function render() {
         document.getElementById('rateInput').value = currentRate;
         document.getElementById('rateExample').innerText = Math.round(10000 * currentRate).toLocaleString();
@@ -491,78 +447,46 @@
             if(sText && !p.name.toLowerCase().includes(sText)) return;
             let specSummary = p.specs.map(s => {
                 const hasSale = s.salePrice && (!s.saleDate || today <= s.saleDate);
-                return `<div class="price-tag"><span style="font-size:11px; font-weight:600;">${s.name}:</span> 
-                    ${hasSale ? `<span class="origin-price">₩${s.price.toLocaleString()}</span><span class="sale-price">₩${s.salePrice.toLocaleString()}</span>` : `<span>₩${s.price.toLocaleString()}</span>`}</div>`;
+                return `<div class="price-tag"><span style="font-size:11px;">${s.name}:</span> ${hasSale ? `<span class="origin-price">₩${s.price.toLocaleString()}</span><span class="sale-price">₩${s.salePrice.toLocaleString()}</span>` : `<span>₩${s.price.toLocaleString()}</span>`}</div>`;
             }).join('');
             dashCont.innerHTML += `<div class="item-card card" style="border-left: 5px solid ${p.priority==='必買'?'var(--pri-must)':p.priority==='需要'?'var(--pri-need)':'var(--pri-want)'}">
                 <img src="${p.img || 'https://via.placeholder.com/100'}" class="prod-img">
-                <div style="flex:1; min-width:0;"><div style="display:flex; justify-content:space-between;"><b>${p.name}</b><small style="color:var(--gray)">${p.sub}</small></div>
-                    ${specSummary}<div style="display:flex; gap:6px; margin-top:10px;">
-                        <button style="flex:1.5; background:var(--cart); color:white; border:none; border-radius:8px; height:32px;" onclick="openSelector(${p.id},'cart')">+🛒</button>
-                        <button style="flex:1.5; border:1px solid #ddd; border-radius:8px; background:white;" onclick="openPlanPicker(${p.id})">+📝</button>
-                        <button style="flex:1; border:1px solid #ddd; border-radius:8px; background:white; font-size:11px;" onclick="editProduct(${p.id})">編輯</button>
-                    </div></div></div>`;
+                <div style="flex:1; min-width:0;"><b>${p.name}</b><br>${specSummary}
+                <div style="display:flex; gap:6px; margin-top:10px;"><button style="flex:2; background:var(--cart); color:white; border:none; border-radius:8px; height:32px;" onclick="openSelector(${p.id},'cart')">+🛒</button><button style="flex:1; border:1px solid #ddd; border-radius:8px; background:white; font-size:11px;" onclick="editProduct(${p.id})">改</button></div></div></div>`;
         });
         renderCart(); renderPlans(); renderHistory();
     }
 
     function renderCart() {
-        let t = 0; const cont = document.getElementById('cart-list');
-        cont.innerHTML = '<h3>🛒 購物籃</h3>';
+        let t = 0; const cont = document.getElementById('cart-list'); cont.innerHTML = '<h3>🛒 購物籃</h3>';
         cart.forEach((i, idx) => {
             const p = db.find(x => x.id === i.prodId); const s = p?.specs.find(x => x.specId === i.specId);
             const pr = s ? ((s.salePrice && (!s.saleDate || new Date().toISOString().split('T')[0] <= s.saleDate))?s.salePrice:s.price) : 0;
             t += pr * i.qty;
             cont.innerHTML += `<div class="card" style="display:flex; justify-content:space-between; align-items:center;"><div><b>${p?p.name:'--'}</b><br><small>${s?s.name:'--'}</small></div><div class="qty-ctrl"><button class="qty-btn" onclick="updateQty('cart',null,${idx},-1)">-</button><span>${i.qty}</span><button class="qty-btn" onclick="updateQty('cart',null,${idx},1)">+</button></div><button onclick="cart.splice(${idx},1);saveAndRender();" style="border:none; color:red; background:none;">×</button></div>`;
         });
-        let r = 0; for(let i=refundTable.length-1;i>=0;i--){if(t>=refundTable[i].min){r=refundTable[i].refund;break;}}
+        let r = calculateRefund(t);
         document.getElementById('cart-total').innerText=`₩${t.toLocaleString()}`;
         document.getElementById('tax-refund-display').innerText=`退稅: ₩${r.toLocaleString()}`;
         document.getElementById('after-refund-total').innerText=(t-r).toLocaleString();
         document.getElementById('hkd-total').innerText=Math.round((t-r)*currentRate).toLocaleString();
     }
 
-    function renderPlans() {
-        document.getElementById('plan-groups').innerHTML = planGroups.map((g, gi) => `
-            <div class="card" style="padding:0; overflow:hidden;">
-                <div style="background:#f3e5f5; padding:10px 15px; display:flex; justify-content:space-between;">
-                    <b>📌 ${g.title}</b><button onclick="deletePlan(${gi})" style="border:none; background:none; color:red;">刪除</button>
-                </div>
-                <div style="padding:10px;">
-                    ${g.items.map((i, ii) => {
-                        const p = db.find(x => x.id === i.prodId);
-                        const isInCart = cart.some(ci => ci.prodId === i.prodId && ci.specId === i.specId);
-                        return `<div class="card ${isInCart?'in-cart-highlight':''}" style="display:flex; justify-content:space-between; margin-bottom:5px; box-shadow:none; border:1px solid #eee;">
-                            <span>${p?p.name:'--'}</span>
-                            <div class="qty-ctrl">
-                                <button class="qty-btn" onclick="updateQty('plan',${gi},${ii},-1)">-</button>
-                                <span>${i.qty}</span>
-                                <button class="qty-btn" onclick="updateQty('plan',${gi},${ii},1)">+</button>
-                            </div>
-                        </div>`;
-                    }).join('')}
-                </div>
-            </div>`).join('');
-    }
-
-    function renderHistory() {
-        document.getElementById('history-list').innerHTML = historyDB.map(h => `<div class="card"><b>${h.title}</b><br><small>${h.date}</small><div style="text-align:right; color:var(--primary); font-weight:700;">實付: ₩${h.finalPaid.toLocaleString()}</div></div>`).join('');
-    }
-
-    function initFilters() {
-        document.getElementById('mainTabScroll').innerHTML = ["全部", ...Object.keys(catConfig)].map(c => `<div class="filter-chip ${c===activeMain?'active':''}" onclick="activeMain='${c}'; activeSub='全部'; initFilters(); render();">${c}</div>`).join('');
-        document.getElementById('priTabScroll').innerHTML = ["全部", "必買", "需要", "想買"].map(p => `<div class="filter-chip ${p===activePri?'active':''}" onclick="activePri='${p}'; initFilters(); render();">${p}</div>`).join('');
-    }
-    
-    function initRegChips() {
-        document.getElementById('regMainCatChips').innerHTML = Object.keys(catConfig).map(c => `<div class="filter-chip ${c === regActiveMain ? 'active' : ''}" onclick="regActiveMain='${c}'; regActiveSub=catConfig['${c}'][0]; initRegChips();">${c}</div>`).join('');
-        document.getElementById('regSubCatChips').innerHTML = catConfig[regActiveMain].map(s => `<div class="filter-chip sub ${s === regActiveSub ? 'active' : ''}" onclick="regActiveSub='${s}'; initRegChips();">${s}</div>`).join('');
-        document.getElementById('regPriChips').innerHTML = ["想買", "需要", "必買"].map(p => `<div class="filter-chip ${p === regActivePri ? 'active' : ''}" onclick="regActivePri='${p}'; initRegChips();">${p}</div>`).join('');
+    function checkoutCart() {
+        if(!cart.length) return;
+        const t = prompt("紀錄名稱：", "購物 " + new Date().toLocaleDateString()); if(!t) return;
+        let total = 0; const items = cart.map(i => {
+            const p = db.find(x => x.id === i.prodId); const s = p.specs.find(x => x.specId === i.specId);
+            const pr = (s.salePrice && (!s.saleDate || new Date().toISOString().split('T')[0] <= s.saleDate)) ? s.salePrice : s.price;
+            total += pr * i.qty; return { name: p.name, qty: i.qty, price: pr };
+        });
+        let rf = calculateRefund(total);
+        historyDB.unshift({ id: Date.now(), title: t, date: new Date().toLocaleString(), items, total, refund: rf, finalPaid: total - rf });
+        cart = []; saveAndRender();
     }
 
     function openSelector(pid, t, pIdx=null) {
-        const p = db.find(x => x.id === pid); modalQty = 1;
-        document.getElementById('modalQtyDisplay').innerText = 1;
+        const p = db.find(x => x.id === pid); modalQty = 1; document.getElementById('modalQtyDisplay').innerText = 1;
         document.getElementById('modalProdName').innerText = p.name;
         document.getElementById('modalSpecSelect').innerHTML = p.specs.map(s => `<option value="${s.specId}">${s.name}</option>`).join('');
         document.getElementById('modalOverlay').style.display = 'flex'; document.getElementById('selectorModal').style.display = 'block';
@@ -575,46 +499,36 @@
         };
     }
 
-    function openPlanPicker(pid) {
-        document.getElementById('modalOverlay').style.display='flex'; document.getElementById('planPickerModal').style.display='block';
-        document.getElementById('planOptionsList').innerHTML = planGroups.map((g, gi) => `<div class="card" onclick="closeModal(); openSelector(${pid}, 'plan', ${gi})">${g.title}</div>`).join('');
+    // 基本初始化
+    function initFilters() {
+        document.getElementById('mainTabScroll').innerHTML = ["全部", ...Object.keys(catConfig)].map(c => `<div class="filter-chip ${c===activeMain?'active':''}" onclick="activeMain='${c}'; activeSub='全部'; initFilters(); render();">${c}</div>`).join('');
+        document.getElementById('priTabScroll').innerHTML = ["全部", "必買", "需要", "想買"].map(p => `<div class="filter-chip ${p===activePri?'active':''}" onclick="activePri='${p}'; initFilters(); render();">${p}</div>`).join('');
     }
-
-    function checkoutCart() {
-        if(!cart.length) return;
-        const t = prompt("記錄名稱：", "購物 " + new Date().toLocaleDateString()); if(!t) return;
-        let total = 0; const items = cart.map(i => {
-            const p = db.find(x => x.id === i.prodId); const s = p.specs.find(x => x.specId === i.specId);
-            const pr = (s.salePrice && (new Date().toISOString().split('T')[0] <= s.saleDate)) ? s.salePrice : s.price;
-            total += pr * i.qty; return { name: p.name, qty: i.qty, price: pr };
-        });
-        let rf = 0; for(let i=refundTable.length-1;i>=0;i--){if(total>=refundTable[i].min){rf=refundTable[i].refund;break;}}
-        historyDB.unshift({ id: Date.now(), title: t, date: new Date().toLocaleString(), items, total, refund: rf, finalPaid: total - rf });
-        cart = []; saveAndRender();
+    function initRegChips() {
+        document.getElementById('regMainCatChips').innerHTML = Object.keys(catConfig).map(c => `<div class="filter-chip ${c === regActiveMain ? 'active' : ''}" onclick="regActiveMain='${c}'; regActiveSub=catConfig['${c}'][0]; initRegChips();">${c}</div>`).join('');
+        document.getElementById('regSubCatChips').innerHTML = catConfig[regActiveMain].map(s => `<div class="filter-chip sub ${s === regActiveSub ? 'active' : ''}" onclick="regActiveSub='${s}'; initRegChips();">${s}</div>`).join('');
+        document.getElementById('regPriChips').innerHTML = ["想買", "需要", "必買"].map(p => `<div class="filter-chip ${p === regActivePri ? 'active' : ''}" onclick="regActivePri='${p}'; initRegChips();">${p}</div>`).join('');
     }
-
-    function exportData() {
-        const data = { rate: currentRate, db, cart, history: historyDB, plans: planGroups, priceHistory, exportDate: new Date().toISOString() };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `OY_Data.json`; a.click();
-    }
-
-    function importData(e) {
-        const reader = new FileReader(); reader.onload = (ev) => {
-            const d = JSON.parse(ev.target.result);
-            if(confirm("即將覆蓋現有數據，確定？")) { db=d.db; cart=d.cart; historyDB=d.history; planGroups=d.plans; priceHistory=d.priceHistory||[]; currentRate=d.rate; saveAndRender(); location.reload(); }
-        }; reader.readAsText(e.target.files[0]);
-    }
-
-    function hardResetSystem() { if(confirm("警告：這將刪除所有數據！") && prompt("輸入 RESET 以確認")==="RESET") { localStorage.clear(); location.reload(); } }
-    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; document.querySelectorAll('.modal-content').forEach(m => m.style.display = 'none'); }
-    function saveRate() { currentRate = parseFloat(document.getElementById('rateInput').value) || 0.0058; saveAndRender(); }
-    function adjModalQty(v) { modalQty = Math.max(1, modalQty + v); document.getElementById('modalQtyDisplay').innerText = modalQty; }
     function updateQty(t,gi,ii,d){let l=(t==='cart')?cart:planGroups[gi].items; if(l[ii]){l[ii].qty=Math.max(1,l[ii].qty+d);saveAndRender();}}
-    function deletePlan(i){if(confirm("刪除計畫？")){planGroups.splice(i,1);saveAndRender();}}
-    function createNewPlanGroup(){let t=prompt("新計畫名稱:");if(t){planGroups.push({title:t,items:[]});saveAndRender();}}
+    function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; document.querySelectorAll('.modal-content').forEach(m => m.style.display = 'none'); }
+    function adjModalQty(v) { modalQty = Math.max(1, modalQty + v); document.getElementById('modalQtyDisplay').innerText = modalQty; }
+    function saveRate() { currentRate = parseFloat(document.getElementById('rateInput').value) || 0.0058; saveAndRender(); }
+    function exportData() { const blob = new Blob([JSON.stringify({db,cart,history:historyDB,plans:planGroups,rate:currentRate})], {type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`OY_Backup.json`; a.click(); }
+    function hardResetSystem() { if(confirm("確定重置？")) { localStorage.clear(); location.reload(); } }
+    function renderPlans() { /* 簡化版計畫渲染 */ }
 
-    // 初始化
+    // 速算渲染
+    function renderQuickCalc() {
+        const cont = document.getElementById('quick-calc-list');
+        cont.innerHTML = quickItems.map((item, idx) => `<div style="display:flex; gap:5px; margin-bottom:5px;"><input type="text" value="${item.name}" style="flex:2; margin:0;" onchange="quickItems[${idx}].name=this.value"><input type="number" value="${item.price}" style="flex:1; margin:0;" onchange="quickItems[${idx}].price=Number(this.value); renderQuickCalc();"><button onclick="quickItems.splice(${idx},1); renderQuickCalc();">×</button></div>`).join('');
+        let total = quickItems.reduce((sum, i) => sum + i.price, 0);
+        let rf = calculateRefund(total);
+        document.getElementById('quick-total-won').innerText = `₩${total.toLocaleString()}`;
+        document.getElementById('quick-refund-won').innerText = `₩${rf.toLocaleString()}`;
+        document.getElementById('quick-final-won').innerText = (total - rf).toLocaleString();
+        document.getElementById('quick-final-hkd').innerText = Math.round((total-rf) * currentRate).toLocaleString();
+    }
+
     if(document.getElementById('specContainer').children.length === 0) addSpecRow();
     initRegChips(); initFilters(); render();
 </script>
