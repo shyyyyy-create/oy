@@ -250,45 +250,43 @@
 
 <script>
     // 根據圖片精確更新的退稅表
-    /**
- * 退稅級距表
- */
-const refundRules = [
-    { min: 15000, refund: 1000 }, { min: 30000, refund: 2000 }, { min: 50000, refund: 3000 },
-    { min: 75000, refund: 5000 }, { min: 100000, refund: 7000 }, { min: 125000, refund: 8000 },
-    { min: 150000, refund: 9000 }, { min: 175000, refund: 10000 }, { min: 200000, refund: 12000 },
-    { min: 225000, refund: 13000 }, { min: 250000, refund: 15000 }, { min: 275000, refund: 17000 },
-    { min: 300000, refund: 19000 }, { min: 325000, refund: 21000 }, { min: 350000, refund: 23000 },
-    { min: 375000, refund: 25000 }, { min: 400000, refund: 27000 }, { min: 425000, refund: 28000 },
-    { min: 450000, refund: 30000 }, { min: 475000, refund: 32000 }, { min: 500000, refund: 35000 },
-    { min: 550000, refund: 37000 }, { min: 600000, refund: 41000 }, { min: 650000, refund: 45000 },
-    { min: 700000, refund: 50000 }, { min: 750000, refund: 53000 }, { min: 800000, refund: 57000 },
-    { min: 850000, refund: 60000 }, { min: 900000, refund: 65000 }, { min: 950000, refund: 68000 },
-    { min: 1000000, refund: 75000 }, { min: 1100000, refund: 80000 }, { min: 1200000, refund: 90000 },
-    { min: 1300000, refund: 95000 }, { min: 1400000, refund: 105000 }, { min: 1500000, refund: 110000 }
-];
-
-/**
- * 計算退稅主邏輯
- * @param {number} salesAmount 銷售金額
- */
-function getRefund(salesAmount) {
-    // 確保輸入是數字
-    const amount = Number(salesAmount);
-
-    // 從最大的級距往回找，找到第一個符合 (金額 >= min) 的規則
-    // slice() 用於建立副本，避免影響原始陣列順序
-    const match = refundRules.slice().reverse().find(rule => amount >= rule.min);
-
-    // 如果有匹配規則則回傳退稅額，否則回傳 0
-    return match ? match.refund : 0;
-}
-
-// --- 測試 ---
-console.log("銷售額 188,000 -> 退稅:", getRefund(188000)); // 預期：10000
-console.log("銷售額 200,000 -> 退稅:", getRefund(200000)); // 預期：12000
-console.log("銷售額 14,999 -> 退稅:", getRefund(14999));   // 預期：0
-
+    const refundTable = [
+    {min:15000, max:29999, refund:1000},
+    {min:30000, max:49999, refund:2000},
+    {min:50000, max:74999, refund:3000},
+    {min:75000, max:99999, refund:5000},
+    {min:100000, max:124999, refund:7000},
+    {min:125000, max:149999, refund:8000},
+    {min:150000, max:174999, refund:9000},
+    {min:175000, max:199999, refund:10000}, // 修正點：188,000 會落在這一層
+    {min:200000, max:224999, refund:12000},
+    {min:225000, max:249999, refund:13000},
+    {min:250000, max:274999, refund:15000},
+    {min:275000, max:299999, refund:17000},
+    {min:300000, max:324999, refund:19000},
+    {min:325000, max:349999, refund:21000},
+    {min:350000, max:374999, refund:23000},
+    {min:375000, max:399999, refund:25000},
+    {min:400000, max:424999, refund:27000},
+    {min:425000, max:449999, refund:28000},
+    {min:450000, max:474999, refund:30000},
+    {min:475000, max:499999, refund:32000},
+    {min:500000, max:549999, refund:35000},
+    {min:550000, max:599999, refund:37000},
+    {min:600000, max:649999, refund:41000},
+    {min:650000, max:699999, refund:45000},
+    {min:700000, max:749999, refund:50000},
+    {min:750000, max:799999, refund:53000},
+    {min:800000, max:849999, refund:57000},
+    {min:850000, max:899999, refund:60000},
+    {min:900000, max:949999, refund:65000},
+    {min:950000, max:999999, refund:68000},
+    {min:1000000, max:1099999, refund:75000},
+    {min:1100000, max:1199999, refund:80000},
+    {min:1200000, max:1299999, refund:90000},
+    {min:1300000, max:1399999, refund:95000},
+    {min:1400000, max:1499999, refund:105000},
+    {min:1500000, max:1599999, refund:110000}
     ];
 
     const catConfig = {"護膚品":["化妝水","精華","乳液","面霜","面膜","防曬","潔面","卸妝"],"化妝品-Base":["妝前","氣墊","粉底","遮瑕","腮紅","光/陰影"],"化妝品-Eyes":["眉筆","眼線/臥蠶","眼影","睫毛膏"],"化妝品-Lip":["唇線筆","唇釉","唇膏"],"其他類":["手部膚理","身體護理","香水","零食","生活雜貨"]};
@@ -305,17 +303,22 @@ console.log("銷售額 14,999 -> 退稅:", getRefund(14999));   // 預期：0
     let quickItems = [];
     let modalQty = 1;
 
-    // 退稅計算函數
-    function calculateRefund(amount) {
-        let rf = 0;
-        for (let i = refundTable.length - 1; i >= 0; i--) {
-            if (amount >= refundTable[i].min) {
-                rf = refundTable[i].refund;
-                break;
-            }
+    // 修正後的計算函數
+function calculateRefund(amount) {
+    let rf = 0;
+    for (let i = 0; i < refundTable.length; i++) {
+        // 如果金額落在該區間的 min 和 max 之間
+        if (amount >= refundTable[i].min && amount <= refundTable[i].max) {
+            rf = refundTable[i].refund;
+            break;
         }
-        return rf;
     }
+    // 處理超過 1,600,000 的極限情況（雖然表格沒寫，但通常會維持最高額或以此類推）
+    if (amount >= 1600000) {
+        rf = 110000; 
+    }
+    return rf;
+}
 
     function saveAndRender() {
         localStorage.setItem('oy_db_v18', JSON.stringify(db));
