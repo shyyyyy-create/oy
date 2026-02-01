@@ -72,6 +72,8 @@
         .history-details { margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; display: none; }
         .history-details.open { display: block; }
         .hist-prod-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; }
+        
+        .edit-icon-small { font-size: 12px; margin-left: 5px; opacity: 0.6; }
     </style>
 </head>
 <body>
@@ -249,44 +251,25 @@
 </div>
 
 <script>
-    // 根據圖片精確更新的退稅表
     const refundTable = [
-    {min:15000, max:29999, refund:1000},
-    {min:30000, max:49999, refund:2000},
-    {min:50000, max:74999, refund:3000},
-    {min:75000, max:99999, refund:5000},
-    {min:100000, max:124999, refund:7000},
-    {min:125000, max:149999, refund:8000},
-    {min:150000, max:174999, refund:9000},
-    {min:175000, max:199999, refund:10000}, // 修正點：188,000 會落在這一層
-    {min:200000, max:224999, refund:12000},
-    {min:225000, max:249999, refund:13000},
-    {min:250000, max:274999, refund:15000},
-    {min:275000, max:299999, refund:17000},
-    {min:300000, max:324999, refund:19000},
-    {min:325000, max:349999, refund:21000},
-    {min:350000, max:374999, refund:23000},
-    {min:375000, max:399999, refund:25000},
-    {min:400000, max:424999, refund:27000},
-    {min:425000, max:449999, refund:28000},
-    {min:450000, max:474999, refund:30000},
-    {min:475000, max:499999, refund:32000},
-    {min:500000, max:549999, refund:35000},
-    {min:550000, max:599999, refund:37000},
-    {min:600000, max:649999, refund:41000},
-    {min:650000, max:699999, refund:45000},
-    {min:700000, max:749999, refund:50000},
-    {min:750000, max:799999, refund:53000},
-    {min:800000, max:849999, refund:57000},
-    {min:850000, max:899999, refund:60000},
-    {min:900000, max:949999, refund:65000},
-    {min:950000, max:999999, refund:68000},
-    {min:1000000, max:1099999, refund:75000},
-    {min:1100000, max:1199999, refund:80000},
-    {min:1200000, max:1299999, refund:90000},
-    {min:1300000, max:1399999, refund:95000},
-    {min:1400000, max:1499999, refund:105000},
-    {min:1500000, max:1599999, refund:110000}
+    {min:15000, max:29999, refund:1000}, {min:30000, max:49999, refund:2000},
+    {min:50000, max:74999, refund:3000}, {min:75000, max:99999, refund:5000},
+    {min:100000, max:124999, refund:7000}, {min:125000, max:149999, refund:8000},
+    {min:150000, max:174999, refund:9000}, {min:175000, max:199999, refund:10000},
+    {min:200000, max:224999, refund:12000}, {min:225000, max:249999, refund:13000},
+    {min:250000, max:274999, refund:15000}, {min:275000, max:299999, refund:17000},
+    {min:300000, max:324999, refund:19000}, {min:325000, max:349999, refund:21000},
+    {min:350000, max:374999, refund:23000}, {min:375000, max:399999, refund:25000},
+    {min:400000, max:424999, refund:27000}, {min:425000, max:449999, refund:28000},
+    {min:450000, max:474999, refund:30000}, {min:475000, max:499999, refund:32000},
+    {min:500000, max:549999, refund:35000}, {min:550000, max:599999, refund:37000},
+    {min:600000, max:649999, refund:41000}, {min:650000, max:699999, refund:45000},
+    {min:700000, max:749999, refund:50000}, {min:750000, max:799999, refund:53000},
+    {min:800000, max:849999, refund:57000}, {min:850000, max:899999, refund:60000},
+    {min:900000, max:949999, refund:65000}, {min:950000, max:999999, refund:68000},
+    {min:1000000, max:1099999, refund:75000}, {min:1100000, max:1199999, refund:80000},
+    {min:1200000, max:1299999, refund:90000}, {min:1300000, max:1399999, refund:95000},
+    {min:1400000, max:1499999, refund:105000}, {min:1500000, max:1599999, refund:110000}
     ];
 
     const catConfig = {"護膚品":["化妝水","精華","乳液","面霜","面膜","防曬","潔面","卸妝"],"化妝品-Base":["妝前","氣墊","粉底","遮瑕","腮紅","光/陰影"],"化妝品-Eyes":["眉筆","眼線/臥蠶","眼影","睫毛膏"],"化妝品-Lip":["唇線筆","唇釉","唇膏"],"其他類":["手部膚理","身體護理","香水","零食","生活雜貨"]};
@@ -303,22 +286,16 @@
     let quickItems = [];
     let modalQty = 1;
 
-    // 修正後的計算函數
-function calculateRefund(amount) {
-    let rf = 0;
-    for (let i = 0; i < refundTable.length; i++) {
-        // 如果金額落在該區間的 min 和 max 之間
-        if (amount >= refundTable[i].min && amount <= refundTable[i].max) {
-            rf = refundTable[i].refund;
-            break;
+    function calculateRefund(amount) {
+        let rf = 0;
+        for (let i = 0; i < refundTable.length; i++) {
+            if (amount >= refundTable[i].min && amount <= refundTable[i].max) {
+                rf = refundTable[i].refund; break;
+            }
         }
+        if (amount >= 1600000) rf = 110000; 
+        return rf;
     }
-    // 處理超過 1,600,000 的極限情況（雖然表格沒寫，但通常會維持最高額或以此類推）
-    if (amount >= 1600000) {
-        rf = 110000; 
-    }
-    return rf;
-}
 
     function saveAndRender() {
         localStorage.setItem('oy_db_v18', JSON.stringify(db));
@@ -341,11 +318,9 @@ function calculateRefund(amount) {
         render();
     }
 
-    // --- 比價追蹤核心 ---
     function renderPriceHistory() {
         const cont = document.getElementById('price-history-list');
         if(db.length === 0) { cont.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">請先在登記頁面新增產品</p>'; return; }
-        
         const grouped = {};
         db.forEach(p => {
             grouped[p.id] = { name: p.name, items: [] };
@@ -353,13 +328,11 @@ function calculateRefund(amount) {
                 grouped[p.id].items.push({ isReg: true, specId: s.specId, specName: s.name, price: s.price, salePrice: s.salePrice, saleDate: s.saleDate, note: "原始登記資料", date: "登記" });
             });
         });
-
         priceHistory.forEach((h, idx) => {
             if(!grouped[h.prodId]) return;
             const s = db.find(x => x.id === h.prodId)?.specs.find(x => x.specId === h.specId);
             grouped[h.prodId].items.push({ ...h, specName: s ? s.name : "未知規格", originalIdx: idx, isReg: false });
         });
-
         cont.innerHTML = Object.values(grouped).map(group => `
             <div class="card" style="border-left: 4px solid var(--price-hist);">
                 <b style="font-size:15px;">${group.name}</b>
@@ -393,7 +366,6 @@ function calculateRefund(amount) {
         document.getElementById('priceRecordModal').style.display = 'block';
         const pSel = document.getElementById('priceProdSelect');
         pSel.innerHTML = db.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-        
         if(editIdx !== null) {
             const h = priceHistory[editIdx];
             document.getElementById('priceModalTitle').innerText = "編輯報價";
@@ -438,7 +410,6 @@ function calculateRefund(amount) {
 
     function deletePriceRecord(idx) { if(confirm("刪除此報價？")) { priceHistory.splice(idx,1); saveAndRender(); renderPriceHistory(); } }
 
-    // --- 登記功能 ---
     function addSpecRow(data = null) {
         const d = document.createElement('div'); d.className='spec-input-item'; d.style='border:1px solid #f2f2f7; padding:12px; border-radius:12px; margin-bottom:10px; position:relative;';
         if(data) d.dataset.sid = data.specId;
@@ -487,7 +458,6 @@ function calculateRefund(amount) {
         document.getElementById('saveBtn').innerText = "儲存修改"; document.getElementById('cancelEditBtn').style.display = "block";
     }
 
-    // --- 速算功能 ---
     function openQuickProdPicker() {
         document.getElementById('modalOverlay').style.display = 'flex';
         document.getElementById('quickPickerModal').style.display = 'block';
@@ -538,16 +508,24 @@ function calculateRefund(amount) {
     }
     function clearQuickCalc() { quickItems = []; renderQuickCalc(); }
 
-    // --- 歷史紀錄管理 ---
     function toggleHistoryDetail(id) {
         document.getElementById('hist-detail-' + id).classList.toggle('open');
+    }
+
+    function editHistoryName(histId) {
+        const h = historyDB.find(x => x.id === histId);
+        if(!h) return;
+        const newName = prompt("請輸入新的紀錄名稱：", h.title);
+        if(newName && newName.trim() !== "") {
+            h.title = newName.trim();
+            saveAndRender();
+        }
     }
 
     function updateHistoryQty(histId, itemIdx, delta) {
         const h = historyDB.find(x => x.id === histId);
         if(!h) return;
         h.items[itemIdx].qty = Math.max(1, h.items[itemIdx].qty + delta);
-        // 重新計算整筆紀錄
         h.total = h.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
         h.refund = calculateRefund(h.total);
         h.finalPaid = h.total - h.refund;
@@ -575,69 +553,62 @@ function calculateRefund(amount) {
         }
     }
 
-    // --- 其他渲染與初始化 ---
     function render() {
-    document.getElementById('rateInput').value = currentRate;
-    document.getElementById('rateExample').innerText = Math.round(10000 * currentRate).toLocaleString();
-    const dashCont = document.getElementById('dash-list'); dashCont.innerHTML = '';
-    const sText = document.getElementById('searchBar').value.toLowerCase();
-    const today = new Date().toISOString().split('T')[0];
+        document.getElementById('rateInput').value = currentRate;
+        document.getElementById('rateExample').innerText = Math.round(10000 * currentRate).toLocaleString();
+        const dashCont = document.getElementById('dash-list'); dashCont.innerHTML = '';
+        const sText = document.getElementById('searchBar').value.toLowerCase();
+        const today = new Date().toISOString().split('T')[0];
 
-    db.forEach(p => {
-        if(activeMain !== '全部' && p.main !== activeMain) return;
-        if(activeSub !== '全部' && p.sub !== activeSub) return;
-        if(activePri !== '全部' && p.priority !== activePri) return;
-        if(sText && !p.name.toLowerCase().includes(sText)) return;
+        db.forEach(p => {
+            if(activeMain !== '全部' && p.main !== activeMain) return;
+            if(activeSub !== '全部' && p.sub !== activeSub) return;
+            if(activePri !== '全部' && p.priority !== activePri) return;
+            if(sText && !p.name.toLowerCase().includes(sText)) return;
 
-        let specSummary = p.specs.map(s => {
-            const hasSale = s.salePrice && (!s.saleDate || today <= s.saleDate);
-            return `<div class="price-tag"><span style="font-size:11px; font-weight:600;">${s.name}:</span> 
-                ${hasSale ? `<span class="origin-price">₩${s.price.toLocaleString()}</span><span class="sale-price">₩${s.salePrice.toLocaleString()}</span>` : `<span>₩${s.price.toLocaleString()}</span>`}</div>`;
-        }).join('');
+            let specSummary = p.specs.map(s => {
+                const hasSale = s.salePrice && (!s.saleDate || today <= s.saleDate);
+                return `<div class="price-tag"><span style="font-size:11px; font-weight:600;">${s.name}:</span> 
+                    ${hasSale ? `<span class="origin-price">₩${s.price.toLocaleString()}</span><span class="sale-price">₩${s.salePrice.toLocaleString()}</span>` : `<span>₩${s.price.toLocaleString()}</span>`}</div>`;
+            }).join('');
 
-        // 優先級按鈕的 HTML
-        const priButtons = `
-            <div style="display:flex; gap:4px; margin-top:8px;">
-                <button onclick="updatePriority(${p.id}, '必買')" style="flex:1; font-size:10px; padding:4px 0; border-radius:6px; border:1px solid var(--pri-must); background:${p.priority==='必買'?'var(--pri-must)':'white'}; color:${p.priority==='必買'?'white':'var(--pri-must)'}; font-weight:bold;">必買</button>
-                <button onclick="updatePriority(${p.id}, '需要')" style="flex:1; font-size:10px; padding:4px 0; border-radius:6px; border:1px solid var(--pri-need); background:${p.priority==='需要'?'var(--pri-need)':'white'}; color:${p.priority==='需要'?'white':'var(--pri-need)'}; font-weight:bold;">需要</button>
-                <button onclick="updatePriority(${p.id}, '想買')" style="flex:1; font-size:10px; padding:4px 0; border-radius:6px; border:1px solid var(--pri-want); background:${p.priority==='想買'?'var(--pri-want)':'white'}; color:${p.priority==='想買'?'white':'var(--pri-want)'}; font-weight:bold;">想買</button>
-            </div>
-        `;
+            const priButtons = `
+                <div style="display:flex; gap:4px; margin-top:8px;">
+                    <button onclick="updatePriority(${p.id}, '必買')" style="flex:1; font-size:10px; padding:4px 0; border-radius:6px; border:1px solid var(--pri-must); background:${p.priority==='必買'?'var(--pri-must)':'white'}; color:${p.priority==='必買'?'white':'var(--pri-must)'}; font-weight:bold;">必買</button>
+                    <button onclick="updatePriority(${p.id}, '需要')" style="flex:1; font-size:10px; padding:4px 0; border-radius:6px; border:1px solid var(--pri-need); background:${p.priority==='需要'?'var(--pri-need)':'white'}; color:${p.priority==='需要'?'white':'var(--pri-need)'}; font-weight:bold;">需要</button>
+                    <button onclick="updatePriority(${p.id}, '想買')" style="flex:1; font-size:10px; padding:4px 0; border-radius:6px; border:1px solid var(--pri-want); background:${p.priority==='想買'?'var(--pri-want)':'white'}; color:${p.priority==='想買'?'white':'var(--pri-want)'}; font-weight:bold;">想買</button>
+                </div>
+            `;
 
-        dashCont.innerHTML += `
-            <div class="item-card card" style="border-left: 6px solid ${p.priority==='必買'?'var(--pri-must)':p.priority==='需要'?'var(--pri-need)':'var(--pri-want)'}; flex-direction:column; align-items:stretch;">
-                <div style="display:flex; gap:14px; align-items:center;">
-                    <img src="${p.img || 'https://via.placeholder.com/100'}" class="prod-img">
-                    <div style="flex:1; min-width:0;">
-                        <div style="display:flex; justify-content:space-between; align-items:start;">
-                            <b style="font-size:16px;">${p.name}</b>
-                            <button style="border:none; background:none; font-size:11px; color:var(--gray);" onclick="editProduct(${p.id})">✏️</button>
+            dashCont.innerHTML += `
+                <div class="item-card card" style="border-left: 6px solid ${p.priority==='必買'?'var(--pri-must)':p.priority==='需要'?'var(--pri-need)':'var(--pri-want)'}; flex-direction:column; align-items:stretch;">
+                    <div style="display:flex; gap:14px; align-items:center;">
+                        <img src="${p.img || 'https://via.placeholder.com/100'}" class="prod-img">
+                        <div style="flex:1; min-width:0;">
+                            <div style="display:flex; justify-content:space-between; align-items:start;">
+                                <b style="font-size:16px;">${p.name}</b>
+                                <button style="border:none; background:none; font-size:11px; color:var(--gray);" onclick="editProduct(${p.id})">✏️</button>
+                            </div>
+                            <small style="color:var(--gray)">${p.main} > ${p.sub}</small>
+                            ${specSummary}
                         </div>
-                        <small style="color:var(--gray)">${p.main} > ${p.sub}</small>
-                        ${specSummary}
                     </div>
-                </div>
-                
-                <div style="display:flex; gap:8px; margin-top:12px; align-items:center;">
-                    <div style="flex:2;">${priButtons}</div>
-                    <div style="flex:1.5; display:flex; gap:4px;">
-                        <button style="flex:1; background:var(--cart); color:white; border:none; border-radius:8px; height:32px; font-weight:bold;" onclick="openSelector(${p.id},'cart')">+🛒</button>
-                        <button style="flex:1; border:1px solid #ddd; border-radius:8px; background:white; height:32px;" onclick="openPlanPicker(${p.id})">+📝</button>
+                    <div style="display:flex; gap:8px; margin-top:12px; align-items:center;">
+                        <div style="flex:2;">${priButtons}</div>
+                        <div style="flex:1.5; display:flex; gap:4px;">
+                            <button style="flex:1; background:var(--cart); color:white; border:none; border-radius:8px; height:32px; font-weight:bold;" onclick="openSelector(${p.id},'cart')">+🛒</button>
+                            <button style="flex:1; border:1px solid #ddd; border-radius:8px; background:white; height:32px;" onclick="openPlanPicker(${p.id})">+📝</button>
+                        </div>
                     </div>
-                </div>
-            </div>`;
-    });
-    renderCart(); renderPlans(); renderHistory();
-}
-
-// --- 新增的切換邏輯函式 ---
-function updatePriority(pid, newPri) {
-    const idx = db.findIndex(x => x.id === pid);
-    if (idx !== -1) {
-        db[idx].priority = newPri;
-        saveAndRender(); // 儲存並重新渲染畫面
+                </div>`;
+        });
+        renderCart(); renderPlans(); renderHistory();
     }
-}
+
+    function updatePriority(pid, newPri) {
+        const idx = db.findIndex(x => x.id === pid);
+        if (idx !== -1) { db[idx].priority = newPri; saveAndRender(); }
+    }
 
     function renderCart() {
         let t = 0; const cont = document.getElementById('cart-list');
@@ -655,6 +626,15 @@ function updatePriority(pid, newPri) {
         document.getElementById('hkd-total').innerText=Math.round((t-r)*currentRate).toLocaleString();
     }
 
+    function addPlanItemToCart(gi, ii) {
+        const item = planGroups[gi].items[ii];
+        const pid = item.prodId; const sid = item.specId; const qty = item.qty;
+        let ext = cart.find(x => x.prodId === pid && x.specId === sid);
+        if(ext) ext.qty += qty; else cart.push({prodId:pid, specId:sid, qty:qty});
+        saveAndRender();
+        alert("已加入購物車！");
+    }
+
     function renderPlans() {
         document.getElementById('plan-groups').innerHTML = planGroups.map((g, gi) => `
             <div class="card" style="padding:0; overflow:hidden;">
@@ -665,12 +645,18 @@ function updatePriority(pid, newPri) {
                     ${g.items.map((i, ii) => {
                         const p = db.find(x => x.id === i.prodId);
                         const isInCart = cart.some(ci => ci.prodId === i.prodId && ci.specId === i.specId);
-                        return `<div class="card ${isInCart?'in-cart-highlight':''}" style="display:flex; justify-content:space-between; margin-bottom:5px; box-shadow:none; border:1px solid #eee;">
-                            <span>${p?p.name:'--'}</span>
-                            <div class="qty-ctrl">
-                                <button class="qty-btn" onclick="updateQty('plan',${gi},${ii},-1)">-</button>
-                                <span>${i.qty}</span>
-                                <button class="qty-btn" onclick="updateQty('plan',${gi},${ii},1)">+</button>
+                        return `<div class="card ${isInCart?'in-cart-highlight':''}" style="display:flex; flex-direction:column; margin-bottom:10px; box-shadow:none; border:1px solid #eee; padding:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-weight:600;">${p?p.name:'--'}</span>
+                                <button onclick="addPlanItemToCart(${gi}, ${ii})" style="background:var(--secondary); color:white; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold;">🛒 加入</button>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div class="qty-ctrl">
+                                    <button class="qty-btn" onclick="updateQty('plan',${gi},${ii},-1)">-</button>
+                                    <span>${i.qty}</span>
+                                    <button class="qty-btn" onclick="updateQty('plan',${gi},${ii},1)">+</button>
+                                </div>
+                                <button onclick="planGroups[${gi}].items.splice(${ii},1); saveAndRender();" style="border:none; color:#ccc; background:none;">移除</button>
                             </div>
                         </div>`;
                     }).join('')}
@@ -681,12 +667,12 @@ function updatePriority(pid, newPri) {
     function renderHistory() {
         document.getElementById('history-list').innerHTML = historyDB.map(h => `
             <div class="card" style="border-left: 4px solid var(--secondary);">
-                <div class="history-item-header" onclick="toggleHistoryDetail(${h.id})">
-                    <div style="flex:1;">
-                        <b>${h.title}</b><br>
+                <div class="history-item-header">
+                    <div style="flex:1;" onclick="editHistoryName(${h.id})">
+                        <b style="border-bottom: 1px dashed #ccc;">${h.title} <span class="edit-icon-small">✏️</span></b><br>
                         <small style="color:var(--gray)">${h.date}</small>
                     </div>
-                    <div style="text-align:right;">
+                    <div style="text-align:right;" onclick="toggleHistoryDetail(${h.id})">
                         <div style="color:var(--primary); font-weight:900;">₩${h.finalPaid.toLocaleString()}</div>
                         <small style="font-size:10px; color:var(--gray);">展開明細 ▾</small>
                     </div>
@@ -778,7 +764,6 @@ function updatePriority(pid, newPri) {
     function deletePlan(i){if(confirm("刪除計畫？")){planGroups.splice(i,1);saveAndRender();}}
     function createNewPlanGroup(){let t=prompt("新計畫名稱:");if(t){planGroups.push({title:t,items:[]});saveAndRender();}}
 
-    // 初始化
     if(document.getElementById('specContainer').children.length === 0) addSpecRow();
     initRegChips(); initFilters(); render();
 </script>
